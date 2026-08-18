@@ -1,0 +1,66 @@
+import { describe, expect, it } from 'vitest'
+import { computeConsistency, computeStreak } from './streak'
+
+describe('computeStreak', () => {
+  it('counts consecutive days ending today when today is logged', () => {
+    const days = ['2026-08-16', '2026-08-17', '2026-08-18']
+    expect(computeStreak(days, '2026-08-18')).toBe(3)
+  })
+
+  it('a gap breaks the streak — only counts back to the gap', () => {
+    // 08-15 logged, 08-16 missing (gap), 08-17 + 08-18 logged.
+    const days = ['2026-08-15', '2026-08-17', '2026-08-18']
+    expect(computeStreak(days, '2026-08-18')).toBe(2)
+  })
+
+  it("counts from yesterday when today isn't logged yet (day still in progress)", () => {
+    const days = ['2026-08-16', '2026-08-17']
+    expect(computeStreak(days, '2026-08-18')).toBe(2)
+  })
+
+  it('returns 0 when neither today nor yesterday is logged', () => {
+    const days = ['2026-08-10']
+    expect(computeStreak(days, '2026-08-18')).toBe(0)
+  })
+
+  it('returns 0 for an empty log', () => {
+    expect(computeStreak([], '2026-08-18')).toBe(0)
+  })
+
+  it('is timezone/month-boundary safe: streak spanning Aug 31 -> Sep 1', () => {
+    const days = ['2026-08-30', '2026-08-31', '2026-09-01']
+    expect(computeStreak(days, '2026-09-01')).toBe(3)
+  })
+
+  it('is year-boundary safe: streak spanning Dec 31 -> Jan 1', () => {
+    const days = ['2025-12-30', '2025-12-31', '2026-01-01']
+    expect(computeStreak(days, '2026-01-01')).toBe(3)
+  })
+})
+
+describe('computeConsistency', () => {
+  it('computes the fraction of the last N days that were logged', () => {
+    const days = ['2026-08-16', '2026-08-17', '2026-08-18']
+    expect(computeConsistency(days, '2026-08-18', 30)).toBeCloseTo(3 / 30, 10)
+  })
+
+  it('ignores entries outside the window', () => {
+    const days = ['2026-06-01', '2026-08-18'] // 2026-06-01 is well outside a 30-day window
+    expect(computeConsistency(days, '2026-08-18', 30)).toBeCloseTo(1 / 30, 10)
+  })
+
+  it('returns 1 when every day in the window was logged', () => {
+    const days: string[] = []
+    for (let i = 0; i < 30; i++) {
+      const d = new Date(2026, 7, 18 - i)
+      days.push(
+        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+      )
+    }
+    expect(computeConsistency(days, '2026-08-18', 30)).toBe(1)
+  })
+
+  it('returns 0 for an empty log', () => {
+    expect(computeConsistency([], '2026-08-18', 30)).toBe(0)
+  })
+})

@@ -206,3 +206,38 @@ Tracks phase-by-phase execution against `dev-plan-ai-agent.md`.
 - Known follow-up for Phase 8: `@zxing/library` + `@zxing/browser` added ~110 KB gz to the bundle
   (now ~325 KB gz total, up from ~213 KB after Phase 4) — `ScanPage` should be route-lazy-loaded
   alongside `WeightPage` before the bundle-budget gate.
+
+## Phase 6 — Templates, Streaks, Reports, Export
+- Built: Meal templates — "Save as template" on any non-empty meal section saves its
+  foodId-based entries (schema-faithful: `MealTemplateEntry` is `{foodId, qty, unit}`, so
+  recipe/custom-snapshot entries are skipped with a visible count in the UI) as a
+  `MealTemplate`; `TemplatesPage.tsx` lists saved templates with a per-template meal selector and
+  one-tap "Log now" that re-resolves the template against *current* food data (`applyTemplate.ts`)
+  rather than replaying stale cached macros. Logging-streak counter (`computeStreak` — consecutive
+  logged days ending today, or yesterday if today's still in progress so an unfinished day doesn't
+  zero out the streak) and 30-day consistency score, both shown on the Dashboard and the new weekly
+  Report page. Weekly report (`ReportPage.tsx` / `computeWeeklyReport`): avg kcal over the last 7
+  logged days, protein-target hit-rate, best/worst day (smallest/largest absolute deviation from
+  the kcal target). CSV export (`ExportPage.tsx`): logs and weigh-ins as separate downloads via
+  Blob + a programmatically-clicked `<a download>`, built on a small RFC4180-style `csv.ts`
+  (quotes/escapes commas, quotes, and newlines).
+- A real bug the E2E tests caught in themselves, not the app: the CSV-export test originally lost
+  its second logged entry every run. Root-caused by reproducing it in isolation — the test was
+  calling `page.goto()` (a hard navigation) immediately after clicking "Add to Lunch," racing
+  ahead of the in-flight `await logRepo.addEntry(...)` inside the click handler, since Playwright's
+  `.click()` only waits for the click to dispatch, not for the app's resulting async work. Fixed
+  by asserting `toHaveURL('/')` (which only becomes true once the save + `navigate()` actually
+  completes) before any subsequent hard navigation — confirmed with a 3x repeat run. Documented
+  here since the same pattern (hard nav right after a save-then-navigate action) would bite any
+  future E2E test in this app.
+- Tests: 11 streak unit tests (incl. gap-breaks-streak, today-in-progress-doesn't-break-streak,
+  month- and year-boundary safety) + 3 weekly-report fixture tests + 8 CSV tests (comma/quote/
+  newline escaping, empty-input header-only case) + 3 `applyTemplate` tests (the same "3 idli + 1
+  katori sambar" fixture numbers as Phase 3, plus a gram-override case and an unknown-food-id
+  error) + 2 `MealTemplateRepo` CRUD tests + 1 template integration test (save → resolve against
+  seeded food data → verify the exact logged entries). 171 unit tests total. 2 new E2E tests: save
+  a template, advance the clock a full day (`page.clock.setFixedTime`, confirming the fresh day
+  starts empty) and one-tap log it, verifying the exact same kcal total lands on the new day; CSV
+  export downloads two parseable files and asserts row counts (header + N) match what was actually
+  logged. 15 E2E total.
+- Gate: standard block → **all green** (171 unit + 15 E2E).

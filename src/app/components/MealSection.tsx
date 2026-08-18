@@ -67,6 +67,15 @@ export default function MealSection({ meal, label, entries, onDelete, date }: Pr
             Scan barcode
           </Link>
         )}
+        {entries.length > 0 && (
+          <Link
+            to={`/templates/new?meal=${meal}${dateSuffix}`}
+            className="text-brand-600 underline"
+            data-testid={`save-template-${meal}`}
+          >
+            Save as template
+          </Link>
+        )}
       </div>
     </section>
   )

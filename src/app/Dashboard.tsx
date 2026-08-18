@@ -4,8 +4,10 @@ import type { LogEntry, Meal, Profile, Targets } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
+import { groupEntriesByDate } from '../domain/history/averages'
 import { sumMacros } from '../domain/logging/portionMath'
-import { todayISO } from '../lib/date'
+import { computeStreak } from '../domain/streaks/streak'
+import { addDaysISO, todayISO } from '../lib/date'
 import CaloriesRing from './components/CaloriesRing'
 import MacroBar from './components/MacroBar'
 import MealSection from './components/MealSection'
@@ -24,6 +26,7 @@ export default function Dashboard() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [targets, setTargets] = useState<Targets | null>(null)
   const [entries, setEntries] = useState<LogEntry[]>([])
+  const [streak, setStreak] = useState(0)
 
   const logRepo = new LogRepo()
 
@@ -45,11 +48,16 @@ export default function Dashboard() {
         return
       }
       const t = await targetRepo.getLatest()
-      const todaysEntries = await new LogRepo().getEntriesForDate(todayISO())
+      const today = todayISO()
+      const [todaysEntries, last30Entries] = await Promise.all([
+        new LogRepo().getEntriesForDate(today),
+        new LogRepo().getEntriesForDateRange(addDaysISO(today, -29), today),
+      ])
       if (cancelled) return
       setProfile(p)
       setTargets(t ?? null)
       setEntries(todaysEntries)
+      setStreak(computeStreak(groupEntriesByDate(last30Entries).map((d) => d.date), today))
       setState('ready')
     })()
     return () => {
@@ -81,6 +89,11 @@ export default function Dashboard() {
           Hi {profile?.name}
         </Link>
       </div>
+      {streak > 0 && (
+        <p className="mt-1 text-xs text-slate-500" data-testid="dashboard-streak">
+          {streak} day{streak === 1 ? '' : 's'} streak
+        </p>
+      )}
 
       <div className="mt-6 flex flex-col items-center rounded-xl bg-white p-6 shadow" data-testid="targets-card">
         <CaloriesRing consumedKcal={totals.kcal} targetKcal={target.kcal} />
@@ -123,12 +136,21 @@ export default function Dashboard() {
         />
       ))}
 
-      <div className="mt-8 flex justify-center gap-4">
+      <div className="mt-8 flex flex-wrap justify-center gap-4">
         <Link to="/history" className="text-sm text-brand-600 underline">
           History
         </Link>
         <Link to="/weight" className="text-sm text-brand-600 underline">
           Weight
+        </Link>
+        <Link to="/templates" className="text-sm text-brand-600 underline">
+          Templates
+        </Link>
+        <Link to="/report" className="text-sm text-brand-600 underline">
+          Report
+        </Link>
+        <Link to="/export" className="text-sm text-brand-600 underline">
+          Export
         </Link>
         <Link to="/recipes/new" className="text-sm text-brand-600 underline">
           + New recipe
