@@ -63,4 +63,19 @@ describe('FoodRepo', () => {
     await repo.delete('idli')
     expect(await repo.getById('idli')).toBeUndefined()
   })
+
+  it('toggles favorite status and lists only favorites', async () => {
+    await repo.put(sampleFood())
+    await repo.put(sampleFood({ id: 'dosa', name: 'Plain Dosa' }))
+
+    expect(await repo.listFavorites()).toHaveLength(0)
+
+    await repo.setFavorite('idli', true)
+    const favorites = await repo.listFavorites()
+    expect(favorites).toHaveLength(1)
+    expect(favorites[0].id).toBe('idli')
+
+    await repo.setFavorite('idli', false)
+    expect(await repo.listFavorites()).toHaveLength(0)
+  })
 })

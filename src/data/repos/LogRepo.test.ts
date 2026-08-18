@@ -7,6 +7,8 @@ const sampleEntry = (overrides: Partial<LogEntry> = {}): Omit<LogEntry, 'id'> =>
   date: '2026-08-18',
   meal: 'breakfast',
   foodId: 'idli',
+  name: 'Idli',
+  portionSummary: '2 x 1 idli',
   qty: 2,
   unit: 'portion',
   grams: 80,

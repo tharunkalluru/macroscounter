@@ -68,3 +68,45 @@ Tracks phase-by-phase execution against `dev-plan-ai-agent.md`.
   dashboard shows the exact fixture numbers (1628 kcal / 126p / 171c / 49f, matching the unit-test
   fixture to the gram), and a reload-persistence check. 56 unit tests + 5 E2E total, all passing.
 - Gate: standard block → **all green**.
+
+## Phase 3 — Logging Core & Today Dashboard
+- Status: **PASS**
+- Built: Today dashboard (rebuilt on top of Phase 2's minimal version) with an SVG calories-ring
+  (`CaloriesRing.tsx`), protein/carb/fat progress bars (`MacroBar.tsx`), and 4 meal sections
+  (`MealSection.tsx`). Add-food flow (`AddFoodPage.tsx`): Fuse search over the seeded food DB (or
+  browse Favorites/Recents/My Recipes when the query is empty) → pick a household portion or enter
+  grams directly → live macro preview → save, with the same page doubling as the edit flow via
+  `/log/edit/:entryId`. Custom quick-add (`QuickAddPage.tsx`, name + direct kcal/p/c/f, no food
+  lookup) and a recipe builder (`RecipeBuilderPage.tsx`: search ingredients, enter grams per
+  ingredient + servings, live per-serving preview, save). `LogEntry` now denormalizes `name` +
+  `portionSummary` (in addition to the macros already denormalized in Phase 1) so the UI never
+  needs N+1 food/recipe lookups to render history. Added `RecipeRepo`, favorite support on
+  `FoodRepo` (`favorite?: boolean` field — no schema/index change needed, Dexie is schemaless
+  beyond declared indexes), and `data/seed.ts` (`ensureFoodDbSeeded` — fetches `/fooddb.json`
+  into IndexedDB exactly once; every subsequent read goes through IndexedDB, which is what makes
+  search/logging work fully offline after the first load).
+- Bug caught by switching from `npm run build` to relying on `npx tsc --noEmit` as the gate's
+  type-check step: the create-vite scaffold's solution-style `tsconfig.json` (`files: []` +
+  `references: [...]`) makes a bare `tsc --noEmit` silently check **zero files** and exit 0 even
+  with blatant type errors — only `tsc -b` (build mode) actually walks the references. Verified
+  this empirically by injecting a deliberate type error and watching `tsc --noEmit` pass anyway.
+  Fixed by consolidating to a single non-referenced `tsconfig.json` covering `src`, `scripts`,
+  and the two root configs, and changed `build` to `tsc --noEmit && vite build` (was `tsc -b`) so
+  both paths now exercise the same real check. Re-ran every prior phase's suite afterward to
+  confirm nothing had been silently broken — all still green. **Read this if reusing this dev
+  plan's literal `npx tsc --noEmit` gate command on a create-vite-scaffolded project: check for
+  this same solution-style tsconfig trap first.**
+- Tests: 10 domain unit tests (portion math incl. the "2 idli + 1 katori sambar" fixture, recipe
+  math). 1 integration test (log → totals update → edit qty → totals update → delete → totals
+  revert, against `fake-indexeddb`, per spec). 6 new repo tests (`RecipeRepo` CRUD,
+  `FoodRepo.favorite`, `seed.ts` fetch-once-then-IndexedDB-only behavior incl. a mocked-fetch
+  failure case). 73 unit tests total. 4 new E2E tests: the full onboard → search "idli" → log 3
+  idli + sambar journey asserting the ring/bars change by the exact expected amounts (1628 →
+  1412 kcal remaining) plus reload persistence; offline logging with `context.setOffline(true)`
+  after the one-time seed; edit-qty-then-delete updating the meal subtotal live. 8 E2E total, all
+  green. Also manually verified visually via Playwright-captured screenshots of the onboarding
+  form, empty dashboard (1628 kcal / 126p / 171c / 49f matching the fixture), search results,
+  portion picker with live preview, and the logged dashboard (1587 kcal remaining after 1 idli) —
+  the sandboxed interactive Browser pane couldn't reach localhost in this session, so screenshots
+  via a throwaway Playwright script substituted for it.
+- Gate: standard block → **all green** (73 unit + 8 E2E).

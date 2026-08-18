@@ -40,4 +40,12 @@ export class FoodRepo {
   async count(): Promise<number> {
     return this.db.foods.count()
   }
+
+  async listFavorites(): Promise<FoodRecord[]> {
+    return this.db.foods.filter((f) => f.favorite === true).toArray()
+  }
+
+  async setFavorite(id: string, favorite: boolean): Promise<void> {
+    await this.db.foods.update(id, { favorite })
+  }
 }

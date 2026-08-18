@@ -36,6 +36,7 @@ export interface FoodRecord {
   portions: Portion[]
   source: string
   verified: boolean
+  favorite?: boolean
 }
 
 export interface RecipeIngredient {
@@ -66,6 +67,10 @@ export interface LogEntry {
   foodId?: string
   recipeId?: number
   customSnapshot?: CustomSnapshot
+  /** Denormalized display name (food/recipe/custom name) at time of logging. */
+  name: string
+  /** Denormalized human-readable portion, e.g. "3 x 1 idli" or "120 g". */
+  portionSummary: string
   qty: number
   unit: Unit
   grams: number

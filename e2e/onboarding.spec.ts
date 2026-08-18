@@ -20,10 +20,10 @@ test('completing onboarding computes and shows the correct kcal target on the da
   await page.getByRole('button', { name: 'Get started' }).click()
 
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('kcal-target')).toHaveText('1628 kcal')
-  await expect(page.getByTestId('protein-target')).toHaveText('126 g')
-  await expect(page.getByTestId('carbs-target')).toHaveText('171 g')
-  await expect(page.getByTestId('fat-target')).toHaveText('49 g')
+  await expect(page.getByTestId('kcal-target')).toHaveText('1628 kcal target')
+  await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 126 g')
+  await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 171 g')
+  await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 49 g')
 })
 
 test('data persists across a reload after onboarding', async ({ page }) => {
@@ -36,10 +36,10 @@ test('data persists across a reload after onboarding', async ({ page }) => {
   await page.getByLabel('Activity level').selectOption('very_active')
   await page.getByRole('button', { name: 'Get started' }).click()
 
-  await expect(page.getByTestId('kcal-target')).toHaveText('2046 kcal')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2046 kcal target')
 
   await page.reload()
 
-  await expect(page.getByTestId('kcal-target')).toHaveText('2046 kcal')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2046 kcal target')
   await expect(page.getByText(/Reload Check/)).toBeVisible()
 })
