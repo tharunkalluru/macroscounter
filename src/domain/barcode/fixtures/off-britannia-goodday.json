@@ -1,0 +1,24 @@
+{
+  "code": "8901063114074",
+  "status": 1,
+  "status_verbose": "product found",
+  "product": {
+    "code": "8901063114074",
+    "product_name": "Good Day Cashew Cookies",
+    "brands": "Britannia",
+    "quantity": "216 g",
+    "serving_size": "30 g",
+    "nutrition_data_per": "100g",
+    "nutriments": {
+      "energy-kcal_100g": 502,
+      "proteins_100g": 6.9,
+      "carbohydrates_100g": 64,
+      "fat_100g": 23,
+      "fiber_100g": 1.5,
+      "energy-kcal_serving": 150.6,
+      "proteins_serving": 2.07,
+      "carbohydrates_serving": 19.2,
+      "fat_serving": 6.9
+    }
+  }
+}

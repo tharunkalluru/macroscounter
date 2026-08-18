@@ -78,4 +78,19 @@ describe('LogRepo', () => {
     const recent = await repo.getRecentFoodIds(10)
     expect(recent).toEqual(['idli', 'dosa'])
   })
+
+  it('returns distinct recent barcodes, most recent first', async () => {
+    await repo.addEntry(
+      sampleEntry({ date: '2026-08-16', foodId: undefined, barcode: '8901491101615' })
+    )
+    await repo.addEntry(
+      sampleEntry({ date: '2026-08-17', foodId: undefined, barcode: '8901063114074' })
+    )
+    await repo.addEntry(
+      sampleEntry({ date: '2026-08-18', foodId: undefined, barcode: '8901491101615' })
+    )
+
+    const recent = await repo.getRecentBarcodes(10)
+    expect(recent).toEqual(['8901491101615', '8901063114074'])
+  })
 })

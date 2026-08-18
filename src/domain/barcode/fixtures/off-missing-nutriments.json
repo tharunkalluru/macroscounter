@@ -1,0 +1,12 @@
+{
+  "code": "8900000000017",
+  "status": 1,
+  "status_verbose": "product found",
+  "product": {
+    "code": "8900000000017",
+    "product_name": "Unlabeled Snack Pack",
+    "brands": "Generic",
+    "nutrition_data_per": "100g",
+    "nutriments": {}
+  }
+}

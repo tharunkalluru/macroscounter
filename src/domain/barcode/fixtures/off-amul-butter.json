@@ -1,0 +1,24 @@
+{
+  "code": "8901491101615",
+  "status": 1,
+  "status_verbose": "product found",
+  "product": {
+    "code": "8901491101615",
+    "product_name": "Amul Butter",
+    "brands": "Amul",
+    "quantity": "500 g",
+    "serving_size": "10 g",
+    "nutrition_data_per": "100g",
+    "nutriments": {
+      "energy-kcal_100g": 717,
+      "proteins_100g": 0.5,
+      "carbohydrates_100g": 0.1,
+      "fat_100g": 80,
+      "fiber_100g": 0,
+      "energy-kcal_serving": 71.7,
+      "proteins_serving": 0.05,
+      "carbohydrates_serving": 0.01,
+      "fat_serving": 8
+    }
+  }
+}

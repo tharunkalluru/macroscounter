@@ -7,6 +7,9 @@ import HistoryPage from './app/HistoryPage'
 import OnboardingFlow from './app/OnboardingFlow'
 import QuickAddPage from './app/QuickAddPage'
 import RecipeBuilderPage from './app/RecipeBuilderPage'
+import ScanNotFoundPage from './app/ScanNotFoundPage'
+import ScanPage from './app/ScanPage'
+import ScanProductPage from './app/ScanProductPage'
 import SettingsPage from './app/SettingsPage'
 import WeightPage from './app/WeightPage'
 import { ensureFoodDbSeeded } from './data/seed'
@@ -51,6 +54,9 @@ function App() {
       <Route path="/history" element={<HistoryPage />} />
       <Route path="/history/:date" element={<DayDetailPage />} />
       <Route path="/weight" element={<WeightPage />} />
+      <Route path="/scan" element={<ScanPage />} />
+      <Route path="/scan/product/:barcode" element={<ScanProductPage />} />
+      <Route path="/scan/not-found/:barcode" element={<ScanNotFoundPage />} />
     </Routes>
   )
 }

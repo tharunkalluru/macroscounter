@@ -40,4 +40,16 @@ export class LogRepo {
     }
     return seen
   }
+
+  async getRecentBarcodes(limit = 30): Promise<string[]> {
+    const entries = await this.db.logEntries.orderBy('date').reverse().toArray()
+    const seen: string[] = []
+    for (const entry of entries) {
+      if (entry.barcode && !seen.includes(entry.barcode)) {
+        seen.push(entry.barcode)
+        if (seen.length >= limit) break
+      }
+    }
+    return seen
+  }
 }

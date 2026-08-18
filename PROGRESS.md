@@ -149,3 +149,60 @@ Tracks phase-by-phase execution against `dev-plan-ai-agent.md`.
   route-lazy-loaded (`React.lazy`) so Recharts isn't in the initial bundle; not fixed now since
   bundle budget is explicitly a Phase 8 gate item, not Phase 4's.
 - Gate: standard block → **all green** (108 unit + 11 E2E).
+
+## Phase 5 — Barcode Scanner (headline feature)
+- Built: Scan screen (`ScanPage.tsx`) tries the native `BarcodeDetector` API first (polling
+  `detect()` against the live video every 400ms), falls back to `@zxing/browser`'s
+  `BrowserMultiFormatReader.decodeFromVideoDevice`, and — regardless of camera outcome, including
+  when `getUserMedia` is denied/unavailable — always renders a manual barcode-number input as the
+  accessibility/desktop fallback the spec calls for. Lookup chain (`lookupProduct.ts`): local
+  `scannedProducts` cache (keyed by barcode, new `ScannedProductRepo`) → Open Food Facts v2 →
+  USDA FDC branded search (only attempted if `VITE_FDC_API_KEY` is set) → not-found. A cache hit
+  returns before any `fetch` call — that's what makes re-scanning a known product work offline.
+  Not-found flow (`ScanNotFoundPage.tsx`): photo capture (`capture="environment"` file input) runs
+  through the `LabelReader` interface — `VisionApiLabelReader` if a vision endpoint+key are
+  configured, else `NullLabelReader` (always returns null, deferring to the manual form) — user
+  fills in/confirms name + per-100g macros + optional serving size, saved to `scannedProducts`
+  permanently (`source: 'manual'`). Serving picker (`servingOptions.ts`) synthesizes "1 serving",
+  "1 pack", "½ pack" options from OFF's `serving_size`/`quantity` fields (falls back to a plain
+  100g option); count-based portions like "2 biscuits" aren't derivable from OFF data without a
+  per-unit weight, so the picker offers pack/serving grams instead, consistent with Phase 3's
+  grams-override pattern. `LogEntry` gained an optional `barcode` field (denormalized, like
+  `name`/`portionSummary` before it) so scanned items are traceable and — via new
+  `LogRepo.getRecentBarcodes` — enter recents.
+- Decode-function fixture testing without a camera: `@zxing/library`'s bundled `MultiFormatWriter`
+  turned out to only support QR/DataMatrix/Aztec (its 1D barcode writers are commented out of this
+  version's build — confirmed by inspecting the compiled source after `EAN13Writer`/`Code128Writer`
+  calls all failed with "No encoder available"). Implemented the standard EAN-13 symbology directly
+  (`ean13TestFixture.ts`: start/middle/end guards + L/G/R digit encodings) to render a real,
+  decodable barcode image as a test fixture, verified against the well-known reference code
+  `4006381333931` before relying on it. `decodeBarcode.ts` is the headless-testable core (raw
+  luminance buffer → ZXing `MultiFormatReader` → text) that both the `BarcodeDetector` and ZXing
+  video paths ultimately reduce to; the camera/video wiring itself isn't unit-testable and isn't
+  exercised by these tests, matching the spec's own note that "camera can't run headless."
+- Fixtures (`src/domain/barcode/fixtures/*.json`): hand-constructed, schema-accurate OFF v2 and FDC
+  v1 responses (not live-captured — no network access in this environment) for an Amul product
+  (butter, 500g pack / 10g serving), a Britannia product (cashew cookies), an OFF "product found but
+  nutriments empty" response, an OFF "not found" response, and FDC branded-search hit/miss
+  responses.
+- Tests: 9 parser unit tests over the fixtures (Amul + Britannia full parse, graceful-null on empty
+  nutriments — confirmed it doesn't throw — graceful-null on not-found, malformed-input safety) +
+  4 FDC parser tests (incl. UPC leading-zero matching) + 4 serving-options tests (incl. per-serving-
+  vs-per-100g math cross-checked against OFF's own reported per-serving values) + 6 decode-fixture
+  tests (2 product-shaped barcodes, 1 varying bar-width/height, blank image, random noise, and a
+  self-check of the fixture generator's check-digit math against the reference code) + 5
+  LabelReader tests + 3 `ScannedProductRepo` CRUD tests + 1 new `LogRepo.getRecentBarcodes` test.
+  7 integration tests (mocked fetch): cache-hit short-circuits network, OFF hit caches for next
+  time, OFF-miss-then-FDC-hit chain order, FDC skipped entirely with no API key, both-miss →
+  not-found, network error handled gracefully, and explicitly the spec's "not-found → manual save
+  → second scan hits cache offline" scenario. 143 unit tests total. 2 new E2E tests (network mocked
+  via Playwright routes, per spec, since camera can't run headless): manual entry → OFF hit → log
+  it → dashboard total updates exactly; not-found → manual form → save → add → then fully offline
+  (`context.setOffline(true)`) re-scan of the same barcode resolves from cache with zero network
+  calls. 13 E2E total. Visually verified: camera gracefully reports "unavailable" and the manual
+  entry path remains fully usable (expected in this sandboxed environment — no camera device);
+  scanned-product page shows name/brand/source badge/portion picker/live preview correctly.
+- Gate: standard block → **all green** (143 unit + 13 E2E).
+- Known follow-up for Phase 8: `@zxing/library` + `@zxing/browser` added ~110 KB gz to the bundle
+  (now ~325 KB gz total, up from ~213 KB after Phase 4) — `ScanPage` should be route-lazy-loaded
+  alongside `WeightPage` before the bundle-budget gate.

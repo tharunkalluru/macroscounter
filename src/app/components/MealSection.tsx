@@ -62,6 +62,11 @@ export default function MealSection({ meal, label, entries, onDelete, date }: Pr
         <Link to={`/log/quick-add?meal=${meal}${dateSuffix}`} className="text-brand-600 underline">
           + Custom
         </Link>
+        {!date && (
+          <Link to={`/scan?meal=${meal}`} className="text-brand-600 underline">
+            Scan barcode
+          </Link>
+        )}
       </div>
     </section>
   )

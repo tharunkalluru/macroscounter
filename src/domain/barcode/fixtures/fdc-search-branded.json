@@ -1,0 +1,24 @@
+{
+  "totalHits": 1,
+  "foods": [
+    {
+      "fdcId": 2344624,
+      "description": "CHOCOLATE CHIP COOKIES",
+      "brandOwner": "GENERIC BRAND FOODS",
+      "brandName": "GENERIC",
+      "gtinUpc": "0012345678905",
+      "servingSize": 30,
+      "servingSizeUnit": "g",
+      "foodNutrients": [
+        { "nutrient": { "id": 1008, "name": "Energy", "unitName": "KCAL" }, "amount": 480 },
+        { "nutrient": { "id": 1003, "name": "Protein", "unitName": "G" }, "amount": 6.67 },
+        {
+          "nutrient": { "id": 1005, "name": "Carbohydrate, by difference", "unitName": "G" },
+          "amount": 63.3
+        },
+        { "nutrient": { "id": 1004, "name": "Total lipid (fat)", "unitName": "G" }, "amount": 20 },
+        { "nutrient": { "id": 1079, "name": "Fiber, total dietary", "unitName": "G" }, "amount": 3.3 }
+      ]
+    }
+  ]
+}
