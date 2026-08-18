@@ -1,0 +1,7064 @@
+[
+  {
+    "id": "idli",
+    "name": "Idli",
+    "aliases": [
+      "idly"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 102.5,
+      "p": 4.5,
+      "c": 20,
+      "f": 0.5,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 idli",
+        "grams": 40
+      },
+      {
+        "label": "2 idli",
+        "grams": 80
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "plain-dosa",
+    "name": "Plain Dosa",
+    "aliases": [
+      "dosai",
+      "sada dosa"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 168.3,
+      "p": 3.7,
+      "c": 26,
+      "f": 5.5,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 90
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "masala-dosa",
+    "name": "Masala Dosa",
+    "aliases": [
+      "masala dosai"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 180.3,
+      "p": 4.2,
+      "c": 24,
+      "f": 7.5,
+      "fiber": 1.4
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 160
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "rava-dosa",
+    "name": "Rava Dosa",
+    "aliases": [
+      "suji dosa"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 178.5,
+      "p": 3.5,
+      "c": 22,
+      "f": 8.5,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 90
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "onion-dosa",
+    "name": "Onion Dosa",
+    "aliases": [
+      "onion uthappam dosa"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 177.4,
+      "p": 3.8,
+      "c": 23,
+      "f": 7.8,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "set-dosa",
+    "name": "Set Dosa",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 164.1,
+      "p": 3.9,
+      "c": 27,
+      "f": 4.5,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 60
+      },
+      {
+        "label": "3 dosa",
+        "grams": 180
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "neer-dosa",
+    "name": "Neer Dosa",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 114.6,
+      "p": 2.6,
+      "c": 22,
+      "f": 1.8,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 60
+      },
+      {
+        "label": "3 dosa",
+        "grams": 180
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "ragi-dosa",
+    "name": "Ragi Dosa",
+    "aliases": [
+      "finger millet dosa"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 129.1,
+      "p": 3.4,
+      "c": 21,
+      "f": 3.5,
+      "fiber": 2.2
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 90
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "uttapam",
+    "name": "Uttapam",
+    "aliases": [
+      "uthappam"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 157,
+      "p": 4,
+      "c": 24,
+      "f": 5,
+      "fiber": 1.1
+    },
+    "portions": [
+      {
+        "label": "1 uttapam",
+        "grams": 120
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "rava-upma",
+    "name": "Rava Upma",
+    "aliases": [
+      "upma",
+      "suji upma"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 122.3,
+      "p": 3.2,
+      "c": 15,
+      "f": 5.5,
+      "fiber": 1.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "ven-pongal",
+    "name": "Ven Pongal",
+    "aliases": [
+      "pongal",
+      "khara pongal"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 144,
+      "p": 4.5,
+      "c": 18,
+      "f": 6,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "medu-vada",
+    "name": "Medu Vada",
+    "aliases": [
+      "vada",
+      "urad dal vada"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 206,
+      "p": 6.5,
+      "c": 18,
+      "f": 12,
+      "fiber": 1.8
+    },
+    "portions": [
+      {
+        "label": "1 vada",
+        "grams": 50
+      },
+      {
+        "label": "2 vada",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "appam",
+    "name": "Appam",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 141.2,
+      "p": 2.8,
+      "c": 28,
+      "f": 2,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "1 appam",
+        "grams": 70
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "puttu",
+    "name": "Puttu",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 145.5,
+      "p": 3,
+      "c": 30,
+      "f": 1.5,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "1 cylinder",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "idiyappam",
+    "name": "Idiyappam",
+    "aliases": [
+      "string hoppers",
+      "noolappam"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 142.1,
+      "p": 2.4,
+      "c": 32,
+      "f": 0.5,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 nool puttu",
+        "grams": 80
+      },
+      {
+        "label": "3 pieces",
+        "grams": 240
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "coconut-chutney",
+    "name": "Coconut Chutney",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 160,
+      "p": 2.5,
+      "c": 6,
+      "f": 14,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "2 tbsp",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tomato-chutney",
+    "name": "Tomato Chutney",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 92.7,
+      "p": 1.8,
+      "c": 9,
+      "f": 5.5,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "2 tbsp",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "peanut-chutney",
+    "name": "Peanut Chutney",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 166,
+      "p": 6.5,
+      "c": 8,
+      "f": 12,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "2 tbsp",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mint-chutney",
+    "name": "Mint Chutney",
+    "aliases": [
+      "pudina chutney"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 44,
+      "p": 1.5,
+      "c": 5,
+      "f": 2,
+      "fiber": 1.8
+    },
+    "portions": [
+      {
+        "label": "2 tbsp",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sambar",
+    "name": "Sambar",
+    "aliases": [
+      "sambhar",
+      "sambaar"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 62,
+      "p": 3,
+      "c": 8,
+      "f": 2,
+      "fiber": 2.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "rasam",
+    "name": "Rasam",
+    "aliases": [
+      "rasam soup",
+      "saaru"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 34.6,
+      "p": 1.4,
+      "c": 5,
+      "f": 1,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "curd-rice",
+    "name": "Curd Rice",
+    "aliases": [
+      "thayir sadam",
+      "dahi rice"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 103.2,
+      "p": 3.5,
+      "c": 16,
+      "f": 2.8,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "lemon-rice",
+    "name": "Lemon Rice",
+    "aliases": [
+      "chitranna"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 155.9,
+      "p": 2.6,
+      "c": 24,
+      "f": 5.5,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tamarind-rice",
+    "name": "Tamarind Rice",
+    "aliases": [
+      "puliyodarai",
+      "puliogare",
+      "tamarind rice puliyodharai"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 169.2,
+      "p": 2.8,
+      "c": 26,
+      "f": 6,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "coconut-rice",
+    "name": "Coconut Rice",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 177.5,
+      "p": 2.5,
+      "c": 25,
+      "f": 7.5,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tomato-rice",
+    "name": "Tomato Rice",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 146.9,
+      "p": 2.6,
+      "c": 24,
+      "f": 4.5,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "bisi-bele-bath",
+    "name": "Bisi Bele Bath",
+    "aliases": [
+      "bisibelebath"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 146.3,
+      "p": 4.2,
+      "c": 20,
+      "f": 5.5,
+      "fiber": 1.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "khara-bath",
+    "name": "Khara Bath",
+    "aliases": [
+      "rava khara bath"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 136.1,
+      "p": 3.4,
+      "c": 16,
+      "f": 6.5,
+      "fiber": 1.1
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "semiya-upma",
+    "name": "Semiya Upma",
+    "aliases": [
+      "vermicelli upma"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 125,
+      "p": 3,
+      "c": 17,
+      "f": 5,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "adai",
+    "name": "Adai",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 154.5,
+      "p": 6.5,
+      "c": 22,
+      "f": 4.5,
+      "fiber": 2.8
+    },
+    "portions": [
+      {
+        "label": "1 adai",
+        "grams": 90
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "paniyaram",
+    "name": "Paniyaram",
+    "aliases": [
+      "kuzhi paniyaram",
+      "gunta ponganalu"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 149.5,
+      "p": 4,
+      "c": 21,
+      "f": 5.5,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "4 pieces",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pesarattu",
+    "name": "Pesarattu",
+    "aliases": [
+      "moong dal dosa"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 140,
+      "p": 6,
+      "c": 20,
+      "f": 4,
+      "fiber": 2.4
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mysore-masala-dosa",
+    "name": "Mysore Masala Dosa",
+    "aliases": [],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 203.1,
+      "p": 4.4,
+      "c": 25,
+      "f": 9.5,
+      "fiber": 1.6
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 170
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "podi-idli",
+    "name": "Podi Idli",
+    "aliases": [
+      "gunpowder idli",
+      "idli podi"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 146.5,
+      "p": 5.5,
+      "c": 21,
+      "f": 4.5,
+      "fiber": 1.1
+    },
+    "portions": [
+      {
+        "label": "4 pieces",
+        "grams": 180
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "vatha-kuzhambu",
+    "name": "Vatha Kuzhambu",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 95.5,
+      "p": 2.5,
+      "c": 9,
+      "f": 5.5,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "kara-kuzhambu",
+    "name": "Kara Kuzhambu",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 86.6,
+      "p": 2.4,
+      "c": 8,
+      "f": 5,
+      "fiber": 1.9
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mor-kuzhambu",
+    "name": "Mor Kuzhambu",
+    "aliases": [
+      "more kuzhambu"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 70.4,
+      "p": 2.6,
+      "c": 6,
+      "f": 4,
+      "fiber": 1.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "drumstick-sambar",
+    "name": "Drumstick Sambar",
+    "aliases": [
+      "murungakkai sambar"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 64,
+      "p": 3,
+      "c": 8.5,
+      "f": 2,
+      "fiber": 2.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "white-rice-cooked",
+    "name": "White Rice (cooked)",
+    "aliases": [
+      "steamed rice",
+      "sadam",
+      "annam"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 125.5,
+      "p": 2.7,
+      "c": 28,
+      "f": 0.3,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      },
+      {
+        "label": "1 plate",
+        "grams": 300
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "brown-rice-cooked",
+    "name": "Brown Rice (cooked)",
+    "aliases": [],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 110.5,
+      "p": 2.6,
+      "c": 23,
+      "f": 0.9,
+      "fiber": 1.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "basmati-rice-cooked",
+    "name": "Basmati Rice (cooked)",
+    "aliases": [],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 123.2,
+      "p": 2.9,
+      "c": 27,
+      "f": 0.4,
+      "fiber": 0.3
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "poha",
+    "name": "Poha",
+    "aliases": [
+      "flattened rice",
+      "aval",
+      "kanda poha"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 147.7,
+      "p": 2.8,
+      "c": 24,
+      "f": 4.5,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "ragi-mudde",
+    "name": "Ragi Mudde",
+    "aliases": [
+      "finger millet balls",
+      "ragi sangati"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 135.4,
+      "p": 2.5,
+      "c": 30,
+      "f": 0.6,
+      "fiber": 3.5
+    },
+    "portions": [
+      {
+        "label": "1 ball",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "jowar-roti",
+    "name": "Jowar Roti",
+    "aliases": [
+      "sorghum roti",
+      "jolada rotti"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 115.5,
+      "p": 3.5,
+      "c": 22,
+      "f": 1.5,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 roti",
+        "grams": 60
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "bajra-roti",
+    "name": "Bajra Roti",
+    "aliases": [
+      "pearl millet roti"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 114.6,
+      "p": 3.6,
+      "c": 21,
+      "f": 1.8,
+      "fiber": 2.8
+    },
+    "portions": [
+      {
+        "label": "1 roti",
+        "grams": 60
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "quinoa-cooked",
+    "name": "Quinoa (cooked)",
+    "aliases": [],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 118.7,
+      "p": 4.4,
+      "c": 21,
+      "f": 1.9,
+      "fiber": 2.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "oats-porridge",
+    "name": "Oats Porridge",
+    "aliases": [
+      "oatmeal",
+      "oats"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 76,
+      "p": 2.5,
+      "c": 12,
+      "f": 2,
+      "fiber": 1.7
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "wheat-rava-cooked",
+    "name": "Wheat Rava (cooked)",
+    "aliases": [
+      "broken wheat",
+      "dalia",
+      "godhuma rava"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 79.6,
+      "p": 3,
+      "c": 16,
+      "f": 0.4,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sabudana-khichdi",
+    "name": "Sabudana Khichdi",
+    "aliases": [
+      "sago khichdi"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 170.5,
+      "p": 2,
+      "c": 26,
+      "f": 6.5,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 plate",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "semiya-plain-cooked",
+    "name": "Semiya (plain, cooked)",
+    "aliases": [
+      "vermicelli plain"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 107.7,
+      "p": 2.8,
+      "c": 23,
+      "f": 0.5,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chapati",
+    "name": "Chapati",
+    "aliases": [
+      "roti",
+      "phulka"
+    ],
+    "category": "breads",
+    "per100g": {
+      "kcal": 117.7,
+      "p": 3.1,
+      "c": 18,
+      "f": 3.7,
+      "fiber": 2.2
+    },
+    "portions": [
+      {
+        "label": "1 chapati",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tandoori-roti",
+    "name": "Tandoori Roti",
+    "aliases": [],
+    "category": "breads",
+    "per100g": {
+      "kcal": 107.1,
+      "p": 3.4,
+      "c": 20,
+      "f": 1.5,
+      "fiber": 2.4
+    },
+    "portions": [
+      {
+        "label": "1 roti",
+        "grams": 45
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "plain-paratha",
+    "name": "Plain Paratha",
+    "aliases": [],
+    "category": "breads",
+    "per100g": {
+      "kcal": 188.7,
+      "p": 3.8,
+      "c": 22,
+      "f": 9.5,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 paratha",
+        "grams": 60
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "aloo-paratha",
+    "name": "Aloo Paratha",
+    "aliases": [],
+    "category": "breads",
+    "per100g": {
+      "kcal": 188.5,
+      "p": 4,
+      "c": 24,
+      "f": 8.5,
+      "fiber": 2.2
+    },
+    "portions": [
+      {
+        "label": "1 paratha",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "parotta",
+    "name": "Parotta",
+    "aliases": [
+      "kerala parotta",
+      "malabar parotta",
+      "barotta"
+    ],
+    "category": "breads",
+    "per100g": {
+      "kcal": 297,
+      "p": 5,
+      "c": 40,
+      "f": 13,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "1 parotta",
+        "grams": 90
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "naan",
+    "name": "Naan",
+    "aliases": [],
+    "category": "breads",
+    "per100g": {
+      "kcal": 192,
+      "p": 4.5,
+      "c": 30,
+      "f": 6,
+      "fiber": 1.4
+    },
+    "portions": [
+      {
+        "label": "1 naan",
+        "grams": 90
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "butter-naan",
+    "name": "Butter Naan",
+    "aliases": [],
+    "category": "breads",
+    "per100g": {
+      "kcal": 219.4,
+      "p": 4.6,
+      "c": 30,
+      "f": 9,
+      "fiber": 1.4
+    },
+    "portions": [
+      {
+        "label": "1 naan",
+        "grams": 95
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "kulcha",
+    "name": "Kulcha",
+    "aliases": [],
+    "category": "breads",
+    "per100g": {
+      "kcal": 190.7,
+      "p": 4.3,
+      "c": 31,
+      "f": 5.5,
+      "fiber": 1.3
+    },
+    "portions": [
+      {
+        "label": "1 kulcha",
+        "grams": 90
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "puri",
+    "name": "Puri",
+    "aliases": [
+      "poori"
+    ],
+    "category": "breads",
+    "per100g": {
+      "kcal": 194.6,
+      "p": 3.9,
+      "c": 20,
+      "f": 11,
+      "fiber": 1.2
+    },
+    "portions": [
+      {
+        "label": "1 puri",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "bhatura",
+    "name": "Bhatura",
+    "aliases": [],
+    "category": "breads",
+    "per100g": {
+      "kcal": 226.8,
+      "p": 4.2,
+      "c": 30,
+      "f": 10,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 bhatura",
+        "grams": 80
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "missi-roti",
+    "name": "Missi Roti",
+    "aliases": [],
+    "category": "breads",
+    "per100g": {
+      "kcal": 125,
+      "p": 4.5,
+      "c": 20,
+      "f": 3,
+      "fiber": 3.2
+    },
+    "portions": [
+      {
+        "label": "1 roti",
+        "grams": 45
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "toor-dal-cooked",
+    "name": "Toor Dal (cooked)",
+    "aliases": [
+      "arhar dal",
+      "tuvaram paruppu",
+      "paruppu"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 102.2,
+      "p": 6.5,
+      "c": 15,
+      "f": 1.8,
+      "fiber": 4
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "moong-dal-yellow-cooked",
+    "name": "Moong Dal, Yellow (cooked)",
+    "aliases": [
+      "yellow moong dal"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 102.8,
+      "p": 7,
+      "c": 16,
+      "f": 1.2,
+      "fiber": 4.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "moong-dal-whole-cooked",
+    "name": "Moong Dal, Whole (cooked)",
+    "aliases": [
+      "green moong dal",
+      "whole moong"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 107,
+      "p": 7.5,
+      "c": 17,
+      "f": 1,
+      "fiber": 5.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chana-dal-cooked",
+    "name": "Chana Dal (cooked)",
+    "aliases": [
+      "split chickpea dal",
+      "bengal gram dal"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 132.5,
+      "p": 7.5,
+      "c": 20,
+      "f": 2.5,
+      "fiber": 5.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "masoor-dal-cooked",
+    "name": "Masoor Dal (cooked)",
+    "aliases": [
+      "red lentil dal"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 101.8,
+      "p": 7.2,
+      "c": 16,
+      "f": 1,
+      "fiber": 4.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "urad-dal-cooked",
+    "name": "Urad Dal (cooked)",
+    "aliases": [
+      "black gram dal"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 112.7,
+      "p": 7.8,
+      "c": 17,
+      "f": 1.5,
+      "fiber": 5.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "dal-tadka",
+    "name": "Dal Tadka",
+    "aliases": [],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 122.5,
+      "p": 6.5,
+      "c": 14,
+      "f": 4.5,
+      "fiber": 3.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "dal-makhani",
+    "name": "Dal Makhani",
+    "aliases": [],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 163.7,
+      "p": 6.8,
+      "c": 15,
+      "f": 8.5,
+      "fiber": 4.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chana-masala",
+    "name": "Chana Masala",
+    "aliases": [
+      "chole",
+      "chickpea curry"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 149.5,
+      "p": 7,
+      "c": 18,
+      "f": 5.5,
+      "fiber": 6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "rajma-masala",
+    "name": "Rajma Masala",
+    "aliases": [
+      "kidney bean curry"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 135.7,
+      "p": 6.8,
+      "c": 17,
+      "f": 4.5,
+      "fiber": 6.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "lobia-curry",
+    "name": "Lobia Curry",
+    "aliases": [
+      "black-eyed peas curry",
+      "lobhia"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 126.2,
+      "p": 7,
+      "c": 16,
+      "f": 3.8,
+      "fiber": 6.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sprouted-moong-salad",
+    "name": "Sprouted Moong Salad",
+    "aliases": [
+      "moong sprouts"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 93,
+      "p": 7,
+      "c": 14,
+      "f": 1,
+      "fiber": 4.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "paruppu-usili",
+    "name": "Paruppu Usili",
+    "aliases": [],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 148.5,
+      "p": 8.5,
+      "c": 14,
+      "f": 6.5,
+      "fiber": 4.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "beans-poriyal",
+    "name": "Beans Poriyal",
+    "aliases": [
+      "french beans poriyal"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 86.5,
+      "p": 2.5,
+      "c": 9,
+      "f": 4.5,
+      "fiber": 3.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "cabbage-poriyal",
+    "name": "Cabbage Poriyal",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 71.2,
+      "p": 1.8,
+      "c": 7,
+      "f": 4,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "carrot-poriyal",
+    "name": "Carrot Poriyal",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 78,
+      "p": 1.5,
+      "c": 9,
+      "f": 4,
+      "fiber": 2.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "beetroot-poriyal",
+    "name": "Beetroot Poriyal",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 82.4,
+      "p": 1.6,
+      "c": 10,
+      "f": 4,
+      "fiber": 2.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "potato-curry",
+    "name": "Potato Curry",
+    "aliases": [
+      "urulai curry",
+      "aloo curry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 122.3,
+      "p": 2.2,
+      "c": 16,
+      "f": 5.5,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "bhindi-fry",
+    "name": "Bhindi Fry",
+    "aliases": [
+      "okra fry",
+      "vendakkai fry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 94,
+      "p": 2,
+      "c": 8,
+      "f": 6,
+      "fiber": 3.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "brinjal-curry",
+    "name": "Brinjal Curry",
+    "aliases": [
+      "kathirikai curry",
+      "eggplant curry",
+      "baingan curry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 96.9,
+      "p": 1.6,
+      "c": 8,
+      "f": 6.5,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "cauliflower-curry",
+    "name": "Cauliflower Curry",
+    "aliases": [
+      "gobi curry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 90.3,
+      "p": 2.2,
+      "c": 8,
+      "f": 5.5,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "aloo-gobi",
+    "name": "Aloo Gobi",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 111.1,
+      "p": 2.4,
+      "c": 13,
+      "f": 5.5,
+      "fiber": 2.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "veg-kurma",
+    "name": "Veg Kurma",
+    "aliases": [
+      "vegetable korma"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 127.7,
+      "p": 2.8,
+      "c": 10,
+      "f": 8.5,
+      "fiber": 2.4
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "avial",
+    "name": "Avial",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 109.4,
+      "p": 2.6,
+      "c": 9,
+      "f": 7,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pumpkin-kootu",
+    "name": "Pumpkin Kootu",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 74.5,
+      "p": 3,
+      "c": 10,
+      "f": 2.5,
+      "fiber": 2.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chana-kootu",
+    "name": "Chana Kootu",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 101,
+      "p": 5.5,
+      "c": 13,
+      "f": 3,
+      "fiber": 4.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "keerai-poriyal",
+    "name": "Keerai Poriyal",
+    "aliases": [
+      "spinach poriyal",
+      "palak poriyal"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 63.5,
+      "p": 3,
+      "c": 5,
+      "f": 3.5,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "paneer-butter-masala",
+    "name": "Paneer Butter Masala",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 205,
+      "p": 8.5,
+      "c": 9,
+      "f": 15,
+      "fiber": 1.4
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "palak-paneer",
+    "name": "Palak Paneer",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 168,
+      "p": 8,
+      "c": 7,
+      "f": 12,
+      "fiber": 2.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "kadai-paneer",
+    "name": "Kadai Paneer",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 181.8,
+      "p": 8.2,
+      "c": 8,
+      "f": 13,
+      "fiber": 1.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "matar-paneer",
+    "name": "Matar Paneer",
+    "aliases": [
+      "mutter paneer"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 170.2,
+      "p": 7.8,
+      "c": 10,
+      "f": 11,
+      "fiber": 2.4
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "baingan-bharta",
+    "name": "Baingan Bharta",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 94,
+      "p": 2,
+      "c": 8,
+      "f": 6,
+      "fiber": 3.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "dum-aloo",
+    "name": "Dum Aloo",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 137.9,
+      "p": 2.6,
+      "c": 15,
+      "f": 7.5,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "methi-malai-matar",
+    "name": "Methi Malai Matar",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 133,
+      "p": 4,
+      "c": 9,
+      "f": 9,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mushroom-masala",
+    "name": "Mushroom Masala",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 99.3,
+      "p": 3.2,
+      "c": 7,
+      "f": 6.5,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mushroom-fry",
+    "name": "Mushroom Fry",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 105.5,
+      "p": 3.5,
+      "c": 6,
+      "f": 7.5,
+      "fiber": 2.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "soya-chunks-curry",
+    "name": "Soya Chunks Curry",
+    "aliases": [
+      "meal maker curry",
+      "soya curry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 129.5,
+      "p": 12,
+      "c": 8,
+      "f": 5.5,
+      "fiber": 3.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tofu-stir-fry",
+    "name": "Tofu Stir Fry",
+    "aliases": [],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 112,
+      "p": 9.5,
+      "c": 5,
+      "f": 6,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-curry",
+    "name": "Chicken Curry",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 161,
+      "p": 15,
+      "c": 5,
+      "f": 9,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "2 pieces + gravy",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-fry",
+    "name": "Chicken Fry",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 239,
+      "p": 22,
+      "c": 4,
+      "f": 15,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      },
+      {
+        "label": "2 pieces",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-65",
+    "name": "Chicken 65",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 238,
+      "p": 20,
+      "c": 8,
+      "f": 14,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      },
+      {
+        "label": "10 pieces",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tandoori-chicken",
+    "name": "Tandoori Chicken",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 176,
+      "p": 24,
+      "c": 2,
+      "f": 8,
+      "fiber": 0.3
+    },
+    "portions": [
+      {
+        "label": "1 leg piece",
+        "grams": 120
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-tikka",
+    "name": "Chicken Tikka",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 185,
+      "p": 23,
+      "c": 3,
+      "f": 9,
+      "fiber": 0.3
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      },
+      {
+        "label": "6 pieces",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "grilled-chicken-breast",
+    "name": "Grilled Chicken Breast",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 156.4,
+      "p": 31,
+      "c": 0,
+      "f": 3.6,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      },
+      {
+        "label": "1 breast",
+        "grams": 170
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-biryani",
+    "name": "Chicken Biryani",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 198.5,
+      "p": 8.5,
+      "c": 22,
+      "f": 8.5,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 plate",
+        "grams": 350
+      },
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-chettinad",
+    "name": "Chicken Chettinad",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 196,
+      "p": 16,
+      "c": 6,
+      "f": 12,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pepper-chicken",
+    "name": "Pepper Chicken",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 187,
+      "p": 18,
+      "c": 4,
+      "f": 11,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-kola-urundai",
+    "name": "Chicken Kola Urundai",
+    "aliases": [
+      "chicken kola urundai kebab",
+      "chicken meatballs"
+    ],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 209,
+      "p": 17,
+      "c": 6,
+      "f": 13,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "4 balls",
+        "grams": 120
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "butter-chicken",
+    "name": "Butter Chicken",
+    "aliases": [
+      "murgh makhani"
+    ],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 210,
+      "p": 14,
+      "c": 7,
+      "f": 14,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-korma",
+    "name": "Chicken Korma",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 201,
+      "p": 15,
+      "c": 6,
+      "f": 13,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-manchurian",
+    "name": "Chicken Manchurian",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 198,
+      "p": 15,
+      "c": 12,
+      "f": 10,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-lollipop",
+    "name": "Chicken Lollipop",
+    "aliases": [],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 220,
+      "p": 18,
+      "c": 10,
+      "f": 12,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "4 pieces",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-kebab",
+    "name": "Chicken Kebab",
+    "aliases": [
+      "seekh kebab chicken"
+    ],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 194,
+      "p": 21,
+      "c": 5,
+      "f": 10,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "4 pieces",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-saagwala",
+    "name": "Chicken Saagwala",
+    "aliases": [
+      "methi chicken",
+      "chicken palak"
+    ],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 174,
+      "p": 16,
+      "c": 5,
+      "f": 10,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "fish-fry",
+    "name": "Fish Fry",
+    "aliases": [
+      "meen varuval"
+    ],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 208,
+      "p": 20,
+      "c": 5,
+      "f": 12,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "1 piece",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "meen-kuzhambu",
+    "name": "Meen Kuzhambu",
+    "aliases": [
+      "fish curry",
+      "fish kuzhambu"
+    ],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 152,
+      "p": 15,
+      "c": 5,
+      "f": 8,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "kerala-fish-curry",
+    "name": "Kerala Fish Curry",
+    "aliases": [
+      "meen curry"
+    ],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 157,
+      "p": 15,
+      "c": 4,
+      "f": 9,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "grilled-fish",
+    "name": "Grilled Fish",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 136.5,
+      "p": 24,
+      "c": 0,
+      "f": 4.5,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      },
+      {
+        "label": "1 fillet",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "fish-tikka",
+    "name": "Fish Tikka",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 163,
+      "p": 22,
+      "c": 3,
+      "f": 7,
+      "fiber": 0.3
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      },
+      {
+        "label": "6 pieces",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "prawn-curry",
+    "name": "Prawn Curry",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 156,
+      "p": 16,
+      "c": 5,
+      "f": 8,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "prawn-fry",
+    "name": "Prawn Fry",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 195,
+      "p": 19,
+      "c": 5,
+      "f": 11,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "prawn-masala",
+    "name": "Prawn Masala",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 173,
+      "p": 17,
+      "c": 6,
+      "f": 9,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "crab-curry",
+    "name": "Crab Curry",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 139,
+      "p": 14,
+      "c": 5,
+      "f": 7,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "fish-molee",
+    "name": "Fish Molee",
+    "aliases": [
+      "fish moilee",
+      "meen moilee"
+    ],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 166,
+      "p": 15,
+      "c": 4,
+      "f": 10,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tuna-canned-in-water",
+    "name": "Tuna (canned in water)",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 113,
+      "p": 26,
+      "c": 0,
+      "f": 1,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      },
+      {
+        "label": "1 small can (drained)",
+        "grams": 120
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "salmon-grilled",
+    "name": "Salmon (grilled)",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 217,
+      "p": 25,
+      "c": 0,
+      "f": 13,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      },
+      {
+        "label": "1 fillet",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "fish-pakora",
+    "name": "Fish Pakora",
+    "aliases": [
+      "fish amritsari",
+      "fish bajji"
+    ],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 238,
+      "p": 16,
+      "c": 12,
+      "f": 14,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "5 pieces",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mutton-curry",
+    "name": "Mutton Curry",
+    "aliases": [
+      "lamb curry"
+    ],
+    "category": "mutton",
+    "per100g": {
+      "kcal": 210,
+      "p": 17,
+      "c": 4,
+      "f": 14,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mutton-biryani",
+    "name": "Mutton Biryani",
+    "aliases": [],
+    "category": "mutton",
+    "per100g": {
+      "kcal": 210,
+      "p": 9,
+      "c": 21,
+      "f": 10,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "1 plate",
+        "grams": 350
+      },
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "keema",
+    "name": "Keema",
+    "aliases": [
+      "minced mutton curry",
+      "kheema"
+    ],
+    "category": "mutton",
+    "per100g": {
+      "kcal": 227,
+      "p": 18,
+      "c": 5,
+      "f": 15,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "boiled-egg",
+    "name": "Boiled Egg",
+    "aliases": [
+      "hard boiled egg"
+    ],
+    "category": "eggs",
+    "per100g": {
+      "kcal": 155.4,
+      "p": 13,
+      "c": 1.1,
+      "f": 11,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 egg",
+        "grams": 50
+      },
+      {
+        "label": "2 eggs",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "fried-egg",
+    "name": "Fried Egg",
+    "aliases": [
+      "sunny side up"
+    ],
+    "category": "eggs",
+    "per100g": {
+      "kcal": 202,
+      "p": 13.5,
+      "c": 1,
+      "f": 16,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 egg",
+        "grams": 55
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "plain-omelette",
+    "name": "Plain Omelette",
+    "aliases": [],
+    "category": "eggs",
+    "per100g": {
+      "kcal": 182,
+      "p": 12.5,
+      "c": 1.5,
+      "f": 14,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "2-egg omelette",
+        "grams": 110
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "masala-omelette",
+    "name": "Masala Omelette",
+    "aliases": [],
+    "category": "eggs",
+    "per100g": {
+      "kcal": 181.5,
+      "p": 12,
+      "c": 3,
+      "f": 13.5,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "2-egg omelette",
+        "grams": 120
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "egg-curry",
+    "name": "Egg Curry",
+    "aliases": [],
+    "category": "eggs",
+    "per100g": {
+      "kcal": 137,
+      "p": 9,
+      "c": 5,
+      "f": 9,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "2 eggs + gravy",
+        "grams": 200
+      },
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "egg-bhurji",
+    "name": "Egg Bhurji",
+    "aliases": [
+      "scrambled eggs indian"
+    ],
+    "category": "eggs",
+    "per100g": {
+      "kcal": 168,
+      "p": 11,
+      "c": 4,
+      "f": 12,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "2-egg serving",
+        "grams": 130
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "egg-dosa",
+    "name": "Egg Dosa",
+    "aliases": [],
+    "category": "eggs",
+    "per100g": {
+      "kcal": 177.5,
+      "p": 7.5,
+      "c": 20,
+      "f": 7.5,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "1 dosa",
+        "grams": 130
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "egg-biryani",
+    "name": "Egg Biryani",
+    "aliases": [],
+    "category": "eggs",
+    "per100g": {
+      "kcal": 198.5,
+      "p": 7.5,
+      "c": 23,
+      "f": 8.5,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "1 plate",
+        "grams": 350
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "samosa",
+    "name": "Samosa",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 231,
+      "p": 4.5,
+      "c": 24,
+      "f": 13,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 samosa",
+        "grams": 60
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "aloo-bonda",
+    "name": "Aloo Bonda",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 184,
+      "p": 3.5,
+      "c": 20,
+      "f": 10,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "1 bonda",
+        "grams": 50
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "onion-pakora",
+    "name": "Onion Pakora",
+    "aliases": [
+      "onion bajji"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 225,
+      "p": 4.5,
+      "c": 18,
+      "f": 15,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "5 pieces",
+        "grams": 80
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mixture",
+    "name": "Mixture",
+    "aliases": [
+      "namkeen mixture",
+      "kara boondi mixture"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 452,
+      "p": 10,
+      "c": 40,
+      "f": 28,
+      "fiber": 4
+    },
+    "portions": [
+      {
+        "label": "1 small cup",
+        "grams": 50
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "murukku",
+    "name": "Murukku",
+    "aliases": [
+      "chakli"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 460,
+      "p": 7,
+      "c": 45,
+      "f": 28,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "4 pieces",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "banana-chips",
+    "name": "Banana Chips",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 491,
+      "p": 2,
+      "c": 42,
+      "f": 35,
+      "fiber": 3.5
+    },
+    "portions": [
+      {
+        "label": "1 small cup",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sundal-chana",
+    "name": "Sundal (Chana)",
+    "aliases": [
+      "chickpea sundal"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 148,
+      "p": 8,
+      "c": 20,
+      "f": 4,
+      "fiber": 6.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sundal-peanut",
+    "name": "Sundal (Peanut)",
+    "aliases": [
+      "verkadalai sundal",
+      "groundnut sundal"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 182,
+      "p": 9,
+      "c": 14,
+      "f": 10,
+      "fiber": 4.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "roasted-chana",
+    "name": "Roasted Chana",
+    "aliases": [
+      "fried gram",
+      "pottukadalai"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 366,
+      "p": 20,
+      "c": 58,
+      "f": 6,
+      "fiber": 17
+    },
+    "portions": [
+      {
+        "label": "1 small cup",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "roasted-peanuts-salted",
+    "name": "Roasted Peanuts (salted)",
+    "aliases": [
+      "masala peanuts"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 588,
+      "p": 24,
+      "c": 15,
+      "f": 48,
+      "fiber": 8
+    },
+    "portions": [
+      {
+        "label": "1 small cup",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "bhel-puri",
+    "name": "Bhel Puri",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 166,
+      "p": 4,
+      "c": 24,
+      "f": 6,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 plate",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pani-puri",
+    "name": "Pani Puri",
+    "aliases": [
+      "golgappa",
+      "puchka"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 145,
+      "p": 3,
+      "c": 22,
+      "f": 5,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "6 puris",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sev-puri",
+    "name": "Sev Puri",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 210,
+      "p": 4,
+      "c": 26,
+      "f": 10,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "6 puris",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "vada-pav",
+    "name": "Vada Pav",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 284,
+      "p": 6,
+      "c": 38,
+      "f": 12,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 vada pav",
+        "grams": 130
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pav-bhaji",
+    "name": "Pav Bhaji",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 240,
+      "p": 5,
+      "c": 28,
+      "f": 12,
+      "fiber": 3.5
+    },
+    "portions": [
+      {
+        "label": "1 plate with pav",
+        "grams": 300
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "dhokla",
+    "name": "Dhokla",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 119,
+      "p": 5,
+      "c": 18,
+      "f": 3,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "4 pieces",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "khandvi",
+    "name": "Khandvi",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 119,
+      "p": 4.5,
+      "c": 14,
+      "f": 5,
+      "fiber": 1.2
+    },
+    "portions": [
+      {
+        "label": "6 rolls",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "kachori",
+    "name": "Kachori",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 284,
+      "p": 5,
+      "c": 30,
+      "f": 16,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 kachori",
+        "grams": 70
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "veg-cutlet",
+    "name": "Veg Cutlet",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 186,
+      "p": 4,
+      "c": 20,
+      "f": 10,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 cutlet",
+        "grams": 60
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "bread-pakora",
+    "name": "Bread Pakora",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 254,
+      "p": 6,
+      "c": 26,
+      "f": 14,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "1 piece",
+        "grams": 80
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "potato-chaat",
+    "name": "Potato Chaat",
+    "aliases": [
+      "aloo chaat"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 172,
+      "p": 3,
+      "c": 22,
+      "f": 8,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 plate",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "roasted-papad",
+    "name": "Roasted Papad",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 335,
+      "p": 22,
+      "c": 55,
+      "f": 3,
+      "fiber": 10
+    },
+    "portions": [
+      {
+        "label": "1 papad",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "fried-papad",
+    "name": "Fried Papad",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 460,
+      "p": 20,
+      "c": 50,
+      "f": 20,
+      "fiber": 9
+    },
+    "portions": [
+      {
+        "label": "1 papad",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "thattai",
+    "name": "Thattai",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 454,
+      "p": 7,
+      "c": 48,
+      "f": 26,
+      "fiber": 3.5
+    },
+    "portions": [
+      {
+        "label": "2 pieces",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "ribbon-pakoda",
+    "name": "Ribbon Pakoda",
+    "aliases": [
+      "ribbon murukku"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 486,
+      "p": 8,
+      "c": 46,
+      "f": 30,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 small cup",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "masala-vada",
+    "name": "Masala Vada",
+    "aliases": [
+      "paruppu vadai",
+      "chana dal vada"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 219,
+      "p": 8,
+      "c": 22,
+      "f": 11,
+      "fiber": 4.5
+    },
+    "portions": [
+      {
+        "label": "2 vada",
+        "grams": 80
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "gulab-jamun",
+    "name": "Gulab Jamun",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 304,
+      "p": 4,
+      "c": 45,
+      "f": 12,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "2 pieces (with syrup)",
+        "grams": 80
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "jalebi",
+    "name": "Jalebi",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 391,
+      "p": 2,
+      "c": 62,
+      "f": 15,
+      "fiber": 0.3
+    },
+    "portions": [
+      {
+        "label": "2 pieces",
+        "grams": 60
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "besan-laddu",
+    "name": "Besan Laddu",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 450,
+      "p": 8,
+      "c": 55,
+      "f": 22,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 laddu",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "rava-laddu",
+    "name": "Rava Laddu",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 432,
+      "p": 5,
+      "c": 58,
+      "f": 20,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 laddu",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mysore-pak",
+    "name": "Mysore Pak",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 494,
+      "p": 4,
+      "c": 52,
+      "f": 30,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "1 piece",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "gajar-halwa",
+    "name": "Gajar Halwa",
+    "aliases": [
+      "carrot halwa",
+      "gajrela"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 226,
+      "p": 4,
+      "c": 30,
+      "f": 10,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sooji-halwa",
+    "name": "Sooji Halwa",
+    "aliases": [
+      "semolina halwa",
+      "rava kesari"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 316,
+      "p": 3,
+      "c": 40,
+      "f": 16,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "semiya-payasam",
+    "name": "Semiya Payasam",
+    "aliases": [
+      "vermicelli kheer",
+      "semiya kheer"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 156,
+      "p": 3.5,
+      "c": 22,
+      "f": 6,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "paal-payasam",
+    "name": "Paal Payasam",
+    "aliases": [
+      "rice payasam",
+      "rice kheer"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 154.5,
+      "p": 4,
+      "c": 20,
+      "f": 6.5,
+      "fiber": 0.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "rava-kesari",
+    "name": "Rava Kesari",
+    "aliases": [
+      "kesari bath sweet",
+      "sheera"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 313,
+      "p": 2.5,
+      "c": 42,
+      "f": 15,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "milk-barfi",
+    "name": "Milk Barfi",
+    "aliases": [
+      "khoya barfi",
+      "mawa barfi"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 408,
+      "p": 7,
+      "c": 50,
+      "f": 20,
+      "fiber": 0.3
+    },
+    "portions": [
+      {
+        "label": "2 pieces",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "rasgulla",
+    "name": "Rasgulla",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 157.5,
+      "p": 4,
+      "c": 32,
+      "f": 1.5,
+      "fiber": 0.2
+    },
+    "portions": [
+      {
+        "label": "2 pieces",
+        "grams": 80
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "kaju-katli",
+    "name": "Kaju Katli",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 442,
+      "p": 9,
+      "c": 52,
+      "f": 22,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "2 pieces",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "coconut-ladoo",
+    "name": "Coconut Ladoo",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 398,
+      "p": 4,
+      "c": 55,
+      "f": 18,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 laddu",
+        "grams": 35
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "boondi-laddu",
+    "name": "Boondi Laddu",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 406,
+      "p": 5,
+      "c": 56,
+      "f": 18,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 laddu",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "adhirasam",
+    "name": "Adhirasam",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 374,
+      "p": 2,
+      "c": 60,
+      "f": 14,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 piece",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sohan-papdi",
+    "name": "Sohan Papdi",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 454,
+      "p": 4,
+      "c": 60,
+      "f": 22,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "2 pieces",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "jackfruit-payasam",
+    "name": "Jackfruit Payasam",
+    "aliases": [
+      "chakka pradhaman"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 168,
+      "p": 2.5,
+      "c": 26,
+      "f": 6,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "jaggery",
+    "name": "Jaggery",
+    "aliases": [
+      "gur",
+      "vellam"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 382.5,
+      "p": 0.4,
+      "c": 95,
+      "f": 0.1,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 small piece",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tea-with-milk-sugar",
+    "name": "Tea with Milk & Sugar",
+    "aliases": [
+      "chai",
+      "masala chai"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 56,
+      "p": 1.5,
+      "c": 8,
+      "f": 2,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tea-with-milk-no-sugar",
+    "name": "Tea with Milk, No Sugar",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 34,
+      "p": 1.5,
+      "c": 2.5,
+      "f": 2,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "black-tea",
+    "name": "Black Tea",
+    "aliases": [
+      "plain tea no milk"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 1.6,
+      "p": 0.1,
+      "c": 0.3,
+      "f": 0,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "filter-coffee",
+    "name": "Filter Coffee",
+    "aliases": [
+      "south indian coffee",
+      "kaapi"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 57.7,
+      "p": 1.8,
+      "c": 7,
+      "f": 2.5,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "black-coffee",
+    "name": "Black Coffee",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 2.8,
+      "p": 0.2,
+      "c": 0.5,
+      "f": 0,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "spiced-buttermilk",
+    "name": "Spiced Buttermilk",
+    "aliases": [
+      "chaas",
+      "moru"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 21.2,
+      "p": 1.5,
+      "c": 2,
+      "f": 0.8,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sweet-lassi",
+    "name": "Sweet Lassi",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 112.8,
+      "p": 3.2,
+      "c": 16,
+      "f": 4,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "salted-lassi",
+    "name": "Salted Lassi",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 61.5,
+      "p": 3,
+      "c": 4.5,
+      "f": 3.5,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mango-lassi",
+    "name": "Mango Lassi",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 126.2,
+      "p": 3,
+      "c": 20,
+      "f": 3.8,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "fresh-lime-soda-sweet",
+    "name": "Fresh Lime Soda (sweet)",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 44,
+      "p": 0,
+      "c": 11,
+      "f": 0,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "nimbu-pani-salted",
+    "name": "Nimbu Pani (salted)",
+    "aliases": [
+      "lime water salted"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 12.4,
+      "p": 0.1,
+      "c": 3,
+      "f": 0,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "coconut-water",
+    "name": "Coconut Water",
+    "aliases": [
+      "tender coconut water",
+      "elaneer"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 22.6,
+      "p": 0.7,
+      "c": 4.5,
+      "f": 0.2,
+      "fiber": 1.1
+    },
+    "portions": [
+      {
+        "label": "1 tender coconut",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sugarcane-juice",
+    "name": "Sugarcane Juice",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 61.2,
+      "p": 0.3,
+      "c": 15,
+      "f": 0,
+      "fiber": 0.2
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "milk-whole",
+    "name": "Milk, Whole",
+    "aliases": [
+      "full cream milk"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 85.6,
+      "p": 3.2,
+      "c": 4.7,
+      "f": 6,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 200
+      },
+      {
+        "label": "1 cup",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "milk-toned",
+    "name": "Milk, Toned",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 58.2,
+      "p": 3.1,
+      "c": 4.7,
+      "f": 3,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "badam-milk",
+    "name": "Badam Milk",
+    "aliases": [
+      "almond milk sweet"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 122.5,
+      "p": 4,
+      "c": 12,
+      "f": 6.5,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "malted-milk-drink",
+    "name": "Malted Milk Drink",
+    "aliases": [
+      "boost",
+      "horlicks",
+      "bournvita"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 121.5,
+      "p": 4,
+      "c": 14,
+      "f": 5.5,
+      "fiber": 0.3
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "rose-milk",
+    "name": "Rose Milk",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 113,
+      "p": 3,
+      "c": 14,
+      "f": 5,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "watermelon-juice",
+    "name": "Watermelon Juice",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 34.9,
+      "p": 0.5,
+      "c": 8,
+      "f": 0.1,
+      "fiber": 0.2
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "orange-juice",
+    "name": "Orange Juice",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 44.6,
+      "p": 0.7,
+      "c": 10,
+      "f": 0.2,
+      "fiber": 0.2
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "curd-plain",
+    "name": "Curd, Plain",
+    "aliases": [
+      "dahi",
+      "yogurt",
+      "thayir"
+    ],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 63.5,
+      "p": 3.5,
+      "c": 4.5,
+      "f": 3.5,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "hung-curd",
+    "name": "Hung Curd",
+    "aliases": [
+      "greek yogurt style curd",
+      "chakka dahi"
+    ],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 84.5,
+      "p": 7,
+      "c": 4,
+      "f": 4.5,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "2 tbsp",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "paneer",
+    "name": "Paneer",
+    "aliases": [
+      "cottage cheese indian"
+    ],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 266,
+      "p": 18,
+      "c": 3.5,
+      "f": 20,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "100 g",
+        "grams": 100
+      },
+      {
+        "label": "1 cube",
+        "grams": 20
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "ghee",
+    "name": "Ghee",
+    "aliases": [
+      "clarified butter"
+    ],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 900,
+      "p": 0,
+      "c": 0,
+      "f": 100,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 tsp",
+        "grams": 5
+      },
+      {
+        "label": "1 tbsp",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "butter",
+    "name": "Butter",
+    "aliases": [],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 733,
+      "p": 0.9,
+      "c": 0.1,
+      "f": 81,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 tsp",
+        "grams": 5
+      },
+      {
+        "label": "1 tbsp",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "coconut-oil",
+    "name": "Coconut Oil",
+    "aliases": [],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 900,
+      "p": 0,
+      "c": 0,
+      "f": 100,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 tsp",
+        "grams": 5
+      },
+      {
+        "label": "1 tbsp",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sunflower-oil",
+    "name": "Sunflower Oil",
+    "aliases": [],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 900,
+      "p": 0,
+      "c": 0,
+      "f": 100,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 tsp",
+        "grams": 5
+      },
+      {
+        "label": "1 tbsp",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "milk-powder",
+    "name": "Milk Powder",
+    "aliases": [],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 490,
+      "p": 26,
+      "c": 38,
+      "f": 26,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "2 tbsp",
+        "grams": 20
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sugar",
+    "name": "Sugar",
+    "aliases": [],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 400,
+      "p": 0,
+      "c": 100,
+      "f": 0,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 tsp",
+        "grams": 5
+      },
+      {
+        "label": "1 tbsp",
+        "grams": 12
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "honey",
+    "name": "Honey",
+    "aliases": [],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 329.2,
+      "p": 0.3,
+      "c": 82,
+      "f": 0,
+      "fiber": 0.2
+    },
+    "portions": [
+      {
+        "label": "1 tsp",
+        "grams": 7
+      },
+      {
+        "label": "1 tbsp",
+        "grams": 21
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "cheese-slice",
+    "name": "Cheese Slice",
+    "aliases": [],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 274,
+      "p": 13,
+      "c": 6,
+      "f": 22,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 slice",
+        "grams": 20
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "banana",
+    "name": "Banana",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 99.1,
+      "p": 1.1,
+      "c": 23,
+      "f": 0.3,
+      "fiber": 2.6
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 120
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "apple",
+    "name": "Apple",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 59,
+      "p": 0.3,
+      "c": 14,
+      "f": 0.2,
+      "fiber": 2.4
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 180
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mango",
+    "name": "Mango",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 66.8,
+      "p": 0.8,
+      "c": 15,
+      "f": 0.4,
+      "fiber": 1.6
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 200
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "papaya",
+    "name": "Papaya",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 49.1,
+      "p": 0.6,
+      "c": 11,
+      "f": 0.3,
+      "fiber": 1.7
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "guava",
+    "name": "Guava",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 75.4,
+      "p": 2.6,
+      "c": 14,
+      "f": 1,
+      "fiber": 5.4
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "orange",
+    "name": "Orange",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 52.5,
+      "p": 0.9,
+      "c": 12,
+      "f": 0.1,
+      "fiber": 2.4
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pomegranate",
+    "name": "Pomegranate",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 93.6,
+      "p": 1.7,
+      "c": 19,
+      "f": 1.2,
+      "fiber": 4
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "grapes",
+    "name": "Grapes",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 77.5,
+      "p": 0.7,
+      "c": 18,
+      "f": 0.3,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "watermelon",
+    "name": "Watermelon",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 36.2,
+      "p": 0.6,
+      "c": 8,
+      "f": 0.2,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pineapple",
+    "name": "Pineapple",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 54.9,
+      "p": 0.5,
+      "c": 13,
+      "f": 0.1,
+      "fiber": 1.4
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sapota",
+    "name": "Sapota",
+    "aliases": [
+      "chikoo"
+    ],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 91.5,
+      "p": 0.4,
+      "c": 20,
+      "f": 1.1,
+      "fiber": 5.3
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "custard-apple",
+    "name": "Custard Apple",
+    "aliases": [
+      "sitaphal"
+    ],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 109.5,
+      "p": 1.7,
+      "c": 25,
+      "f": 0.3,
+      "fiber": 2.4
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "muskmelon",
+    "name": "Muskmelon",
+    "aliases": [
+      "kharbuja"
+    ],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 37,
+      "p": 0.8,
+      "c": 8,
+      "f": 0.2,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "dates",
+    "name": "Dates",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 313.6,
+      "p": 2.5,
+      "c": 75,
+      "f": 0.4,
+      "fiber": 8
+    },
+    "portions": [
+      {
+        "label": "3 dates",
+        "grams": 25
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "raisins",
+    "name": "Raisins",
+    "aliases": [
+      "kishmish"
+    ],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 332.9,
+      "p": 3.1,
+      "c": 79,
+      "f": 0.5,
+      "fiber": 3.7
+    },
+    "portions": [
+      {
+        "label": "1 small handful",
+        "grams": 20
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "jackfruit",
+    "name": "Jackfruit",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 104.2,
+      "p": 1.7,
+      "c": 23,
+      "f": 0.6,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "lychee",
+    "name": "Lychee",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 74.8,
+      "p": 0.8,
+      "c": 17,
+      "f": 0.4,
+      "fiber": 1.3
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "kiwi",
+    "name": "Kiwi",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 68.9,
+      "p": 1.1,
+      "c": 15,
+      "f": 0.5,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 80
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "strawberry",
+    "name": "Strawberry",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 37.5,
+      "p": 0.7,
+      "c": 8,
+      "f": 0.3,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "fig",
+    "name": "Fig",
+    "aliases": [
+      "anjeer"
+    ],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 81.9,
+      "p": 0.8,
+      "c": 19,
+      "f": 0.3,
+      "fiber": 2.9
+    },
+    "portions": [
+      {
+        "label": "2 fresh figs",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "avocado",
+    "name": "Avocado",
+    "aliases": [],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 179,
+      "p": 2,
+      "c": 9,
+      "f": 15,
+      "fiber": 6.7
+    },
+    "portions": [
+      {
+        "label": "1/2 medium",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "fresh-coconut",
+    "name": "Fresh Coconut",
+    "aliases": [
+      "thengai",
+      "nariyal"
+    ],
+    "category": "fruits",
+    "per100g": {
+      "kcal": 370.2,
+      "p": 3.3,
+      "c": 15,
+      "f": 33,
+      "fiber": 9
+    },
+    "portions": [
+      {
+        "label": "1/4 coconut",
+        "grams": 45
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "almonds",
+    "name": "Almonds",
+    "aliases": [
+      "badam"
+    ],
+    "category": "nuts-seeds",
+    "per100g": {
+      "kcal": 622,
+      "p": 21,
+      "c": 22,
+      "f": 50,
+      "fiber": 12.5
+    },
+    "portions": [
+      {
+        "label": "10 almonds",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "cashews",
+    "name": "Cashews",
+    "aliases": [
+      "kaju"
+    ],
+    "category": "nuts-seeds",
+    "per100g": {
+      "kcal": 588,
+      "p": 18,
+      "c": 30,
+      "f": 44,
+      "fiber": 3.3
+    },
+    "portions": [
+      {
+        "label": "10 cashews",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "peanuts-raw",
+    "name": "Peanuts, Raw",
+    "aliases": [
+      "groundnuts"
+    ],
+    "category": "nuts-seeds",
+    "per100g": {
+      "kcal": 609,
+      "p": 26,
+      "c": 16,
+      "f": 49,
+      "fiber": 8.5
+    },
+    "portions": [
+      {
+        "label": "1 small handful",
+        "grams": 20
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "walnuts",
+    "name": "Walnuts",
+    "aliases": [
+      "akhrot"
+    ],
+    "category": "nuts-seeds",
+    "per100g": {
+      "kcal": 701,
+      "p": 15,
+      "c": 14,
+      "f": 65,
+      "fiber": 6.7
+    },
+    "portions": [
+      {
+        "label": "4 halves",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pistachios",
+    "name": "Pistachios",
+    "aliases": [
+      "pista"
+    ],
+    "category": "nuts-seeds",
+    "per100g": {
+      "kcal": 597,
+      "p": 20,
+      "c": 28,
+      "f": 45,
+      "fiber": 10
+    },
+    "portions": [
+      {
+        "label": "20 pistachios",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sesame-seeds",
+    "name": "Sesame Seeds",
+    "aliases": [
+      "til"
+    ],
+    "category": "nuts-seeds",
+    "per100g": {
+      "kcal": 614,
+      "p": 18,
+      "c": 23,
+      "f": 50,
+      "fiber": 12
+    },
+    "portions": [
+      {
+        "label": "1 tbsp",
+        "grams": 10
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "flax-seeds",
+    "name": "Flax Seeds",
+    "aliases": [
+      "alsi"
+    ],
+    "category": "nuts-seeds",
+    "per100g": {
+      "kcal": 566,
+      "p": 18,
+      "c": 29,
+      "f": 42,
+      "fiber": 27
+    },
+    "portions": [
+      {
+        "label": "1 tbsp",
+        "grams": 10
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chia-seeds",
+    "name": "Chia Seeds",
+    "aliases": [],
+    "category": "nuts-seeds",
+    "per100g": {
+      "kcal": 515,
+      "p": 17,
+      "c": 42,
+      "f": 31,
+      "fiber": 34
+    },
+    "portions": [
+      {
+        "label": "1 tbsp",
+        "grams": 12
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "boiled-potato",
+    "name": "Boiled Potato",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 76.9,
+      "p": 2,
+      "c": 17,
+      "f": 0.1,
+      "fiber": 1.8
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "bread-white",
+    "name": "Bread, White",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 263.5,
+      "p": 8,
+      "c": 50,
+      "f": 3.5,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 slice",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "bread-brown",
+    "name": "Bread, Brown",
+    "aliases": [
+      "whole wheat bread"
+    ],
+    "category": "general",
+    "per100g": {
+      "kcal": 247.5,
+      "p": 9,
+      "c": 45,
+      "f": 3.5,
+      "fiber": 6.5
+    },
+    "portions": [
+      {
+        "label": "1 slice",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "cornflakes",
+    "name": "Cornflakes",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 373,
+      "p": 7,
+      "c": 84,
+      "f": 1,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "muesli",
+    "name": "Muesli",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 362.5,
+      "p": 10,
+      "c": 66,
+      "f": 6.5,
+      "fiber": 8
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "boiled-sweet-corn",
+    "name": "Boiled Sweet Corn",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 99.6,
+      "p": 3.2,
+      "c": 19,
+      "f": 1.2,
+      "fiber": 2.4
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "cucumber-tomato-salad",
+    "name": "Cucumber Tomato Salad",
+    "aliases": [
+      "kachumber"
+    ],
+    "category": "general",
+    "per100g": {
+      "kcal": 21.8,
+      "p": 1,
+      "c": 4,
+      "f": 0.2,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "plain-pasta",
+    "name": "Plain Pasta",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 131,
+      "p": 5.5,
+      "c": 25,
+      "f": 1,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "vegetable-soup",
+    "name": "Vegetable Soup",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 39,
+      "p": 1.5,
+      "c": 6,
+      "f": 1,
+      "fiber": 1.2
+    },
+    "portions": [
+      {
+        "label": "1 bowl",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tomato-soup",
+    "name": "Tomato Soup",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 54.8,
+      "p": 1.2,
+      "c": 8,
+      "f": 2,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 bowl",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sweet-potato-boiled",
+    "name": "Sweet Potato, Boiled",
+    "aliases": [
+      "shakarkandi"
+    ],
+    "category": "general",
+    "per100g": {
+      "kcal": 87.3,
+      "p": 1.6,
+      "c": 20,
+      "f": 0.1,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 130
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "mango-pickle",
+    "name": "Mango Pickle",
+    "aliases": [
+      "aam achar"
+    ],
+    "category": "general",
+    "per100g": {
+      "kcal": 224,
+      "p": 1,
+      "c": 10,
+      "f": 20,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 tbsp",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "lime-pickle",
+    "name": "Lime Pickle",
+    "aliases": [
+      "nimbu achar"
+    ],
+    "category": "general",
+    "per100g": {
+      "kcal": 186.2,
+      "p": 0.8,
+      "c": 12,
+      "f": 15,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 tbsp",
+        "grams": 15
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "cucumber-raw",
+    "name": "Cucumber, Raw",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 18.1,
+      "p": 0.7,
+      "c": 3.6,
+      "f": 0.1,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tomato-raw",
+    "name": "Tomato, Raw",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 21,
+      "p": 0.9,
+      "c": 3.9,
+      "f": 0.2,
+      "fiber": 1.2
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 120
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "onion-raw",
+    "name": "Onion, Raw",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 42.5,
+      "p": 1.1,
+      "c": 9.3,
+      "f": 0.1,
+      "fiber": 1.7
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "carrot-raw",
+    "name": "Carrot, Raw",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 43.8,
+      "p": 0.9,
+      "c": 9.6,
+      "f": 0.2,
+      "fiber": 2.8
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 60
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "beetroot-raw",
+    "name": "Beetroot, Raw",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 46.6,
+      "p": 1.6,
+      "c": 9.6,
+      "f": 0.2,
+      "fiber": 2.8
+    },
+    "portions": [
+      {
+        "label": "1 medium",
+        "grams": 100
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "spinach-raw",
+    "name": "Spinach, Raw",
+    "aliases": [
+      "palak raw"
+    ],
+    "category": "general",
+    "per100g": {
+      "kcal": 29.6,
+      "p": 2.9,
+      "c": 3.6,
+      "f": 0.4,
+      "fiber": 2.2
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "cabbage-raw",
+    "name": "Cabbage, Raw",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 29.3,
+      "p": 1.3,
+      "c": 5.8,
+      "f": 0.1,
+      "fiber": 2.5
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chegodilu",
+    "name": "Chegodilu",
+    "aliases": [
+      "rice flour rings"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 449,
+      "p": 6,
+      "c": 50,
+      "f": 25,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "2 rings",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "karasev",
+    "name": "Karasev",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 482,
+      "p": 9,
+      "c": 44,
+      "f": 30,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 small cup",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "boondi-plain",
+    "name": "Boondi (plain)",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 452,
+      "p": 8,
+      "c": 42,
+      "f": 28,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 small cup",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "peanut-chikki",
+    "name": "Peanut Chikki",
+    "aliases": [
+      "groundnut chikki"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 478,
+      "p": 12,
+      "c": 58,
+      "f": 22,
+      "fiber": 4.5
+    },
+    "portions": [
+      {
+        "label": "1 piece",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "til-chikki",
+    "name": "Til Chikki",
+    "aliases": [
+      "sesame brittle"
+    ],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 494,
+      "p": 10,
+      "c": 55,
+      "f": 26,
+      "fiber": 6
+    },
+    "portions": [
+      {
+        "label": "1 piece",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "corn-chaat",
+    "name": "Corn Chaat",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 134.5,
+      "p": 3.5,
+      "c": 20,
+      "f": 4.5,
+      "fiber": 2.8
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "masala-papad",
+    "name": "Masala Papad",
+    "aliases": [],
+    "category": "snacks",
+    "per100g": {
+      "kcal": 294,
+      "p": 18,
+      "c": 42,
+      "f": 6,
+      "fiber": 8.5
+    },
+    "portions": [
+      {
+        "label": "1 papad",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "paruppu-payasam",
+    "name": "Paruppu Payasam",
+    "aliases": [
+      "moong dal payasam"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 177,
+      "p": 4.5,
+      "c": 24,
+      "f": 7,
+      "fiber": 1.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "atta-halwa",
+    "name": "Atta Halwa",
+    "aliases": [
+      "wheat halwa",
+      "kada prasad"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 352,
+      "p": 3.5,
+      "c": 44,
+      "f": 18,
+      "fiber": 1.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pinni",
+    "name": "Pinni",
+    "aliases": [],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 432,
+      "p": 6,
+      "c": 48,
+      "f": 24,
+      "fiber": 2
+    },
+    "portions": [
+      {
+        "label": "1 piece",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "badusha",
+    "name": "Badusha",
+    "aliases": [
+      "balushahi"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 428,
+      "p": 3,
+      "c": 50,
+      "f": 24,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "1 piece",
+        "grams": 40
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "khoya",
+    "name": "Khoya",
+    "aliases": [
+      "kova",
+      "mawa"
+    ],
+    "category": "sweets",
+    "per100g": {
+      "kcal": 402,
+      "p": 15,
+      "c": 27,
+      "f": 26,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "2 tbsp",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "jaljeera",
+    "name": "Jaljeera",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 26.1,
+      "p": 0.3,
+      "c": 6,
+      "f": 0.1,
+      "fiber": 0.3
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "thandai",
+    "name": "Thandai",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 140,
+      "p": 3.5,
+      "c": 18,
+      "f": 6,
+      "fiber": 0.6
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "apple-juice",
+    "name": "Apple Juice",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 45.3,
+      "p": 0.1,
+      "c": 11,
+      "f": 0.1,
+      "fiber": 0.2
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "pineapple-juice",
+    "name": "Pineapple Juice",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 54.1,
+      "p": 0.3,
+      "c": 13,
+      "f": 0.1,
+      "fiber": 0.2
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "buttermilk-plain",
+    "name": "Buttermilk, Plain",
+    "aliases": [
+      "unsalted chaas"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 18.5,
+      "p": 1.5,
+      "c": 2,
+      "f": 0.5,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "iced-tea",
+    "name": "Iced Tea",
+    "aliases": [],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 36,
+      "p": 0,
+      "c": 9,
+      "f": 0,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 250
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "kerala-chicken-stew",
+    "name": "Kerala Chicken Stew",
+    "aliases": [
+      "nadan chicken stew"
+    ],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 162,
+      "p": 13,
+      "c": 5,
+      "f": 10,
+      "fiber": 0.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-roast-kerala",
+    "name": "Chicken Roast (Kerala)",
+    "aliases": [
+      "kerala chicken roast"
+    ],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 217,
+      "p": 19,
+      "c": 6,
+      "f": 13,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "chicken-sukka",
+    "name": "Chicken Sukka",
+    "aliases": [
+      "chicken sukka fry"
+    ],
+    "category": "chicken",
+    "per100g": {
+      "kcal": 217,
+      "p": 20,
+      "c": 5,
+      "f": 13,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "amritsari-fish",
+    "name": "Amritsari Fish",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 247,
+      "p": 18,
+      "c": 10,
+      "f": 15,
+      "fiber": 0.7
+    },
+    "portions": [
+      {
+        "label": "5 pieces",
+        "grams": 120
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "prawn-biryani",
+    "name": "Prawn Biryani",
+    "aliases": [],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 205,
+      "p": 9,
+      "c": 22,
+      "f": 9,
+      "fiber": 0.9
+    },
+    "portions": [
+      {
+        "label": "1 plate",
+        "grams": 350
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "andhra-fish-curry",
+    "name": "Andhra Fish Curry",
+    "aliases": [
+      "gongura fish curry"
+    ],
+    "category": "fish-seafood",
+    "per100g": {
+      "kcal": 156.5,
+      "p": 15,
+      "c": 5,
+      "f": 8.5,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "gutti-vankaya",
+    "name": "Gutti Vankaya",
+    "aliases": [
+      "stuffed brinjal curry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 141.5,
+      "p": 3,
+      "c": 11,
+      "f": 9.5,
+      "fiber": 3.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "vazhakkai-curry",
+    "name": "Vazhakkai Curry",
+    "aliases": [
+      "raw banana curry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 116.7,
+      "p": 1.8,
+      "c": 15,
+      "f": 5.5,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "senai-kizhangu-curry",
+    "name": "Senai Kizhangu Curry",
+    "aliases": [
+      "yam curry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 117.8,
+      "p": 2.2,
+      "c": 16,
+      "f": 5,
+      "fiber": 3.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "tindora-fry",
+    "name": "Tindora Fry",
+    "aliases": [
+      "kovakkai fry",
+      "ivy gourd fry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 87.9,
+      "p": 1.6,
+      "c": 8,
+      "f": 5.5,
+      "fiber": 2.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "snake-gourd-poriyal",
+    "name": "Snake Gourd Poriyal",
+    "aliases": [
+      "pudalangai poriyal"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 63.8,
+      "p": 1.4,
+      "c": 6,
+      "f": 3.8,
+      "fiber": 2.4
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "ridge-gourd-curry",
+    "name": "Ridge Gourd Curry",
+    "aliases": [
+      "peerkangai curry",
+      "turai curry"
+    ],
+    "category": "vegetables-curries",
+    "per100g": {
+      "kcal": 61.5,
+      "p": 1.5,
+      "c": 6,
+      "f": 3.5,
+      "fiber": 2.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "dal-fry",
+    "name": "Dal Fry",
+    "aliases": [],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 123.2,
+      "p": 6.8,
+      "c": 15,
+      "f": 4,
+      "fiber": 3.6
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "panchmel-dal",
+    "name": "Panchmel Dal",
+    "aliases": [
+      "panchratna dal"
+    ],
+    "category": "dals-legumes",
+    "per100g": {
+      "kcal": 123.5,
+      "p": 7,
+      "c": 16,
+      "f": 3.5,
+      "fiber": 4.8
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "jeera-rice",
+    "name": "Jeera Rice",
+    "aliases": [
+      "cumin rice"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 154.4,
+      "p": 2.6,
+      "c": 27,
+      "f": 4,
+      "fiber": 0.4
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "vegetable-pulao",
+    "name": "Vegetable Pulao",
+    "aliases": [
+      "veg pulao",
+      "veg biryani"
+    ],
+    "category": "rice-grains",
+    "per100g": {
+      "kcal": 166.3,
+      "p": 3.2,
+      "c": 26,
+      "f": 5.5,
+      "fiber": 1.2
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      },
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "curd-semiya",
+    "name": "Curd Semiya",
+    "aliases": [
+      "cold vermicelli curd"
+    ],
+    "category": "south-indian",
+    "per100g": {
+      "kcal": 111.8,
+      "p": 3.2,
+      "c": 18,
+      "f": 3,
+      "fiber": 0.5
+    },
+    "portions": [
+      {
+        "label": "1 katori",
+        "grams": 150
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "luchi",
+    "name": "Luchi",
+    "aliases": [
+      "bengali puri"
+    ],
+    "category": "breads",
+    "per100g": {
+      "kcal": 185.7,
+      "p": 3.8,
+      "c": 19,
+      "f": 10.5,
+      "fiber": 1.1
+    },
+    "portions": [
+      {
+        "label": "1 luchi",
+        "grams": 28
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "roomali-roti",
+    "name": "Roomali Roti",
+    "aliases": [],
+    "category": "breads",
+    "per100g": {
+      "kcal": 98.8,
+      "p": 3,
+      "c": 19,
+      "f": 1.2,
+      "fiber": 1.6
+    },
+    "portions": [
+      {
+        "label": "1 roti",
+        "grams": 35
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "peanut-butter-natural",
+    "name": "Peanut Butter, Natural",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 630,
+      "p": 25,
+      "c": 20,
+      "f": 50,
+      "fiber": 6
+    },
+    "portions": [
+      {
+        "label": "1 tbsp",
+        "grams": 16
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "whey-protein-1-scoop",
+    "name": "Whey Protein (1 scoop)",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 397,
+      "p": 80,
+      "c": 8,
+      "f": 5,
+      "fiber": 1
+    },
+    "portions": [
+      {
+        "label": "1 scoop",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "greek-yogurt-plain",
+    "name": "Greek Yogurt, Plain",
+    "aliases": [],
+    "category": "dairy-basics",
+    "per100g": {
+      "kcal": 58,
+      "p": 10,
+      "c": 3.6,
+      "f": 0.4,
+      "fiber": 0
+    },
+    "portions": [
+      {
+        "label": "1 cup",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "hummus",
+    "name": "Hummus",
+    "aliases": [],
+    "category": "general",
+    "per100g": {
+      "kcal": 178,
+      "p": 8,
+      "c": 14,
+      "f": 10,
+      "fiber": 6
+    },
+    "portions": [
+      {
+        "label": "2 tbsp",
+        "grams": 30
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  },
+  {
+    "id": "sattu-drink",
+    "name": "Sattu Drink",
+    "aliases": [
+      "roasted gram flour drink"
+    ],
+    "category": "beverages",
+    "per100g": {
+      "kcal": 85.5,
+      "p": 6,
+      "c": 12,
+      "f": 1.5,
+      "fiber": 3
+    },
+    "portions": [
+      {
+        "label": "1 glass",
+        "grams": 200
+      }
+    ],
+    "source": "IFCT-2017-derived",
+    "verified": true
+  }
+]

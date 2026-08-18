@@ -5,12 +5,15 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "npm run build:fooddb",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
     "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
+    "pretest": "npm run build:fooddb",
     "test": "vitest",
     "test:e2e": "playwright test",
+    "prevalidate:fooddb": "npm run build:fooddb",
     "validate:fooddb": "vitest run src/domain/fooddb/validate.test.ts",
     "build:fooddb": "tsx scripts/build-fooddb.ts",
     "check:bundle": "tsx scripts/check-bundle.ts"
