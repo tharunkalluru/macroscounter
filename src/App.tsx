@@ -2,10 +2,13 @@ import { useEffect, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import AddFoodPage from './app/AddFoodPage'
 import Dashboard from './app/Dashboard'
+import DayDetailPage from './app/DayDetailPage'
+import HistoryPage from './app/HistoryPage'
 import OnboardingFlow from './app/OnboardingFlow'
 import QuickAddPage from './app/QuickAddPage'
 import RecipeBuilderPage from './app/RecipeBuilderPage'
 import SettingsPage from './app/SettingsPage'
+import WeightPage from './app/WeightPage'
 import { ensureFoodDbSeeded } from './data/seed'
 
 function App() {
@@ -45,6 +48,9 @@ function App() {
       <Route path="/log/edit/:entryId" element={<AddFoodPage />} />
       <Route path="/log/quick-add" element={<QuickAddPage />} />
       <Route path="/recipes/new" element={<RecipeBuilderPage />} />
+      <Route path="/history" element={<HistoryPage />} />
+      <Route path="/history/:date" element={<DayDetailPage />} />
+      <Route path="/weight" element={<WeightPage />} />
     </Routes>
   )
 }

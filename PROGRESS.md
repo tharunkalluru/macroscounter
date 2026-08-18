@@ -110,3 +110,42 @@ Tracks phase-by-phase execution against `dev-plan-ai-agent.md`.
   the sandboxed interactive Browser pane couldn't reach localhost in this session, so screenshots
   via a throwaway Playwright script substituted for it.
 - Gate: standard block → **all green** (73 unit + 8 E2E).
+
+## Phase 4 — History, Calendar & Weight Tracking
+- Built: Month-view calendar (`HistoryPage.tsx`) with day color coding — green ≤ target, amber ≤
+  110%, red > 110%, and a 4th "none" state (grey) for days with no entries logged *or* no target
+  yet in effect; future days render as disabled, unlinked cells (no future navigation). Tapping a
+  day opens `DayDetailPage.tsx` (route `/history/:date`), which reuses `MealSection`/`MacroBar`
+  from Phase 3 to read/edit/delete that day's log exactly like the Today view — `AddFoodPage` and
+  `QuickAddPage` now accept a `date` query param (defaulting to today, clamped against future
+  dates) so "add food" from a past day logs onto that day, not today. 7-day/30-day kcal averages
+  shown on the History page. Weight log (`WeightPage.tsx`): date+weight form (date input capped at
+  today), list of past weigh-ins, and a Recharts `LineChart` (first real use of Recharts) plotting
+  raw weight plus a 7-day EMA trend line. New: `WeighInRepo`, `findApplicableTarget` (picks the
+  `Targets` row with the latest `effectiveDate` <= a given date — so a day's color is judged
+  against whatever goal was actually in effect that day, not today's goal), `classifyDay`,
+  `computeAverage`/`groupEntriesByDate` (averaging skips unlogged days rather than zero-filling —
+  callers only ever pass days that actually have entries), `computeEMA`, and `getMonthGrid`/
+  `isFutureDate`/`addDaysISO` calendar-grid date utilities.
+- Behavior worth flagging, not a bug: because `Targets.effectiveDate` is stamped at onboarding
+  time, any day *before* a user's account existed shows "none" (grey), even if entries are
+  logged there — there's genuinely no goal to compare against for a day before the goal existed.
+  Confirmed this is intentional by seeding an earlier-dated target directly into IndexedDB in the
+  E2E test to exercise the green→red transition meaningfully.
+- Tests: 28 domain unit tests (11 color-band classification table incl. exact-target and
+  exactly-110% boundaries; 4 EMA fixture-series incl. out-of-order input; 4 averaging incl. the
+  "skip missing days, don't zero-fill" case; 4 target-for-date incl. order-independence; 5
+  calendar-grid/date-guard, incl. a leap-year February). 4 new repo tests (`WeighInRepo`). 3
+  integration tests seeding 10 calendar days (1 deliberately unlogged) against a single target and
+  asserting every day's color band *and* that 7-day/30-day averages match hand-computed fixtures
+  (2108.3 / 2061.1 kcal) — exactly the "seeded-history" gate spec calls for. 3 new E2E tests:
+  navigate to a past day → edit an entry's quantity until it crosses from green to red → verify the
+  calendar cell updates; future days are non-interactive; log a weigh-in and see the trend chart.
+  11 E2E total. 108 unit tests total. Visually verified the calendar, day detail, and multi-point
+  EMA weight chart via Playwright-captured screenshots.
+- Known follow-up for Phase 8 hardening: Recharts pulled the gzipped bundle from ~104 KB to ~213
+  KB (866 modules now transformed vs. 60 before) — comfortably over the <300 KB gz *initial* JS
+  budget once Phase 6/7 add more code. `WeightPage` (and future chart-heavy pages) should be
+  route-lazy-loaded (`React.lazy`) so Recharts isn't in the initial bundle; not fixed now since
+  bundle budget is explicitly a Phase 8 gate item, not Phase 4's.
+- Gate: standard block → **all green** (108 unit + 11 E2E).

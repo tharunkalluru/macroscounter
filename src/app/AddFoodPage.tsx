@@ -7,7 +7,7 @@ import { LogRepo } from '../data/repos/LogRepo'
 import { RecipeRepo } from '../data/repos/RecipeRepo'
 import { computeMacrosForGrams, gramsForPortion } from '../domain/logging/portionMath'
 import { sumIngredientGrams } from '../domain/logging/recipeMath'
-import { todayISO } from '../lib/date'
+import { isFutureDate, todayISO } from '../lib/date'
 import { useFoodIndex } from './hooks/useFoodIndex'
 
 type Selected = { kind: 'food'; food: FoodRecord } | { kind: 'recipe'; recipe: Recipe }
@@ -41,7 +41,10 @@ export default function AddFoodPage() {
   const { foods, service, loading } = useFoodIndex()
 
   const [meal, setMeal] = useState<Meal>((searchParams.get('meal') as Meal) || 'breakfast')
-  const [entryDate, setEntryDate] = useState(todayISO())
+  const requestedDate = searchParams.get('date')
+  const [entryDate, setEntryDate] = useState(
+    requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
+  )
   const [query, setQuery] = useState('')
   const [recents, setRecents] = useState<FoodRecord[]>([])
   const [favorites, setFavorites] = useState<FoodRecord[]>([])
@@ -144,16 +147,18 @@ export default function AddFoodPage() {
     } else {
       await logRepo.addEntry(entryData)
     }
-    navigate('/')
+    navigate(backTo)
   }
 
   if (loading) {
     return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading…</div>
   }
 
+  const backTo = entryDate === todayISO() ? '/' : `/history/${entryDate}`
+
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to={backTo} className="mb-4 inline-block text-sm text-brand-600 underline">
         ← Back
       </Link>
       <h1 className="mb-1 text-xl font-bold text-brand-700">

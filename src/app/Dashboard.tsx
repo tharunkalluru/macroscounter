@@ -123,7 +123,13 @@ export default function Dashboard() {
         />
       ))}
 
-      <div className="mt-8 flex justify-center">
+      <div className="mt-8 flex justify-center gap-4">
+        <Link to="/history" className="text-sm text-brand-600 underline">
+          History
+        </Link>
+        <Link to="/weight" className="text-sm text-brand-600 underline">
+          Weight
+        </Link>
         <Link to="/recipes/new" className="text-sm text-brand-600 underline">
           + New recipe
         </Link>

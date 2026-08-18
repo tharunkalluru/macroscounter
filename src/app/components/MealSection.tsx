@@ -6,10 +6,13 @@ interface Props {
   label: string
   entries: LogEntry[]
   onDelete: (id: number) => void
+  /** ISO date this section belongs to. Omit for "today" (the Today dashboard's default). */
+  date?: string
 }
 
-export default function MealSection({ meal, label, entries, onDelete }: Props) {
+export default function MealSection({ meal, label, entries, onDelete, date }: Props) {
   const subtotalKcal = Math.round(entries.reduce((sum, e) => sum + e.kcal, 0))
+  const dateSuffix = date ? `&date=${date}` : ''
 
   return (
     <section className="mt-6" data-testid={`meal-section-${meal}`}>
@@ -53,10 +56,10 @@ export default function MealSection({ meal, label, entries, onDelete }: Props) {
       </ul>
 
       <div className="mt-2 flex gap-4 text-sm">
-        <Link to={`/log/add?meal=${meal}`} className="text-brand-600 underline">
+        <Link to={`/log/add?meal=${meal}${dateSuffix}`} className="text-brand-600 underline">
           + Add food
         </Link>
-        <Link to={`/log/quick-add?meal=${meal}`} className="text-brand-600 underline">
+        <Link to={`/log/quick-add?meal=${meal}${dateSuffix}`} className="text-brand-600 underline">
           + Custom
         </Link>
       </div>

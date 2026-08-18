@@ -2,7 +2,7 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
-import { todayISO } from '../lib/date'
+import { isFutureDate, todayISO } from '../lib/date'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -18,7 +18,10 @@ export default function QuickAddPage() {
   const editingId = entryIdParam ? Number(entryIdParam) : null
 
   const [meal, setMeal] = useState<Meal>((searchParams.get('meal') as Meal) || 'breakfast')
-  const [entryDate, setEntryDate] = useState(todayISO())
+  const requestedDate = searchParams.get('date')
+  const [entryDate, setEntryDate] = useState(
+    requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
+  )
   const [name, setName] = useState('')
   const [kcal, setKcal] = useState('')
   const [p, setP] = useState('')
@@ -74,12 +77,14 @@ export default function QuickAddPage() {
     } else {
       await logRepo.addEntry(entryData)
     }
-    navigate('/')
+    navigate(backTo)
   }
+
+  const backTo = entryDate === todayISO() ? '/' : `/history/${entryDate}`
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to={backTo} className="mb-4 inline-block text-sm text-brand-600 underline">
         ← Back
       </Link>
       <h1 className="mb-4 text-xl font-bold text-brand-700">
