@@ -1,8 +1,7 @@
 import type { FoodCategory, Portion } from '../domain/fooddb/types'
+import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
 
-export type Sex = 'male' | 'female'
-export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'very_active'
-export type Goal = 'cut' | 'maintain' | 'gain'
+export type { ActivityLevel, Goal, Sex }
 export type TargetSource = 'computed' | 'manual' | 'adaptive'
 export type Meal = 'breakfast' | 'lunch' | 'snacks' | 'dinner'
 export type Unit = 'portion' | 'grams'

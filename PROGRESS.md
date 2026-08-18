@@ -42,3 +42,29 @@ Tracks phase-by-phase execution against `dev-plan-ai-agent.md`.
 - Notes: nutrition values are plausible curated approximations "in the spirit of" IFCT-2017/INDB
   patterns, not a verbatim dataset export (no network/licensed-data access in this environment) —
   documented as such in the source file's header comment.
+
+## Phase 2 — Onboarding & Goal Engine
+- Status: **PASS**
+- Built: [goalEngine.ts](src/domain/goals/goalEngine.ts) — Mifflin-St Jeor BMR → TDEE via activity
+  multiplier → cut target = TDEE−500 floored at `max(BMR, 1500♂/1200♀)`, maintain = TDEE, gain =
+  TDEE+300; protein 1.8 g/kg default (clamped 1.6–2.2), fat 0.7 g/kg floor, carbs = remainder.
+  Single-page onboarding form ([OnboardingFlow.tsx](src/app/OnboardingFlow.tsx)) collecting
+  name/sex/age/height/weight/activity/goal (goal defaults to "Lose fat" = cut); computes + persists
+  Profile and an initial Targets row (`effectiveDate` = today, `source: 'computed'`). Minimal
+  Dashboard showing the day's kcal/protein/carb/fat targets (ring/bars land in Phase 3). Settings
+  page re-uses the same form to edit the profile and recompute targets. `ProfileRepo` (single-row
+  upsert) and `TargetRepo` (`getLatest`/`getAll` by `effectiveDate`) added to the Phase 1 repo
+  layer. App root redirects to `/onboarding` when no profile exists yet.
+- Bug caught by the property test, fixed in code (not the test): `0.7 * 85` evaluates to
+  `59.49999999999999` in IEEE754, which made `Math.round` truncate down to a mathematically wrong
+  half-up result. Added a `round()` helper in `goalEngine.ts` that clears float noise via
+  `toFixed(6)` before rounding — same fix needed anywhere grams-per-kg get multiplied out.
+- Tests: 12 goal-engine unit tests — 7 hand-computed fixture personas (BMR-floor-binding sedentary
+  male, no-floor very-active female, absolute-1200-floor low-bodyweight female, absolute-1500-floor
+  low-bodyweight male, sedentary-vs-very_active pair, gain, maintain), 4 editable-range/floor
+  clamp tests, 1 property test (500 seeded-random profiles asserting macro-kcal sum within ±2% of
+  target and protein/fat never below floors). 6 new repo CRUD tests (`ProfileRepo`, `TargetRepo`).
+  2 E2E tests: full onboarding journey for the "male/sedentary/cut" fixture persona asserting the
+  dashboard shows the exact fixture numbers (1628 kcal / 126p / 171c / 49f, matching the unit-test
+  fixture to the gram), and a reload-persistence check. 56 unit tests + 5 E2E total, all passing.
+- Gate: standard block → **all green**.
