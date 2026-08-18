@@ -35,6 +35,15 @@ export class MacroDesiDB extends Dexie {
       scannedProducts: 'barcode',
       mealTemplates: '++id, name',
     })
+
+    // v2 — index `barcode` on logEntries (was an unindexed field added in
+    // Phase 5) so "recently scanned" queries can use the index instead of a
+    // full table scan. Existing v1 rows carry over untouched — Dexie only
+    // adds the new index, it doesn't need to rewrite data since `barcode`
+    // was already a plain stored field.
+    this.version(2).stores({
+      logEntries: '++id, date, meal, [date+meal], foodId, recipeId, barcode',
+    })
   }
 }
 

@@ -59,7 +59,7 @@ export default function TemplatesPage() {
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading…</div>
+    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
   }
 
   return (
@@ -108,7 +108,7 @@ export default function TemplatesPage() {
           </li>
         ))}
         {templates.length === 0 && (
-          <li className="text-sm text-slate-400">
+          <li className="text-sm text-slate-500">
             No templates yet — save a meal from the Today view as a template to see it here.
           </li>
         )}

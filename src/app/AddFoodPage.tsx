@@ -151,7 +151,7 @@ export default function AddFoodPage() {
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading…</div>
+    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
   }
 
   const backTo = entryDate === todayISO() ? '/' : `/history/${entryDate}`
@@ -190,7 +190,7 @@ export default function AddFoodPage() {
                 </li>
               ))}
               {results.length === 0 && (
-                <li className="px-3 py-2 text-sm text-slate-400">No matches.</li>
+                <li className="px-3 py-2 text-sm text-slate-500">No matches.</li>
               )}
             </ul>
           ) : (
@@ -203,7 +203,7 @@ export default function AddFoodPage() {
               )}
               {recipes.length > 0 && (
                 <div>
-                  <p className="mb-1 text-xs font-medium uppercase text-slate-400">My Recipes</p>
+                  <p className="mb-1 text-xs font-medium uppercase text-slate-500">My Recipes</p>
                   <div className="flex flex-wrap gap-2">
                     {recipes.map((recipe) => (
                       <button
@@ -219,7 +219,7 @@ export default function AddFoodPage() {
                 </div>
               )}
               {foods && foods.length === 0 && (
-                <p className="text-sm text-slate-400">Food database still loading…</p>
+                <p className="text-sm text-slate-500">Food database still loading…</p>
               )}
             </div>
           )}
@@ -230,7 +230,7 @@ export default function AddFoodPage() {
         <div className="mt-4 rounded-lg bg-white p-4 shadow-sm">
           <div className="flex items-center justify-between">
             <h2 className="font-semibold">{nameOf(selected)}</h2>
-            <button type="button" className="text-sm text-slate-400 underline" onClick={() => setSelected(null)}>
+            <button type="button" className="text-sm text-slate-500 underline" onClick={() => setSelected(null)}>
               Change
             </button>
           </div>
@@ -321,7 +321,7 @@ function FoodChipList({
 }) {
   return (
     <div>
-      <p className="mb-1 text-xs font-medium uppercase text-slate-400">{title}</p>
+      <p className="mb-1 text-xs font-medium uppercase text-slate-500">{title}</p>
       <div className="flex flex-wrap gap-2">
         {foods.map((food) => (
           <button

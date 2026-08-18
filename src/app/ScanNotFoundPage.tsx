@@ -112,7 +112,7 @@ export default function ScanNotFoundPage() {
           />
         </label>
 
-        <p className="text-xs font-medium uppercase text-slate-400">Per 100 g</p>
+        <p className="text-xs font-medium uppercase text-slate-500">Per 100 g</p>
         <div className="grid grid-cols-2 gap-3">
           <label className="flex flex-col gap-1">
             <span className="text-sm font-medium">Calories</span>

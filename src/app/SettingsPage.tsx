@@ -100,7 +100,7 @@ export default function SettingsPage() {
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading…</div>
+    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
   }
 
   return (

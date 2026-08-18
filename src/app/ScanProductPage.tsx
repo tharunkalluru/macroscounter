@@ -54,7 +54,7 @@ export default function ScanProductPage() {
   }
 
   if (product === undefined) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading…</div>
+    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
   }
 
   if (product === null) {

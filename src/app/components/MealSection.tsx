@@ -24,6 +24,9 @@ export default function MealSection({ meal, label, entries, onDelete, date }: Pr
       </div>
 
       <ul className="mt-2 divide-y divide-slate-100 rounded-lg bg-white shadow-sm">
+        {entries.length === 0 && (
+          <li className="px-3 py-2 text-sm text-slate-500">Nothing logged yet.</li>
+        )}
         {entries.map((entry) => (
           <li key={entry.id} className="flex items-center justify-between gap-2 px-3 py-2">
             <div className="min-w-0">

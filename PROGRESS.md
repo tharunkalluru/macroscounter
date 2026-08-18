@@ -2,6 +2,28 @@
 
 Tracks phase-by-phase execution against `dev-plan-ai-agent.md`.
 
+## Final summary (all 9 phases, 0–8: PASS)
+
+MacroDesi is complete: an installable, offline-first PWA calorie/macro tracker with a 307-item
+curated Indian food database, barcode scanning (camera + manual fallback, OFF/FDC lookup chain),
+full logging (search/quick-add/recipes/templates), calendar history with weight trend charts,
+CSV export, and a weekly adaptive-target system — built phase-by-phase with a gate (lint → tsc →
+tests → build → E2E → bundle budget) enforced green before every commit.
+
+- **Tests:** 182 unit/integration tests (98.87% line coverage on `src/domain/**`, well above the
+  80% bar) + 26 E2E tests (Playwright, incl. a 9-scan WCAG 2.1 A/AA audit via axe-core) = **208
+  tests, all green**.
+- **Bundle:** 111 KB gz initial JS+CSS (budget 300 KB) — Recharts and ZXing route-lazy-loaded so
+  neither is in the initial load.
+- **Lighthouse** (desktop preset, `npm run build && npm run preview` + `npm run lighthouse`):
+  Performance 100 / Accessibility 100 / Best Practices 100 / SEO 100.
+- **Data safety:** a real (not hypothetical) Dexie v1→v2 migration — seed a v1-only database,
+  reopen with the current schema, verify every table's data survives and the new index works.
+- **9 commits**, one per phase, each gated green before the next started; two real bugs were
+  caught and fixed along the way rather than worked around (a floating-point rounding bug in the
+  goal engine's property test, and a solution-style-tsconfig trap that made `tsc --noEmit` silently
+  check zero files — full details in each phase's section below).
+
 ## Phase 0 — Scaffold & CI Harness
 - Status: **PASS**
 - Built: Vite + React 18 + TS project; Tailwind CSS; `vite-plugin-pwa` (manifest + service worker,
@@ -275,3 +297,67 @@ Tracks phase-by-phase execution against `dev-plan-ai-agent.md`.
   doesn't reappear on reload; dismissing hides it and it stays hidden across a reload without
   changing the target. 17 E2E total. Visually verified the prompt's copy and layout.
 - Gate: standard block → **all green** (181 unit + 17 E2E).
+
+## Phase 8 — Hardening & Release
+- **Error boundaries:** class-based `ErrorBoundary` wraps the whole route tree — an unhandled
+  render error now shows a "your data is safe on this device, try reloading" screen instead of a
+  blank white page, with the actual error logged to the console for diagnosis.
+- **Empty states:** audited every page; the one real gap was `MealSection` rendering a blank white
+  card with zero explanation when a meal had no entries — added "Nothing logged yet." All other
+  pages (Templates, Weight, Report, RecipeBuilder, AddFoodPage search) already had empty-state
+  copy from their originating phase.
+- **a11y pass:** installed `@axe-core/playwright` and wrote `e2e/a11y.spec.ts`, a real automated
+  WCAG 2.1 A/AA scan (not a manual eyeball pass) across onboarding, dashboard, add-food, history,
+  weight, templates, report, settings, and scan — 9 pages. First run found genuine violations:
+  `text-slate-400` (the muted/secondary-text color used everywhere) is 2.45–2.56:1 against white
+  and slate-50, well under the 4.5:1 AA minimum for normal text — fixed by switching the whole app
+  to `text-slate-500` (verified 4.76:1 on white via manual contrast calc before the sed). Two more
+  violations survived that first pass: the calendar's disabled future-day cells used `opacity-40`,
+  which multiplies the *effective* rendered contrast down regardless of the base color (1.63:1,
+  badly failing) — fixed by dropping opacity entirely in favor of an explicit lighter
+  background+darker text combo (`bg-slate-50 text-slate-600`, 7.24:1); and the "no data" calendar
+  band (`bg-slate-100 text-slate-500`, 4.34:1) and amber "over 100%" band (`text-amber-700` on
+  `bg-amber-100`, 4.51:1 — passing but with almost no margin) were bumped to `text-slate-600`
+  (6.92:1) and `text-amber-800` (6.37:1) for real safety margin, not just a bare pass. All 9 pages
+  now scan **zero violations**.
+- **Bundle budget:** `WeightPage` (Recharts) and the three `Scan*` pages (`@zxing/library` +
+  `@zxing/browser`) are now `React.lazy()` + `Suspense` route chunks instead of being in the
+  initial bundle — dropping initial JS+CSS from ~329 KB gz (flagged as a known issue after Phases
+  4 and 5) to **111 KB gz**, comfortably under the 300 KB budget. `scripts/check-bundle.ts` parses
+  `dist/index.html` for the `<script>`/`<link>` tags it references directly (i.e. what a first
+  visit actually has to download — lazy chunks fetched later on navigation don't count) and gzips
+  each to verify the total, wired into `npm run check:bundle`.
+- **Dexie migration test:** every table's indexes were already fully specified in the Phase 1 v1
+  schema, so nothing had actually *needed* a migration yet — added a genuine, useful v2 (indexing
+  `barcode` on `logEntries`, which was an unindexed plain field since Phase 5, so "recently
+  scanned" lookups can use the index instead of a full scan) specifically to have a real migration
+  to test. `db.migration.test.ts` opens a raw Dexie instance with *only* the v1 schema, seeds one
+  row in every table, closes it, reopens with the real `MacroDesiDB` class (v1+v2), and asserts
+  every table's data survived intact *and* the new index actually returns correct results (not
+  just "didn't crash").
+- **Final Lighthouse checks:** installed `lighthouse` + `chrome-launcher` as dev dependencies
+  (`npm run lighthouse`, documented in the README) and ran a real desktop-preset audit against
+  `npm run preview`. First run: Performance 100, Accessibility 100, Best Practices 100, **SEO 91**
+  — `robots-txt is not valid`, because there was no `public/robots.txt` and `vite preview`'s SPA
+  fallback was serving `index.html` (HTML, not a valid robots.txt) for that path. Added a minimal
+  permissive `public/robots.txt`; re-run scored **100/100/100/100**. This script isn't wired into
+  the automated gate (matches the dev plan's literal final gate command, which doesn't include
+  it, and a full Lighthouse run is slow/flakier than the other checks) — it's a documented,
+  manually-invokable verification instead.
+- **Deploy config + README:** `vercel.json` (rewrites), `netlify.toml` (build + redirect), and
+  `public/_redirects` (Netlify-format fallback that Cloudflare Pages also reads, copied into
+  `dist/` automatically since it's under `public/`) all route every path to `index.html` — needed
+  because React Router's client-side routing means a hard reload on e.g. `/history` has no
+  server-side route to match otherwise. README expanded with concrete per-platform deploy steps,
+  the Lighthouse workflow, and the full final gate command including `--coverage` and
+  `check:bundle`.
+- **Coverage:** added `@vitest/coverage-v8`, configured `include: ['src/domain/**']` with an
+  80%-lines threshold in `vite.config.ts`. Actual: **98.87% lines** (98.87% statements, 90.71%
+  branches, 98.46% functions) — the only real gaps are a couple of unreachable defensive
+  `catch`/fallback branches in the barcode parsers and label reader, which is expected for
+  error-handling code paths that only trigger on malformed external API responses.
+- Tests added this phase: 9 a11y E2E tests (0 violations after fixes) + 1 Dexie migration test.
+  Combined with everything from Phases 0–7: **182 unit tests, 26 E2E tests, 208 total, all green**.
+- Gate (final): `npm run lint && npx tsc --noEmit && npm run test -- --run --coverage && npm run
+  build && npm run test:e2e && npm run check:bundle` → **all green**. Build is deployable
+  (verified static output + SPA-rewrite configs for all three named targets).

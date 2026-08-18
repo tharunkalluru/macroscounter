@@ -65,7 +65,7 @@ export default function WeightPage() {
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading…</div>
+    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
   }
 
   return (
@@ -132,7 +132,7 @@ export default function WeightPage() {
             </button>
           </li>
         ))}
-        {weighIns.length === 0 && <li className="px-3 py-2 text-sm text-slate-400">No weigh-ins yet.</li>}
+        {weighIns.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">No weigh-ins yet.</li>}
       </ul>
     </div>
   )

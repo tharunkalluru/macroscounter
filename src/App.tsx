@@ -1,22 +1,31 @@
-import { useEffect, useState } from 'react'
+import { lazy, Suspense, useEffect, useState } from 'react'
 import { Route, Routes } from 'react-router-dom'
 import AddFoodPage from './app/AddFoodPage'
 import Dashboard from './app/Dashboard'
 import DayDetailPage from './app/DayDetailPage'
+import ErrorBoundary from './app/components/ErrorBoundary'
 import ExportPage from './app/ExportPage'
 import HistoryPage from './app/HistoryPage'
 import OnboardingFlow from './app/OnboardingFlow'
 import QuickAddPage from './app/QuickAddPage'
 import RecipeBuilderPage from './app/RecipeBuilderPage'
 import ReportPage from './app/ReportPage'
-import ScanNotFoundPage from './app/ScanNotFoundPage'
-import ScanPage from './app/ScanPage'
-import ScanProductPage from './app/ScanProductPage'
 import SettingsPage from './app/SettingsPage'
 import TemplateNewPage from './app/TemplateNewPage'
 import TemplatesPage from './app/TemplatesPage'
-import WeightPage from './app/WeightPage'
 import { ensureFoodDbSeeded } from './data/seed'
+
+// Recharts (WeightPage) and @zxing (Scan* pages) are large — route-lazy-loaded
+// so they never enter the initial bundle, which is what keeps the app under
+// the <300KB gz initial-JS budget (see scripts/check-bundle.ts).
+const WeightPage = lazy(() => import('./app/WeightPage'))
+const ScanPage = lazy(() => import('./app/ScanPage'))
+const ScanProductPage = lazy(() => import('./app/ScanProductPage'))
+const ScanNotFoundPage = lazy(() => import('./app/ScanNotFoundPage'))
+
+function RouteLoading() {
+  return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
+}
 
 function App() {
   const [seeded, setSeeded] = useState(false)
@@ -40,32 +49,36 @@ function App() {
 
   if (!seeded) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-slate-400">
+      <div className="flex min-h-screen items-center justify-center text-slate-500">
         Loading MacroDesi…
       </div>
     )
   }
 
   return (
-    <Routes>
-      <Route path="/" element={<Dashboard />} />
-      <Route path="/onboarding" element={<OnboardingFlow />} />
-      <Route path="/settings" element={<SettingsPage />} />
-      <Route path="/log/add" element={<AddFoodPage />} />
-      <Route path="/log/edit/:entryId" element={<AddFoodPage />} />
-      <Route path="/log/quick-add" element={<QuickAddPage />} />
-      <Route path="/recipes/new" element={<RecipeBuilderPage />} />
-      <Route path="/history" element={<HistoryPage />} />
-      <Route path="/history/:date" element={<DayDetailPage />} />
-      <Route path="/weight" element={<WeightPage />} />
-      <Route path="/scan" element={<ScanPage />} />
-      <Route path="/scan/product/:barcode" element={<ScanProductPage />} />
-      <Route path="/scan/not-found/:barcode" element={<ScanNotFoundPage />} />
-      <Route path="/templates" element={<TemplatesPage />} />
-      <Route path="/templates/new" element={<TemplateNewPage />} />
-      <Route path="/report" element={<ReportPage />} />
-      <Route path="/export" element={<ExportPage />} />
-    </Routes>
+    <ErrorBoundary>
+      <Suspense fallback={<RouteLoading />}>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/onboarding" element={<OnboardingFlow />} />
+          <Route path="/settings" element={<SettingsPage />} />
+          <Route path="/log/add" element={<AddFoodPage />} />
+          <Route path="/log/edit/:entryId" element={<AddFoodPage />} />
+          <Route path="/log/quick-add" element={<QuickAddPage />} />
+          <Route path="/recipes/new" element={<RecipeBuilderPage />} />
+          <Route path="/history" element={<HistoryPage />} />
+          <Route path="/history/:date" element={<DayDetailPage />} />
+          <Route path="/weight" element={<WeightPage />} />
+          <Route path="/scan" element={<ScanPage />} />
+          <Route path="/scan/product/:barcode" element={<ScanProductPage />} />
+          <Route path="/scan/not-found/:barcode" element={<ScanNotFoundPage />} />
+          <Route path="/templates" element={<TemplatesPage />} />
+          <Route path="/templates/new" element={<TemplateNewPage />} />
+          <Route path="/report" element={<ReportPage />} />
+          <Route path="/export" element={<ExportPage />} />
+        </Routes>
+      </Suspense>
+    </ErrorBoundary>
   )
 }
 

@@ -11,9 +11,9 @@ import { addDaysISO, getMonthGrid, isFutureDate, todayISO } from '../lib/date'
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const BAND_CLASSES: Record<DayColorBand, string> = {
-  none: 'bg-slate-100 text-slate-400',
+  none: 'bg-slate-100 text-slate-600',
   green: 'bg-brand-100 text-brand-700',
-  amber: 'bg-amber-100 text-amber-700',
+  amber: 'bg-amber-100 text-amber-800',
   red: 'bg-red-100 text-red-700',
 }
 
@@ -106,7 +106,7 @@ export default function HistoryPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 text-center text-xs text-slate-400">
+        <div className="grid grid-cols-7 gap-1 text-center text-xs text-slate-500">
           {WEEKDAY_LABELS.map((d) => (
             <div key={d}>{d}</div>
           ))}
@@ -123,7 +123,11 @@ export default function HistoryPage() {
             const cellClasses = `flex aspect-square items-center justify-center rounded text-sm ${BAND_CLASSES[band]}`
 
             return future ? (
-              <div key={date} className={`${cellClasses} opacity-40`} data-testid={`day-${date}`}>
+              <div
+                key={date}
+                className="flex aspect-square items-center justify-center rounded text-sm bg-slate-50 text-slate-600"
+                data-testid={`day-${date}`}
+              >
                 {dayNum}
               </div>
             ) : (
@@ -143,11 +147,11 @@ export default function HistoryPage() {
 
       <div className="mt-6 grid grid-cols-2 gap-3">
         <div className="rounded-lg bg-white p-3 shadow-sm" data-testid="avg-7day">
-          <p className="text-xs text-slate-400">7-day avg</p>
+          <p className="text-xs text-slate-500">7-day avg</p>
           <p className="text-lg font-semibold">{avg7.daysCounted > 0 ? `${avg7.kcal} kcal` : '—'}</p>
         </div>
         <div className="rounded-lg bg-white p-3 shadow-sm" data-testid="avg-30day">
-          <p className="text-xs text-slate-400">30-day avg</p>
+          <p className="text-xs text-slate-500">30-day avg</p>
           <p className="text-lg font-semibold">{avg30.daysCounted > 0 ? `${avg30.kcal} kcal` : '—'}</p>
         </div>
       </div>

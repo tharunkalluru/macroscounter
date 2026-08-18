@@ -73,7 +73,7 @@ export default function RecipeBuilderPage() {
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading…</div>
+    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
   }
 
   return (
@@ -116,13 +116,13 @@ export default function RecipeBuilderPage() {
                 value={ing.grams}
                 onChange={(e) => updateGrams(i, Number(e.target.value))}
               />
-              <span className="text-xs text-slate-400">g</span>
+              <span className="text-xs text-slate-500">g</span>
               <button type="button" className="text-xs text-red-600 underline" onClick={() => removeIngredient(i)}>
                 Remove
               </button>
             </li>
           ))}
-          {ingredients.length === 0 && <li className="px-3 py-2 text-sm text-slate-400">No ingredients yet.</li>}
+          {ingredients.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">No ingredients yet.</li>}
         </ul>
 
         <input
@@ -145,7 +145,7 @@ export default function RecipeBuilderPage() {
                 </button>
               </li>
             ))}
-            {results.length === 0 && <li className="px-3 py-2 text-sm text-slate-400">No matches.</li>}
+            {results.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">No matches.</li>}
           </ul>
         )}
       </div>
