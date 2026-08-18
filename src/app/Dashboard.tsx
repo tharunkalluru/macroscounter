@@ -8,6 +8,7 @@ import { groupEntriesByDate } from '../domain/history/averages'
 import { sumMacros } from '../domain/logging/portionMath'
 import { computeStreak } from '../domain/streaks/streak'
 import { addDaysISO, todayISO } from '../lib/date'
+import AdaptiveTargetPrompt from './components/AdaptiveTargetPrompt'
 import CaloriesRing from './components/CaloriesRing'
 import MacroBar from './components/MacroBar'
 import MealSection from './components/MealSection'
@@ -70,6 +71,11 @@ export default function Dashboard() {
     await loadEntries()
   }
 
+  async function reloadTargets() {
+    const t = await new TargetRepo().getLatest()
+    setTargets(t ?? null)
+  }
+
   if (state === 'loading') {
     return <div className="flex min-h-screen items-center justify-center text-slate-400">Loading…</div>
   }
@@ -125,6 +131,8 @@ export default function Dashboard() {
           />
         </div>
       </div>
+
+      <AdaptiveTargetPrompt onAccepted={reloadTargets} />
 
       {MEALS.map(({ key, label }) => (
         <MealSection

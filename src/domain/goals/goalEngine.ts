@@ -26,6 +26,13 @@ export function calculateTDEE(bmr: number, activityLevel: ActivityLevel): number
   return bmr * ACTIVITY_MULTIPLIERS[activityLevel]
 }
 
+/** The same never-below-this-many-kcal floor `computeGoalTargets` uses for 'cut' — exported for Phase 7's adaptive job. */
+export function computeKcalFloor(sex: Sex, weightKg: number, heightCm: number, age: number): number {
+  const bmr = calculateBMR(sex, weightKg, heightCm, age)
+  const absoluteFloor = sex === 'male' ? MALE_KCAL_FLOOR : FEMALE_KCAL_FLOOR
+  return Math.max(bmr, absoluteFloor)
+}
+
 function clamp(value: number, min: number, max: number): number {
   return Math.min(Math.max(value, min), max)
 }

@@ -241,3 +241,37 @@ Tracks phase-by-phase execution against `dev-plan-ai-agent.md`.
   export downloads two parseable files and asserts row counts (header + N) match what was actually
   logged. 15 E2E total.
 - Gate: standard block → **all green** (171 unit + 15 E2E).
+
+## Phase 7 — Adaptive Targets (smart layer)
+- Built: weekly adaptive-target job (`adaptiveTargets.ts`) that runs automatically on app open
+  (`AdaptiveTargetPrompt.tsx`, mounted on the Dashboard). Algorithm: `impliedTDEE = meanLoggedKcal
+  - (weeklyWeightChangeKg × 7700) / 7` (the standard energy-balance identity — infers a person's
+  *actual* maintenance calories from what they really ate vs. what their weight really did, rather
+  than trusting the Mifflin-St Jeor estimate forever), `idealTarget = impliedTDEE - 550` (550 =
+  the daily deficit for a 0.5 kg/week loss goal), adjustment = `idealTarget - currentTarget`
+  clamped to ±100 kcal, and the resulting suggested target is floored via the same
+  `computeKcalFloor` (newly exported from `goalEngine.ts`) Phase 2's `computeGoalTargets` uses
+  internally — so an accepted adaptive nudge can never drop below the user's BMR/1500/1200 floor.
+  Requires a full 7 distinct logged days *and* ≥2 weigh-ins inside that trailing window, else
+  returns `null` (no-op) rather than guessing from partial data. Every non-zero-adjustment result
+  carries a human-readable "why" (e.g. "You lost 1.0 kg over the last 7 days — faster than your
+  0.5 kg/week goal, so we're raising your target by 100 kcal to keep this sustainable."). Accept
+  writes a new `Targets` row (`source: 'adaptive'`, carbs absorb the kcal change, protein/fat grams
+  held steady since adaptive nudges are about calorie balance, not body-composition goals); Dismiss
+  records a one-week suppression in `localStorage` so the same week's suggestion doesn't nag again
+  on every app open — a reasonable place for this since it's ephemeral UI state, not core data
+  worth a new Dexie table/version bump.
+- Tests: 8 unit-fixture tests (losing-too-fast → raised +100, plateau → lowered -100, two
+  insufficient-data no-op cases — <7 logged days and <2 weigh-ins — floor respected even when the
+  unclamped math would go lower, a distinguishing case proving the formula uses *actual* logged
+  intake rather than just chasing the weight-trend rate, an exact-0.5kg/week on-track case with
+  zero adjustment, and weigh-ins outside the 7-day window being correctly ignored). 1 integration
+  test seeding a real 3-week dataset (fake-indexeddb) and running the job 3 times with each week's
+  accepted target feeding the next, asserting the *exact* sequence `[1728, 1628, 1628]` — raised,
+  lowered, held — per the gate spec. 181 unit tests total. 2 new E2E tests seeding 7 days of
+  plateau data directly into IndexedDB (mirroring Phase 4's target-seeding pattern, since
+  constructing a week of history through the UI would be impractical): the prompt shows the
+  correct suggestion and reason text, accepting updates the visible kcal target and the prompt
+  doesn't reappear on reload; dismissing hides it and it stays hidden across a reload without
+  changing the target. 17 E2E total. Visually verified the prompt's copy and layout.
+- Gate: standard block → **all green** (181 unit + 17 E2E).

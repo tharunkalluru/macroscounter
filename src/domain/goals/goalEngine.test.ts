@@ -1,6 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import { computeGoalTargets } from './goalEngine'
+import { computeGoalTargets, computeKcalFloor } from './goalEngine'
 import type { GoalEngineInput } from './types'
+
+describe('computeKcalFloor', () => {
+  it('matches the floor computeGoalTargets applies internally for a cut', () => {
+    // male, 28, 170cm, 70kg -> BMR 1627.5, absolute floor 1500 -> floor is BMR.
+    expect(computeKcalFloor('male', 70, 170, 28)).toBeCloseTo(1627.5, 5)
+    // female, very low bodyweight -> absolute 1200 floor binds over BMR.
+    expect(computeKcalFloor('female', 38, 150, 22)).toBe(1200)
+  })
+})
 
 /**
  * Fixtures are hand-computed with Mifflin-St Jeor + the spec's activity
