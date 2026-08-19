@@ -1038,3 +1038,102 @@ local cache.
 - 338 unit tests total (+27: 15+2+1+5+3+1), 70 E2E specs total (+1), all green. `lint && tsc --noEmit
   && check:tokens && test && build && test:e2e` all pass. Bundle: 173.60 KB gz initial (budget 300 KB
   gz).
+
+## 10.6 — Native-Feel Polish & Vercel Deploy Prep
+Closing sub-phase: makes the installed PWA look and behave like a real app rather than a bookmarked
+website, then gets everything ready to actually deploy — the deploy itself needs the user's own
+Vercel/Neon/Google accounts (see `SETUP.md`), so this is as far as an agent can take it.
+
+- **Icons**: added `scripts/generate-icons.ts` (new `sharp` devDependency) rasterizing
+  `icons/icon.svg` into a real PNG set — `icon-192`/`icon-512` (`any` purpose), full-bleed
+  `icon-maskable-192`/`-512` (the existing SVG had its rounded-rect background baked in, which isn't
+  safe for OS-applied masks — the maskable variant strips that so content stays inside the required
+  80% safe zone), `apple-touch-icon.png` (180×180), and 4 `apple-touch-startup-image` splash screens
+  covering current iPhone/iPad device classes (not Apple's full historical matrix — documented in
+  `SETUP.md` for extending). Manifest gained `display_override: ["window-controls-overlay",
+  "standalone"]` and the new icon entries; `index.html` gained `apple-mobile-web-app-capable`/
+  `-status-bar-style`/`-title` metas, `apple-touch-icon`, and the splash `<link>`s with per-device
+  media queries.
+- **Install coach-mark** (`src/app/components/InstallCoachMark.tsx`, new): first-visit "Install
+  MacroDesi" banner, mounted in `AppShell`. Android/Chrome: listens for `beforeinstallprompt`,
+  `preventDefault()`s Chrome's own mini-infobar, shows a custom "Install" button that triggers the
+  captured prompt. iOS Safari has no such event, so it gets illustrated "Share → Add to Home Screen"
+  instructions instead (`isIOS()` via UA sniffing — there's no feature-detectable alternative). Never
+  shows once already running standalone (`isStandalone()`: `matchMedia('(display-mode: standalone)')`
+  or iOS's legacy `navigator.standalone`); dismissing persists in `localStorage`, same pattern as
+  `AdaptiveTargetPrompt`'s weekly dismissal.
+- **Native-feel CSS** (`src/index.css`): `overscroll-behavior-y: none` on `html` kills the page-level
+  rubber-band bounce (individual scrollable containers — the bottom sheet already had
+  `overscroll-contain` from Phase 9 — keep their own default, so nothing about in-sheet scrolling
+  changed); `-webkit-tap-highlight-color: transparent` globally; `user-select: none` +
+  `touch-action: manipulation` scoped to interactive chrome (`button`, `a`, `input`, `select`,
+  `[role="button"]`, `[role="tab"]`, `nav`) rather than `*`, so body copy and macro numbers stay
+  selectable while controls stop showing text-selection handles or double-tap-zooming. Safe-area
+  insets were already handled for the tab bar and sheets (Phase 9) — verified, not re-done.
+  Custom toasts-instead-of-`alert()`: already true since Phase 9's `Snackbar` component; confirmed via
+  a repo-wide grep for `alert(`/`confirm(` (zero hits) rather than re-implementing something that
+  already existed. Custom pull-to-refresh: spec explicitly allows "none," and `overscroll-behavior-y:
+  none` already suppresses the browser's native one, so nothing further was built.
+- **Small cleanup found along the way**: `BottomTabBar`'s FAB had its own hand-rolled time-of-day
+  meal picker (`defaultMealForNow()`) with boundaries that quietly drifted from 10.3's canonical
+  `activeMealWindow()` (e.g. lunch cutting off at 16:00 instead of 15:30) — consolidated onto
+  `activeMealWindow()` so there's exactly one definition of "what meal is it right now" in the app.
+- **View Transitions API — attempted, reverted**: wired `document.startViewTransition()` (with
+  `flushSync` around the React Router `navigate()` call, the standard fix for the API's synchronous
+  before/after DOM-snapshot timing) into the bottom tab bar's navigation. Found a real, reproducible
+  bug: Framer Motion's `AnimatePresence mode="wait"` keeps the outgoing screen mounted through its own
+  exit animation, and that overlapped badly with the View Transition's snapshot timing — the old and
+  new screens' content stayed simultaneously in the DOM indefinitely (caught by
+  `shell.spec.ts`'s existing tab-navigation test: both the Trends page and a stray Weight-form field
+  were visible at once). `flushSync` didn't fix it. Rather than ship a navigation state that can get
+  stuck, removed the integration entirely (`src/lib/viewTransition.ts` and its tests deleted) and kept
+  Phase 9's Framer Motion transitions as the only screen-change animation — which is exactly the
+  spec's own permitted "graceful fallback," just applied everywhere instead of only on unsupported
+  browsers. A correct integration would need to either disable `AnimatePresence`'s exit animation for
+  the browsers/routes using View Transitions, or use a routing layer with built-in support for both
+  together — real scope, not attempted here.
+- **Tests**: `InstallCoachMark.test.tsx` (6) — standalone hides it, no-event/non-iOS shows nothing,
+  `beforeinstallprompt` shows the Android trigger (and calls `preventDefault`), clicking Install calls
+  `prompt()`, iOS UA shows the Share instructions with no install button, dismissal persists across a
+  remount. New E2E (`e2e/nativeFeel.spec.ts`, 6 specs): apple meta/icon tags present; a repeat-visit
+  timing test (onboard → wait for `serviceWorker.ready` → reload → assert `today-view` appears in
+  under 1.5s, the spec's own budget); no horizontal `scrollWidth` overflow on dashboard/history/
+  settings; the three install-coach-mark platform behaviors (Android trigger, iOS instructions via a
+  real UA-spoofed browser context, hidden in standalone mode via a mocked `matchMedia`). Extended
+  `smoke.spec.ts`'s manifest test with `display: 'standalone'`, the `display_override` array, and a
+  maskable-icon assertion. Full a11y suite (13 page/theme scans) and touch-target audit (9 pages) both
+  re-run clean, unchanged from Phase 9F.
+- 344 unit tests total (+6), 76 E2E specs total (+6), all green. `lint && tsc --noEmit && check:tokens
+  && test && build && test:e2e` all pass. Bundle: 174.29 KB gz initial (budget 300 KB gz).
+- **Not verified — needs the user's own accounts** (see `SETUP.md`): an actual `vercel build`/deploy,
+  a live Neon database receiving a real migration, a real Google OAuth round trip, and the exact
+  `secure`/`SameSite` cookie attributes Chrome sends over a genuine HTTPS connection. Also not
+  verified: the maskable icons' actual crop on a real Android launcher, and the iOS splash screens /
+  `apple-mobile-web-app-capable` standalone behavior on real iOS hardware — none of that is observable
+  from this sandbox.
+
+## Phase 10 summary (10.1–10.6: PASS)
+Google sign-in, cloud sync, the time-aware meal prompt, grams-first logging, the seamless barcode
+flow, and native-app-feel PWA polish — six sub-phases, each gated (`lint`, `tsc --noEmit`,
+`check:tokens`, unit tests, `build`, `test:e2e`) before moving to the next, matching the discipline
+used throughout Phases 0–9. Final state: 344 unit tests (up from 235 at the end of Phase 9 — +109
+across all of Phase 10), 76 E2E specs (up from 54), a 174.29 KB gz initial bundle (unchanged 300 KB
+budget, ~15 KB gz added across six sub-phases despite drizzle-orm/@neondatabase/serverless/better-auth
+all staying server-only), zero axe violations across every scanned page in both themes, and a touch-
+target audit that now also covers the new `/welcome` screen. Three real, previously-undetected bugs
+were found and fixed along the way (not introduced by this phase, all pre-existing): a Phase 9E
+dark-mode sweep miss on the AddFood portion toggle (fixed pre-Phase-10, in the audit that preceded
+it), a Phase-5 barcode cache bug that silently dropped a scanned product's pack/quantity info on every
+rescan (10.5), and a suite-wide E2E flakiness landmine where almost no spec pinned the system clock,
+so results depended on the wall-clock time the suite happened to run at (10.3). One attempted
+enhancement (View Transitions API for tab navigation, 10.6) was found to conflict with the existing
+Framer Motion transition system and deliberately reverted rather than shipped half-working.
+
+What's real vs. simulated: every sub-phase's own code is built for real and gated against
+mocks/fixtures/an in-memory mock server — none of it has been exercised against a live Neon Postgres
+database or real Google OAuth credentials, since provisioning those requires the user's own accounts
+(`SETUP.md` documents exactly what to do and what each step unlocks). The app has not been deployed to
+a Vercel URL. Phase 10's own exit criteria ("all six gates green cumulatively; app deployed to a
+Vercel preview URL; PROGRESS.md updated with the URL and env-var checklist") is therefore met on the
+code/gate side and open on the deploy side — the env-var checklist is in `SETUP.md` §3; the preview
+URL line will be added here once the user deploys.

@@ -1,4 +1,5 @@
 import { Link, useLocation } from 'react-router-dom'
+import { activeMealWindow } from '../../domain/mealPrompt/activeMealWindow'
 import { useUIState } from './UIStateContext'
 import { HistoryIcon, ScanIcon, SettingsIcon, TodayIcon, TrendsIcon } from './icons'
 
@@ -47,7 +48,7 @@ export default function BottomTabBar() {
         <div className="relative flex flex-1 items-center justify-center">
           <button
             type="button"
-            onClick={() => openAddFoodSheet(defaultMealForNow())}
+            onClick={() => openAddFoodSheet(activeMealWindow(new Date()) ?? 'breakfast')}
             aria-label="Scan or add food"
             data-testid="fab-scan"
             className="absolute -top-6 flex min-h-touch min-w-touch flex-col items-center justify-center rounded-full bg-brand-600 p-4 text-white shadow-card active:scale-95"
@@ -63,14 +64,6 @@ export default function BottomTabBar() {
       </div>
     </nav>
   )
-}
-
-function defaultMealForNow(): 'breakfast' | 'lunch' | 'snacks' | 'dinner' {
-  const hour = new Date().getHours()
-  if (hour < 11) return 'breakfast'
-  if (hour < 16) return 'lunch'
-  if (hour < 19) return 'snacks'
-  return 'dinner'
 }
 
 function TabLink({ tab, active }: { tab: TabDef; active: boolean }) {

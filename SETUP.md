@@ -1,15 +1,17 @@
-# Setup — Cloud Sync (Phase 10)
+# Setup — Cloud Sync, Sign-In & Deployment (Phase 10)
 
-MacroDesi is a local-first PWA: everything works offline with no account.
-This doc covers provisioning the pieces needed for cloud sync and Google
-sign-in, which only you (the project owner) can do since they require
-creating real accounts and credentials.
+MacroDesi is a local-first PWA: everything works offline with no account,
+today, with zero setup. This doc covers the pieces that need *you*
+specifically — provisioning real accounts/credentials and deploying — since
+none of that can be done by an agent.
 
-Status: the sync engine, database schema, and Google sign-in (via Better
-Auth) are all built and tested against mocks/fixtures — but none of it has
-run against a real Neon database or real Google OAuth credentials, since
-those require you to provision real accounts. Follow the steps below to
-make it real.
+Status: the sync engine, database schema, Google sign-in (via Better Auth),
+the grams-first logging flow, the seamless barcode flow, and the
+native-app-feel PWA polish are all built and gated (`lint`, `tsc`, unit
+tests, `test:e2e`, bundle budget, axe/touch-target audits) — all green
+against mocks/fixtures. What's *not* verified, because it needs your own
+accounts, is listed at the end of each section below. Follow steps 1-4 to
+make it real, then §5 to actually deploy.
 
 ## 1. Database — Neon via Vercel Marketplace
 
@@ -73,7 +75,17 @@ Production/Preview:
 | `AUTH_SECRET` | Any long random string — used to sign session cookies. Generate with `openssl rand -base64 32` |
 | `VITE_APP_URL` | The canonical deployed URL, e.g. `https://macrodesi.vercel.app` — used for OAuth redirect construction |
 
-## 4. Deploying
+## 4. Icons (already generated, regenerate only if you change the logo)
+
+`public/icons/*.png` (app icons, maskable icons, apple-touch-icon, and a
+representative set of iOS splash screens) are committed, generated from
+`public/icons/icon.svg` by `npm run icons:generate` (uses `sharp`). The iOS
+splash screens cover a handful of current device classes, not Apple's full
+historical size matrix — extend `scripts/generate-icons.ts`'s
+`SPLASH_SCREENS` list and the `<link rel="apple-touch-startup-image">` tags
+in `index.html` if you need more.
+
+## 5. Deploying
 
 ```bash
 npm i -g vercel   # if you don't have the CLI
@@ -85,3 +97,11 @@ vercel --prod     # promote to production
 The build runs `npm run db:migrate && npm run build` — migrations apply
 automatically on every deploy, so `drizzle/migrations/*.sql` files must be
 committed (they are not gitignored).
+
+**Smoke test after deploying** (either preview or prod): open the URL,
+confirm the `/welcome` sign-in screen loads, "Skip for now" reaches
+onboarding and the dashboard, then try "Continue with Google" for the real
+OAuth round trip. Check the Settings page's sync-status dot goes from
+"Not signed in" to "Synced" after signing in. None of this can be verified
+until you've completed §1-3 and deployed — see `PROGRESS.md`'s Phase 10
+summary for exactly what's been tested short of that.

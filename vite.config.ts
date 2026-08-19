@@ -36,7 +36,7 @@ export default defineConfig({
     react(),
     VitePWA({
       registerType: 'autoUpdate',
-      includeAssets: ['icons/icon.svg'],
+      includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png', 'icons/apple-splash-*.png'],
       manifest: {
         name: 'MacroDesi',
         short_name: 'MacroDesi',
@@ -44,14 +44,20 @@ export default defineConfig({
         theme_color: '#0f172a',
         background_color: '#0f172a',
         display: 'standalone',
+        // window-controls-overlay is desktop-PWA-only (Chromium) and falls
+        // back to the next entry automatically where it's not supported.
+        display_override: ['window-controls-overlay', 'standalone'],
         start_url: '/',
         icons: [
           { src: 'icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'any' },
-          { src: 'icons/icon.svg', sizes: 'any', type: 'image/svg+xml', purpose: 'maskable' },
+          { src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png', purpose: 'any' },
+          { src: 'icons/icon-maskable-192.png', sizes: '192x192', type: 'image/png', purpose: 'maskable' },
+          { src: 'icons/icon-maskable-512.png', sizes: '512x512', type: 'image/png', purpose: 'maskable' },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,json}'],
+        globPatterns: ['**/*.{js,css,html,svg,json,png}'],
       },
       devOptions: {
         enabled: false,

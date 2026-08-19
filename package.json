@@ -18,6 +18,7 @@
     "build:fooddb": "tsx scripts/build-fooddb.ts",
     "check:bundle": "tsx scripts/check-bundle.ts",
     "check:tokens": "tsx scripts/check-tokens.ts",
+    "icons:generate": "tsx scripts/generate-icons.ts",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "drizzle-kit migrate",
     "lighthouse": "lighthouse http://localhost:4173 --preset=desktop --chrome-flags=\"--headless=new\""
@@ -62,6 +63,7 @@
     "lighthouse": "^12.8.2",
     "postcss": "^8.4.49",
     "prettier": "^3.4.2",
+    "sharp": "^0.35.3",
     "tailwindcss": "^3.4.17",
     "tsx": "^4.19.2",
     "typescript": "^5.7.2",

@@ -3,12 +3,35 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#0f172a" />
     <meta
       name="description"
       content="MacroDesi — fat-loss focused calorie and macro tracker with an Indian food database"
     />
+
+    <!-- Standalone/installed-app feel (Phase 10.6) -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="MacroDesi" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <!--
+      A representative set of current device classes, not Apple's full
+      historical splash-screen matrix (see scripts/generate-icons.ts /
+      SETUP.md to extend). iOS Safari only picks these up before a device is
+      ever installed as a standalone app; matched by exact device-width /
+      device-height / pixel-ratio in portrait.
+    -->
+    <link rel="apple-touch-startup-image" href="/icons/apple-splash-750x1334.png"
+      media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/icons/apple-splash-1170x2532.png"
+      media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/icons/apple-splash-1179x2556.png"
+      media="(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" />
+    <link rel="apple-touch-startup-image" href="/icons/apple-splash-1536x2048.png"
+      media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
+
     <title>MacroDesi</title>
     <script>
       // Applied synchronously, before first paint, to avoid a light->dark flash.

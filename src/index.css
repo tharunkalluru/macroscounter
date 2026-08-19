@@ -8,6 +8,30 @@ body,
   height: 100%;
 }
 
+html {
+  /* No rubber-band bounce on the document itself — individual scrollable
+     containers (the bottom sheet, any overflow-y-auto list) keep their own
+     default overscroll behavior, so they can still bounce/scroll normally
+     without that motion leaking into a page-level pull-to-refresh. */
+  overscroll-behavior-y: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
 body {
   @apply bg-slate-50 text-slate-900 antialiased dark:bg-surface-dark dark:text-slate-100;
+}
+
+/* Native-feel chrome (Phase 10.6): controls behave like app UI, not web
+   page furniture — no text-selection handles on tap-and-hold, no double-tap
+   zoom or the old 300ms tap delay. Deliberately scoped to interactive
+   controls, not `*`, so body copy and food/macro numbers stay selectable. */
+button,
+a,
+input,
+select,
+[role='button'],
+[role='tab'],
+nav {
+  user-select: none;
+  touch-action: manipulation;
 }

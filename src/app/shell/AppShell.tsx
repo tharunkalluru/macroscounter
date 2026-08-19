@@ -6,6 +6,7 @@ import Header from './Header'
 import PageTransition from './PageTransition'
 import { useUIState } from './UIStateContext'
 import AddFoodSheetContent from '../sheets/AddFoodSheetContent'
+import InstallCoachMark from '../components/InstallCoachMark'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -24,6 +25,7 @@ export default function AppShell() {
 
   return (
     <div className="min-h-screen bg-surface dark:bg-surface-dark">
+      <InstallCoachMark />
       <Header />
       <main className="pb-24">
         <PageTransition>

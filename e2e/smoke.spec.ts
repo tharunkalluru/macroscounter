@@ -17,6 +17,12 @@ test('web app manifest is present and valid', async ({ page, request }) => {
   const manifest = await res.json()
   expect(manifest.name).toBe('MacroDesi')
   expect(manifest.icons?.length).toBeGreaterThan(0)
+
+  // Phase 10.6: installed/standalone-app feel.
+  expect(manifest.display).toBe('standalone')
+  expect(manifest.display_override).toEqual(['window-controls-overlay', 'standalone'])
+  expect(manifest.icons.some((i: { purpose?: string }) => i.purpose === 'maskable')).toBe(true)
+  expect(manifest.icons.some((i: { sizes?: string }) => i.sizes === '512x512')).toBe(true)
 })
 
 test('service worker registers on the preview build', async ({ page }) => {
