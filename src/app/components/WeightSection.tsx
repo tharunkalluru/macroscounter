@@ -84,7 +84,7 @@ export default function WeightSection() {
           <input
             type="date"
             max={todayISO()}
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
@@ -94,7 +94,7 @@ export default function WeightSection() {
           <input
             type="number"
             step="0.1"
-            className="w-24 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch w-24 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
           />

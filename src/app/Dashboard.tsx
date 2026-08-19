@@ -126,6 +126,7 @@ export default function Dashboard() {
 
   return (
     <div className="pb-4" data-testid="today-view">
+      <h1 className="sr-only">Today</h1>
       <DateNav date={date} onChange={goToDate} />
       {!isToday && (
         <div className="mt-2 flex justify-center">

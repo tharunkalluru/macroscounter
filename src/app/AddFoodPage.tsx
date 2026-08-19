@@ -149,7 +149,7 @@ export default function AddFoodPage() {
     <div className="mx-auto max-w-md px-6 py-8">
       <Link
         to={backTo}
-        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
       >
         ← Back
       </Link>
@@ -162,7 +162,7 @@ export default function AddFoodPage() {
           <input
             type="text"
             placeholder="Search foods (e.g. idli, sambar)"
-            className="mt-3 w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="mt-3 min-h-touch w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
@@ -268,7 +268,7 @@ export default function AddFoodPage() {
           {mode === 'portion' ? (
             <div className="mt-3 flex flex-col gap-2">
               <select
-                className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+                className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
                 value={portionIndex}
                 onChange={(e) => setPortionIndex(Number(e.target.value))}
               >
@@ -284,7 +284,7 @@ export default function AddFoodPage() {
                   type="number"
                   min="0"
                   step="0.5"
-                  className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+                  className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
                   value={qty}
                   onChange={(e) => setQty(e.target.value)}
                 />
@@ -296,7 +296,7 @@ export default function AddFoodPage() {
               <input
                 type="number"
                 min="0"
-                className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+                className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
                 value={gramsValue}
                 onChange={(e) => setGramsValue(e.target.value)}
               />

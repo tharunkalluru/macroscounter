@@ -109,7 +109,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Name</span>
           <input
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
@@ -120,7 +120,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
           <legend className="text-sm font-medium">Sex</legend>
           <div className="flex gap-4">
             {(['male', 'female'] as const).map((value) => (
-              <label key={value} className="flex items-center gap-2">
+              <label key={value} className="flex min-h-touch items-center gap-2">
                 <input
                   type="radio"
                   name="sex"
@@ -138,7 +138,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
           <span className="text-sm font-medium">Age</span>
           <input
             type="number"
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={age}
             onChange={(e) => setAge(e.target.value)}
             placeholder="years"
@@ -149,7 +149,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
           <span className="text-sm font-medium">Height (cm)</span>
           <input
             type="number"
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={heightCm}
             onChange={(e) => setHeightCm(e.target.value)}
             placeholder="cm"
@@ -160,7 +160,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
           <span className="text-sm font-medium">Weight (kg)</span>
           <input
             type="number"
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
             placeholder="kg"
@@ -170,7 +170,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Activity level</span>
           <select
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={activityLevel}
             onChange={(e) => setActivityLevel(e.target.value as ActivityLevel)}
           >
@@ -186,7 +186,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
           <legend className="text-sm font-medium">Goal</legend>
           <div className="flex flex-col gap-2">
             {GOAL_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex items-center gap-2">
+              <label key={opt.value} className="flex min-h-touch items-center gap-2">
                 <input
                   type="radio"
                   name="goal"

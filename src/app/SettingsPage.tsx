@@ -149,7 +149,7 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
-      <Link to="/" className="mb-4 text-sm text-brand-700 underline dark:text-brand-400">
+      <Link to="/" className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 underline dark:text-brand-400">
         ← Back
       </Link>
       <h1 className="mb-6 text-2xl font-bold text-brand-700 dark:text-brand-400">
@@ -162,7 +162,7 @@ export default function SettingsPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Name</span>
           <input
-            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -174,7 +174,7 @@ export default function SettingsPage() {
             {(['male', 'female'] as const).map((value) => (
               <label
                 key={value}
-                className="flex items-center gap-2 text-slate-900 dark:text-slate-100"
+                className="flex min-h-touch items-center gap-2 text-slate-900 dark:text-slate-100"
               >
                 <input
                   type="radio"
@@ -193,7 +193,7 @@ export default function SettingsPage() {
           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Age</span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={age}
             onChange={(e) => setAge(e.target.value)}
           />
@@ -205,7 +205,7 @@ export default function SettingsPage() {
           </span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={heightCm}
             onChange={(e) => setHeightCm(e.target.value)}
           />
@@ -217,7 +217,7 @@ export default function SettingsPage() {
           </span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
           />
@@ -228,7 +228,7 @@ export default function SettingsPage() {
             Activity level
           </span>
           <select
-            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={activityLevel}
             onChange={(e) => setActivityLevel(e.target.value as ActivityLevel)}
           >
@@ -246,7 +246,7 @@ export default function SettingsPage() {
             {GOAL_OPTIONS.map((opt) => (
               <label
                 key={opt.value}
-                className="flex items-center gap-2 text-slate-900 dark:text-slate-100"
+                className="flex min-h-touch items-center gap-2 text-slate-900 dark:text-slate-100"
               >
                 <input
                   type="radio"
@@ -273,13 +273,16 @@ export default function SettingsPage() {
         )}
 
         <div className="mt-2 flex gap-3">
-          <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
+          <button
+            type="submit"
+            className="min-h-touch rounded bg-brand-700 px-4 py-2 font-medium text-white"
+          >
             Save & recalculate
           </button>
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="rounded px-4 py-2 text-slate-600 dark:text-slate-300"
+            className="min-h-touch rounded px-4 py-2 text-slate-600 dark:text-slate-300"
           >
             Done
           </button>

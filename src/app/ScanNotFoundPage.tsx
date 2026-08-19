@@ -68,7 +68,7 @@ export default function ScanNotFoundPage() {
     <div className="mx-auto max-w-md px-6 py-8">
       <Link
         to="/scan"
-        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
       >
         ← Back to scan
       </Link>
@@ -83,7 +83,7 @@ export default function ScanNotFoundPage() {
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
-        className="w-full rounded border border-dashed border-slate-300 dark:border-slate-600 px-4 py-3 text-sm text-slate-600 dark:text-slate-300"
+        className="min-h-touch w-full rounded border border-dashed border-slate-300 dark:border-slate-600 px-4 py-3 text-sm text-slate-600 dark:text-slate-300"
       >
         {readingLabel ? 'Reading label…' : '📷 Photo of nutrition label'}
       </button>
@@ -103,7 +103,7 @@ export default function ScanNotFoundPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Product name</span>
           <input
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -111,7 +111,7 @@ export default function ScanNotFoundPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Brand (optional)</span>
           <input
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
           />
@@ -125,7 +125,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Calories</span>
             <input
               type="number"
-              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={kcal}
               onChange={(e) => setKcal(e.target.value)}
             />
@@ -134,7 +134,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Serving size (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={servingSize}
               onChange={(e) => setServingSize(e.target.value)}
             />
@@ -143,7 +143,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Protein (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={p}
               onChange={(e) => setP(e.target.value)}
             />
@@ -152,7 +152,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Carbs (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={c}
               onChange={(e) => setC(e.target.value)}
             />
@@ -161,7 +161,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Fat (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={f}
               onChange={(e) => setF(e.target.value)}
             />

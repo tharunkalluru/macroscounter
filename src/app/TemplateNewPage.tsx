@@ -56,7 +56,7 @@ export default function TemplateNewPage() {
     <div className="mx-auto max-w-md px-6 py-8">
       <Link
         to="/"
-        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
       >
         ← Back
       </Link>
@@ -80,7 +80,7 @@ export default function TemplateNewPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Template name</span>
           <input
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Usual Breakfast"

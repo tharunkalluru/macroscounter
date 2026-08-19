@@ -32,4 +32,5 @@ coverage
 playwright-report
 test-results
 dev-dist
+screenshots
 

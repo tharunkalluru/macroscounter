@@ -70,7 +70,7 @@ export default function TemplatesPage() {
     <div className="mx-auto max-w-md px-6 py-8">
       <Link
         to="/"
-        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
       >
         ← Back
       </Link>
@@ -89,7 +89,7 @@ export default function TemplatesPage() {
 
             <div className="mt-3 flex items-center gap-2">
               <select
-                className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-2 py-1 text-sm"
+                className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-2 py-1 text-sm"
                 value={mealByTemplate[template.id!] ?? 'breakfast'}
                 onChange={(e) =>
                   setMealByTemplate((prev) => ({ ...prev, [template.id!]: e.target.value as Meal }))

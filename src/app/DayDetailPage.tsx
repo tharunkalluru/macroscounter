@@ -57,7 +57,7 @@ export default function DayDetailPage() {
       <div className="mx-auto max-w-md px-6 py-8">
         <Link
           to="/history"
-          className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+          className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
         >
           ← Back
         </Link>
@@ -81,7 +81,7 @@ export default function DayDetailPage() {
     <div className="mx-auto max-w-md px-6 py-8 pb-16">
       <Link
         to="/history"
-        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
       >
         ← Back to calendar
       </Link>

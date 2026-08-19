@@ -6,7 +6,7 @@ export default function ReportPage() {
     <div className="mx-auto max-w-md px-6 py-8">
       <Link
         to="/"
-        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
       >
         ← Back
       </Link>

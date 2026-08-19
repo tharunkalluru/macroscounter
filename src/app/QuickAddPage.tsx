@@ -88,7 +88,7 @@ export default function QuickAddPage() {
     <div className="mx-auto max-w-md px-6 py-8">
       <Link
         to={backTo}
-        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
       >
         ← Back
       </Link>
@@ -100,7 +100,7 @@ export default function QuickAddPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Name</span>
           <input
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Restaurant meal"
@@ -111,7 +111,7 @@ export default function QuickAddPage() {
           <span className="text-sm font-medium">Calories (kcal)</span>
           <input
             type="number"
-            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={kcal}
             onChange={(e) => setKcal(e.target.value)}
           />
@@ -122,7 +122,7 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Protein (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={p}
               onChange={(e) => setP(e.target.value)}
             />
@@ -131,7 +131,7 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Carbs (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={c}
               onChange={(e) => setC(e.target.value)}
             />
@@ -140,7 +140,7 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Fat (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={f}
               onChange={(e) => setF(e.target.value)}
             />

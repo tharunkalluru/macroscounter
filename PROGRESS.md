@@ -618,3 +618,63 @@ set of gated sub-phases (9A–9F) on top of the existing app, same protocol as P
 - Gate: `lint && tsc --noEmit && check:tokens && test && build && test:e2e` → all green. Bundle:
   159.31 KB gz initial (budget 300 KB) — no new runtime dependency; the CSS bump (+0.15KB gz) is
   from the doubled `dark:` variant classes.
+
+## 9F — Accessibility Pass & Final Gate
+- **Touch-target audit** (`e2e/touchTargets.spec.ts`, new, 8 specs): asserts every visible
+  interactive element on a 390×844 viewport is ≥44×44px — buttons, links, inputs/selects directly,
+  and radio/checkbox inputs via their enclosing `<label>` (the real tap target for a small native
+  control). Covers onboarding, Today, the Add-Food sheet, History, Trends, Settings, Templates, Scan.
+  First run found real violations, all fixed by padding (not size hacks, per spec): every "← Back"
+  link across 14 pages was a bare 20px-tall inline text node — given `min-h-touch` +
+  `inline-flex items-center` so the *hit area* grows via padding while the visual text stays the
+  same size; the same fix went on Settings' Save/Done buttons, History's Prev/Next/Weight-tracking
+  links, and the Sex/Goal radio `<label>`s in Settings and Onboarding; every text `<input>`/`<select>`
+  across 11 files got `min-h-touch`. History's calendar grid (7 columns in a `max-w-md` card) was the
+  one case padding alone couldn't fix without a real layout change — trimmed the calendar card's
+  horizontal padding (`p-4` → `px-1 py-4`, with the padding moved onto the nav-row/weekday-row
+  individually so they keep their visual alignment) to give each day cell enough width to clear 44px
+  edge-to-edge.
+- **Heading order**: axe's `heading-order`/`page-has-heading-one` rules are tagged `best-practice`
+  in axe-core, not `wcag2a`/`wcag2aa` — meaning the a11y suite's existing WCAG-tagged scans (all
+  green throughout this phase) would never have caught a missing or out-of-order heading. Ran both
+  rules explicitly across every route as a one-off diagnostic and found two pages with no `<h1>` at
+  all: the Today dashboard (jumps straight to meal-card `<h2>`s) and Trends (jumps straight to
+  "Weight"/"This week" `<h2>`s) — both now have a `sr-only` `<h1>` ("Today" / "Trends") so the page
+  has a real top-level landmark for screen-reader users without changing anything visually. Diagnostic
+  confirmed zero violations across all 9 routes after the fix; not kept as a permanent gate script
+  since best-practice rules aren't part of this repo's WCAG A/AA gate contract, and the two gaps
+  found are now just fixed in the markup.
+- **Focus-visible / icon-button labels / secondary-text contrast**: audited rather than rewritten —
+  no component sets `outline-none` on a real interactive element (the one occurrence, on
+  `BottomSheet`'s programmatic `tabIndex={-1}` focus-trap container, is correct as-is: it's never a
+  tab stop, so it has no focus ring to suppress); every icon-only button already carries an
+  `aria-label` (barcode scan, prev/next day, close, meal overflow ⋯, FAB) or sits next to a visible
+  text label (bottom tab bar); secondary text contrast in both themes was already driven to 4.5:1 in
+  9A (light, Phase 8 grey-400→600 sweep) and 9E (dark, this phase's brand-700/red-600 fix) — the
+  full a11y + dark-mode a11y suites (0 violations across 13 scanned page/theme combinations) are the
+  actual verification for this, not a new check.
+- Tests: 8 new E2E specs (`touchTargets.spec.ts`). No new unit tests this sub-phase — 9F is a
+  verification/audit pass over existing UI, not new logic. 235 unit tests (unchanged), 51 E2E specs
+  total (+8), all green, verified stable across two consecutive full runs. Zero serious/critical axe
+  violations across every scanned page in both themes (13 page/theme combinations across
+  `a11y.spec.ts` + `darkMode.spec.ts`).
+- Screenshot artifacts captured for Today, light and dark (390×844), confirming the ring/macro-bars/
+  meal-card/bottom-tab-bar redesign holds up visually in both themes.
+- Gate: `lint && tsc --noEmit && check:tokens && test && build && test:e2e` → all green. Bundle:
+  159.38 KB gz initial (budget 300 KB).
+
+## Phase 9 summary (9A–9F: PASS)
+MacroDesi's UX/UI polish pass is complete: a real design-token system (Tailwind config sourced
+directly from `src/theme/tokens.ts`, zero raw hex in components, enforced by `check:tokens`); a
+persistent app shell with bottom-tab navigation, a FAB-driven add-food sheet, and animated screen
+transitions; a redesigned summary card (animated ring, count-up numbers, Eaten/Remaining/Target,
+tap-to-breakdown macro bars); meal cards with household-unit portion text, an overflow menu
+(save/log template, copy from yesterday), swipe-to-delete-with-undo, and history-seeded "your
+usual?" suggestion chips; app-wide motion polish (FLIP list animations, haptics, a skeleton loader)
+and a full light/dark/system theme with a persisted toggle; and a closing accessibility pass
+(44px touch targets everywhere, corrected heading structure, verified focus/contrast/aria-label
+coverage). Final state: 235 unit tests, 51 E2E specs (including a dedicated touch-target audit and
+a dark-mode a11y suite), zero axe violations across every scanned page in both themes, and a
+159.38 KB gz initial bundle — all against the original 300 KB budget, unchanged since Phase 8,
+with the entire 9A–9F polish pass adding zero new runtime dependencies beyond `framer-motion`
+(added once, in 9B).

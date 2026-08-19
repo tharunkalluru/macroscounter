@@ -88,7 +88,7 @@ export default function RecipeBuilderPage() {
     <div className="mx-auto max-w-md px-6 py-8">
       <Link
         to="/"
-        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
       >
         ← Back
       </Link>
@@ -97,7 +97,7 @@ export default function RecipeBuilderPage() {
       <label className="flex flex-col gap-1">
         <span className="text-sm font-medium">Recipe name</span>
         <input
-          className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+          className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
@@ -108,7 +108,7 @@ export default function RecipeBuilderPage() {
         <input
           type="number"
           min="1"
-          className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+          className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
           value={servings}
           onChange={(e) => setServings(e.target.value)}
         />
@@ -123,7 +123,7 @@ export default function RecipeBuilderPage() {
               <input
                 type="number"
                 min="0"
-                className="w-20 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-2 py-1 text-sm"
+                className="min-h-touch w-20 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-2 py-1 text-sm"
                 value={ing.grams}
                 onChange={(e) => updateGrams(i, Number(e.target.value))}
               />
@@ -147,7 +147,7 @@ export default function RecipeBuilderPage() {
         <input
           type="text"
           placeholder="Search foods to add…"
-          className="mt-2 w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+          className="mt-2 min-h-touch w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />

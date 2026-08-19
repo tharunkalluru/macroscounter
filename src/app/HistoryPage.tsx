@@ -91,17 +91,17 @@ export default function HistoryPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-700 underline">
+      <Link to="/" className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline">
         ← Back
       </Link>
       <h1 className="mb-4 text-xl font-bold text-brand-700">History</h1>
 
-      <div className="rounded-xl bg-white dark:bg-surface-dark-card p-4 shadow-sm">
-        <div className="mb-3 flex items-center justify-between text-sm">
+      <div className="rounded-xl bg-white dark:bg-surface-dark-card px-1 py-4 shadow-sm">
+        <div className="mb-3 flex items-center justify-between px-2 text-sm">
           <button
             type="button"
             onClick={() => changeMonth(-1)}
-            className="text-brand-700 underline"
+            className="inline-flex min-h-touch items-center text-brand-700 underline dark:text-brand-400"
           >
             ← Prev
           </button>
@@ -110,7 +110,7 @@ export default function HistoryPage() {
             type="button"
             onClick={() => changeMonth(1)}
             disabled={isCurrentMonth}
-            className="text-brand-700 underline disabled:pointer-events-none disabled:opacity-30"
+            className="inline-flex min-h-touch items-center text-brand-700 underline disabled:pointer-events-none disabled:opacity-30 dark:text-brand-400"
           >
             Next →
           </button>
@@ -176,7 +176,10 @@ export default function HistoryPage() {
         </div>
       </div>
 
-      <Link to="/weight" className="mt-6 inline-block text-sm text-brand-700 underline">
+      <Link
+        to="/weight"
+        className="mt-6 inline-flex min-h-touch items-center text-sm text-brand-700 underline dark:text-brand-400"
+      >
         Weight tracking →
       </Link>
     </div>
