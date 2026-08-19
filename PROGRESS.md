@@ -909,3 +909,60 @@ tab's visibility history — plus a suite-wide fix for a real flakiness bug this
 - 302 unit tests total (+21: 15+6), 66 E2E specs total (+5), all green. `lint && tsc --noEmit &&
   check:tokens && test && build && test:e2e` all pass. Bundle: 173.94 KB gz initial (budget 300 KB
   gz; +0.74 KB gz over 10.2 for the prompt sheet + hook + domain/lib modules).
+
+## 10.4 — Grams-First Logging
+Replaced the household-unit-first add flow (a mode toggle between a portion `<select>`+qty and a
+separate grams field) with a single grams field as the only way to set a quantity — household-unit
+portions now only exist as gram-filling shortcut chips, never a stored unit, exactly per spec.
+
+- **`PortionStep`** (`src/app/components/PortionStep.tsx`, new): the shared portion-entry step —
+  previously `AddFoodSheetContent.tsx` and `AddFoodPage.tsx` each carried their own ~80-line copy of
+  the mode-toggle/select/qty UI (a real duplication problem that made the toggle's Phase-9E dark-mode
+  bug possible in the first place — see the pre-Phase-10 audit above). One grams `<input>`
+  (`inputMode="decimal"`, `autoFocus`, selects its own text on focus so typing immediately replaces
+  the default — no extra clear step), pre-filled from the food's typical portion
+  (`portionsOf(selected)[0].grams`) or, in edit mode, the entry's existing `grams`. Quick-adjust chips:
+  fixed `50 / 100 / 150 / 200 g` plus one chip per the food's own reference portions rendered as grams
+  ("1 idli ≈ 40 g" — tapping it fills 40, not "1 idli"). A tabular-nums live preview
+  (`computeMacrosForGrams`, unchanged from Phase 9) and a log button whose text *is* the result —
+  `Add {grams} g · {kcal} kcal` — replacing the old static "Add to Breakfast" wording. Every save is
+  `unit: 'grams'`, `portionLabel: undefined` — storage is grams-only, matching "household units become
+  gram shortcuts, never the stored unit."
+- **Where the meal name went**: since the button no longer says "Add to Breakfast", the add-food
+  `BottomSheet`'s title is now dynamic (`Add to ${meal}`, set in `AppShell.tsx`) instead of the old
+  static "Add food" — meal context is visible for the *whole* sheet lifecycle now (search step
+  included), not just the final button, a small UX improvement alongside the spec change.
+- **`AddFoodSheetContent.tsx` and `AddFoodPage.tsx`**: both shrank to search/select + `<PortionStep>`;
+  all mode/portionIndex/qty/gramsValue state and the duplicated JSX are gone. `AddFoodPage`'s edit mode
+  now simply passes `initialGrams={entry.grams}` — `grams` was already denormalized on every entry
+  regardless of unit, so editing a *legacy* portion-unit entry pre-fills correctly with no branching.
+- **`formatPortion()` needed no changes** — it already fell back to `"{grams} g"` whenever
+  `unit !== 'portion'`, which is now always true for new entries; the caller-side `"{portion} · {kcal}
+  kcal"` composition (`MealSection.tsx` already appended kcal after the portion string) already
+  produces the spec's target "180 g · 292 kcal" display. `formatPortion()` still correctly renders
+  legacy portion-unit rows in household units — verified by repurposing a Phase 9 E2E test that used
+  to log via the live UI (impossible now, since new entries can't produce `unit: 'portion'`) to instead
+  seed one directly, the same way other specs already seed fixture history.
+- **Shared chip-tap logic**: `MealSection`'s "your usual?" empty-state chip already had its own
+  food-lookup+macro-compute+`addEntry` sequence (Phase 9); extracted to
+  `src/lib/logging/logSuggestionChip.ts` in 10.3 for the meal prompt to reuse — unrelated to this
+  sub-phase but the same principle: `PortionStep` is the equivalent extraction for the portion-entry
+  step itself.
+- **Tests**: `PortionStep.test.tsx` (7) — defaults to the typical portion, live preview math (incl. an
+  explicit rounding case: 33g of 12p/100g = 3.96 → displays "4p", not "3.96" or "3.9"), a fixed chip
+  and the food's own portion-chip both fill the field correctly, the log button's dynamic text, and
+  edit-mode pre-fill from `initialGrams`. `AddFoodSheetContent.test.tsx` (2, new) — the spec's
+  "search→select→type grams→log updates totals exactly" integration case, driven against a real
+  `LogRepo`/fake-indexeddb rather than a mocked `onSave`: search, select, type/chip-select grams, log,
+  then read the row back from the database and assert every field. New E2E
+  (`e2e/gramsFirstLogging.spec.ts`, 3 specs): grams field auto-focus + `inputmode="decimal"` +
+  typical-portion default asserted directly; a 2-tap-plus-typing flow (select, type, log); a 3-tap
+  chip-driven flow whose logged row shows grams, never a household-unit label. Updated every existing
+  spec that logged food through the old flow (9 files, ~20 call sites) to the new
+  `portion-grams-input`/`gram-chip-*`/`log-entry-button` test ids — `ScanProductPage.tsx` and
+  `QuickAddPage.tsx`'s own "Add to X" buttons are separate components this phase didn't touch, so their
+  specs (`barcode.spec.ts`, two of `summaryCard.spec.ts`'s three tests) needed no changes.
+- 311 unit tests total (+9: 7+2), 69 E2E specs total (+3), all green. `lint && tsc --noEmit &&
+  check:tokens && test && build && test:e2e` all pass. Bundle: 173.42 KB gz initial (budget 300 KB
+  gz) — essentially flat versus 10.3 despite the new component, since it replaced roughly as much
+  toggle/select/qty code as it added.

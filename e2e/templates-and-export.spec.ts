@@ -26,8 +26,8 @@ test('save a meal as a template, then one-tap log it the next day with correct t
   await page.getByTestId('add-breakfast').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByLabel('Quantity').fill('3')
-  await page.getByRole('button', { name: 'Add to Breakfast' }).click()
+  await page.getByTestId('portion-grams-input').fill('120')
+  await page.getByTestId('log-entry-button').click()
   await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('123 kcal')
 
   await page.getByTestId('meal-overflow-breakfast').click()
@@ -57,13 +57,13 @@ test('CSV export downloads parseable files with the correct row counts', async (
   await page.getByTestId('add-breakfast').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to Breakfast' }).click()
+  await page.getByTestId('log-entry-button').click()
   await expect(page.getByTestId('bottom-sheet')).not.toBeVisible() // wait for the save to actually land before hard-navigating
 
   await page.getByTestId('add-lunch').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('sambhar')
   await page.getByTestId('search-results').getByRole('button', { name: 'Sambar', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to Lunch' }).click()
+  await page.getByTestId('log-entry-button').click()
   await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
 
   await page.goto('/weight')

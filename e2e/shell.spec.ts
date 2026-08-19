@@ -45,12 +45,12 @@ test('FAB opens the Add Food sheet, logging closes it and updates totals', async
   await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
   await page.getByTestId('fab-scan').click()
   await expect(page.getByTestId('bottom-sheet')).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Add food' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Add to Breakfast' })).toBeVisible()
 
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
   await expect(page.getByTestId('entry-preview')).toContainText('41 kcal')
-  await page.getByRole('button', { name: /Add to/ }).click()
+  await page.getByTestId('log-entry-button').click()
 
   await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
   // Data refreshed without a page reload (dataVersion bump).

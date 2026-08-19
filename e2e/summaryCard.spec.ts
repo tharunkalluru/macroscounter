@@ -60,7 +60,7 @@ test('tapping a macro bar opens the per-meal breakdown sheet with correct totals
   await page.getByTestId('add-breakfast').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to Breakfast' }).click()
+  await page.getByTestId('log-entry-button').click()
   await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
 
   await page.getByTestId('protein-bar').click()

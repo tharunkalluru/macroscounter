@@ -4,19 +4,12 @@ import type { FoodRecord, Meal, Recipe } from '../../data/models'
 import { FoodRepo } from '../../data/repos/FoodRepo'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { RecipeRepo } from '../../data/repos/RecipeRepo'
-import { computeMacrosForGrams, gramsForPortion } from '../../domain/logging/portionMath'
 import { todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
-import { nameOf, per100gOf, portionsOf, type Selected } from '../foodSelection'
+import { nameOf, type Selected } from '../foodSelection'
 import { useFoodIndex } from '../hooks/useFoodIndex'
+import PortionStep, { type PortionSaveData } from '../components/PortionStep'
 import { BarcodeIcon } from '../shell/icons'
-
-const MEAL_LABELS: Record<Meal, string> = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  snacks: 'Snacks',
-  dinner: 'Dinner',
-}
 
 interface Props {
   meal: Meal
@@ -41,10 +34,6 @@ export default function AddFoodSheetContent({
   const [favorites, setFavorites] = useState<FoodRecord[]>([])
   const [recipes, setRecipes] = useState<Recipe[]>([])
   const [selected, setSelected] = useState<Selected | null>(null)
-  const [portionIndex, setPortionIndex] = useState(0)
-  const [mode, setMode] = useState<'portion' | 'grams'>('portion')
-  const [qty, setQty] = useState('1')
-  const [gramsValue, setGramsValue] = useState('100')
 
   useEffect(() => {
     ;(async () => {
@@ -67,42 +56,14 @@ export default function AddFoodSheetContent({
     return service.search(query, 20)
   }, [service, query])
 
-  const portions = selected ? portionsOf(selected) : []
-
-  useEffect(() => {
-    setPortionIndex(0)
-  }, [selected])
-
-  const grams =
-    mode === 'grams'
-      ? Number(gramsValue) || 0
-      : portions[portionIndex]
-        ? gramsForPortion(Number(qty) || 0, portions[portionIndex].grams)
-        : 0
-
-  const preview = selected && grams > 0 ? computeMacrosForGrams(per100gOf(selected), grams) : null
-
-  async function handleSave() {
-    if (!selected || !preview || grams <= 0) return
-
-    const portionSummary =
-      mode === 'grams' ? `${grams} g` : `${qty} x ${portions[portionIndex].label}`
-
+  async function handleSave(selected: Selected, data: PortionSaveData) {
     await new LogRepo().addEntry({
       date: todayISO(),
       meal,
       foodId: selected.kind === 'food' ? selected.food.id : undefined,
       recipeId: selected.kind === 'recipe' ? selected.recipe.id : undefined,
       name: nameOf(selected),
-      portionSummary,
-      portionLabel: mode === 'portion' ? portions[portionIndex].label : undefined,
-      qty: mode === 'grams' ? grams : Number(qty) || 0,
-      unit: mode,
-      grams,
-      kcal: preview.kcal,
-      p: preview.p,
-      c: preview.c,
-      f: preview.f,
+      ...data,
     })
     vibrateTiny()
     onSaved()
@@ -234,91 +195,11 @@ export default function AddFoodSheetContent({
       )}
 
       {selected && (
-        <div className="rounded-card bg-white dark:bg-surface-dark-card">
-          <div className="flex items-center justify-between">
-            <h3 className="font-semibold">{nameOf(selected)}</h3>
-            <button
-              type="button"
-              className="min-h-touch text-sm text-slate-500 dark:text-slate-400 underline"
-              onClick={() => setSelected(null)}
-            >
-              Change
-            </button>
-          </div>
-
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              className={`min-h-touch rounded px-3 py-1 text-sm ${mode === 'portion' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100'}`}
-              onClick={() => setMode('portion')}
-            >
-              Household unit
-            </button>
-            <button
-              type="button"
-              className={`min-h-touch rounded px-3 py-1 text-sm ${mode === 'grams' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100'}`}
-              onClick={() => setMode('grams')}
-            >
-              Grams
-            </button>
-          </div>
-
-          {mode === 'portion' ? (
-            <div className="mt-3 flex flex-col gap-2">
-              <select
-                className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
-                value={portionIndex}
-                onChange={(e) => setPortionIndex(Number(e.target.value))}
-              >
-                {portions.map((portion, i) => (
-                  <option key={portion.label} value={i}>
-                    {portion.label} ({portion.grams} g)
-                  </option>
-                ))}
-              </select>
-              <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium">Quantity</span>
-                <input
-                  type="number"
-                  min="0"
-                  step="0.5"
-                  className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
-                  value={qty}
-                  onChange={(e) => setQty(e.target.value)}
-                />
-              </label>
-            </div>
-          ) : (
-            <label className="mt-3 flex flex-col gap-1">
-              <span className="text-sm font-medium">Grams</span>
-              <input
-                type="number"
-                min="0"
-                className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
-                value={gramsValue}
-                onChange={(e) => setGramsValue(e.target.value)}
-              />
-            </label>
-          )}
-
-          {preview && (
-            <p
-              className="mt-3 text-sm text-slate-600 dark:text-slate-300 tabular-nums"
-              data-testid="entry-preview"
-            >
-              {Math.round(preview.kcal)} kcal · {preview.p}p / {preview.c}c / {preview.f}f
-            </p>
-          )}
-
-          <button
-            type="button"
-            disabled={!preview || grams <= 0}
-            onClick={handleSave}
-            className="mt-4 min-h-touch w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
-          >
-            {`Add to ${MEAL_LABELS[meal]}`}
-          </button>
-        </div>
+        <PortionStep
+          selected={selected}
+          onChangeFood={() => setSelected(null)}
+          onSave={(data) => handleSave(selected, data)}
+        />
       )}
     </div>
   )

@@ -1,10 +1,18 @@
 import { Outlet } from 'react-router-dom'
+import type { Meal } from '../../data/models'
 import BottomSheet from './BottomSheet'
 import BottomTabBar from './BottomTabBar'
 import Header from './Header'
 import PageTransition from './PageTransition'
 import { useUIState } from './UIStateContext'
 import AddFoodSheetContent from '../sheets/AddFoodSheetContent'
+
+const MEAL_LABELS: Record<Meal, string> = {
+  breakfast: 'Breakfast',
+  lunch: 'Lunch',
+  snacks: 'Snacks',
+  dinner: 'Dinner',
+}
 
 export default function AppShell() {
   const { addFoodSheet, closeAddFoodSheet, notifyDataChanged } = useUIState()
@@ -24,7 +32,11 @@ export default function AppShell() {
       </main>
       <BottomTabBar />
 
-      <BottomSheet open={addFoodSheet.open} onClose={closeAddFoodSheet} title="Add food">
+      <BottomSheet
+        open={addFoodSheet.open}
+        onClose={closeAddFoodSheet}
+        title={`Add to ${MEAL_LABELS[addFoodSheet.meal]}`}
+      >
         <AddFoodSheetContent
           meal={addFoodSheet.meal}
           onSaved={handleSaved}

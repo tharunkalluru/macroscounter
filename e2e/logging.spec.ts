@@ -63,9 +63,11 @@ test('full journey: onboard, search idli, log 3 idli + sambar for breakfast, rin
 
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByLabel('Quantity').fill('3')
+  // Idli's typical portion (40g) pre-fills the grams field; type the total
+  // grams for 3 idli (120g) directly, replacing the pre-focused default.
+  await page.getByTestId('portion-grams-input').fill('120')
   await expect(page.getByTestId('entry-preview')).toContainText('123 kcal')
-  await page.getByRole('button', { name: 'Add to Breakfast' }).click()
+  await page.getByTestId('log-entry-button').click()
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-remaining')).toHaveText('1505') // 1628 - 123
@@ -74,8 +76,9 @@ test('full journey: onboard, search idli, log 3 idli + sambar for breakfast, rin
   await page.getByTestId('add-breakfast').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('sambhar')
   await page.getByTestId('search-results').getByRole('button', { name: 'Sambar', exact: true }).click()
+  // Sambar's typical portion is already 1 katori = 150g, matching the fixture exactly.
   await expect(page.getByTestId('entry-preview')).toContainText('93 kcal')
-  await page.getByRole('button', { name: 'Add to Breakfast' }).click()
+  await page.getByTestId('log-entry-button').click()
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-remaining')).toHaveText('1412') // 1628 - 216
@@ -100,7 +103,7 @@ test('offline logging: once seeded, adding a food entry works entirely without n
   await page.getByTestId('add-lunch').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('chicken curry')
   await page.getByTestId('search-results').getByRole('button', { name: 'Chicken Curry', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to Lunch' }).click()
+  await page.getByTestId('log-entry-button').click()
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('meal-subtotal-lunch')).not.toHaveText('0 kcal')
@@ -114,13 +117,14 @@ test('editing quantity and deleting an entry update the day totals', async ({ pa
   await page.getByTestId('add-dinner').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to Dinner' }).click()
+  // Idli's typical portion (40g) is already the pre-filled default.
+  await page.getByTestId('log-entry-button').click()
 
   await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('41 kcal') // 1 idli (40g), 102.5*0.4=41
 
   await page.getByRole('button', { name: 'Edit Idli' }).click()
-  await page.getByLabel('Quantity').fill('2')
-  await page.getByRole('button', { name: 'Save changes' }).click()
+  await page.getByTestId('portion-grams-input').fill('80')
+  await page.getByTestId('log-entry-button').click()
   await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('82 kcal') // 2 idli (80g), 102.5*0.8=82
 
   await swipeToDelete(page, page.getByRole('button', { name: 'Edit Idli' }))

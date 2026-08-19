@@ -77,14 +77,29 @@ async function seedLogEntry(
   }, entry)
 }
 
-test('food rows show portions in household units, never a raw multiplier', async ({ page }) => {
+test('legacy portion-unit entries still render in household units, never a raw multiplier', async ({ page }) => {
   await onboard(page)
 
-  await page.getByTestId('add-breakfast').click()
-  await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
-  await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByLabel('Quantity').fill('3')
-  await page.getByRole('button', { name: 'Add to Breakfast' }).click()
+  // Phase 10.4 made every *new* entry grams-only, but formatPortion() must
+  // keep rendering pre-existing portion-unit rows (logged before that
+  // shipped) in household units — simulate one directly, the same way
+  // other tests in this file seed fixture history.
+  await seedLogEntry(page, {
+    date: '2026-08-18',
+    meal: 'breakfast',
+    foodId: 'idli',
+    name: 'Idli',
+    portionSummary: '3 x 1 idli',
+    portionLabel: '1 idli',
+    qty: 3,
+    unit: 'portion',
+    grams: 120,
+    kcal: 123,
+    p: 5.4,
+    c: 24,
+    f: 0.6,
+  })
+  await page.reload()
 
   const row = page.getByRole('button', { name: 'Edit Idli' })
   await expect(row).toContainText('3 idli')
@@ -111,7 +126,7 @@ test('swipe-delete shows an undo snackbar that restores the entry and totals', a
   await page.getByTestId('add-dinner').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to Dinner' }).click()
+  await page.getByTestId('log-entry-button').click()
   await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('41 kcal')
 
   await swipeToDelete(page, page.getByRole('button', { name: 'Edit Idli' }))

@@ -52,7 +52,7 @@ test('navigate to a past day, edit an entry, verify the calendar color updates',
   await page.goto('/log/add?meal=lunch&date=2026-08-10')
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to Lunch' }).click()
+  await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/history/2026-08-10')
 
   await page.goto('/history')
@@ -62,10 +62,10 @@ test('navigate to a past day, edit an entry, verify the calendar color updates',
   await expect(page).toHaveURL('/history/2026-08-10')
   await expect(page.getByTestId('day-total-kcal')).toHaveText('41 / 1628 kcal')
 
-  // Bump quantity way up so the day crosses into the red band (>1790.8 kcal).
+  // Bump grams way up so the day crosses into the red band (>1790.8 kcal).
   await page.getByRole('button', { name: 'Edit Idli' }).click()
-  await page.getByLabel('Quantity').fill('50') // 50 x 40g = 2000g -> 2050 kcal
-  await page.getByRole('button', { name: 'Save changes' }).click()
+  await page.getByTestId('portion-grams-input').fill('2000') // 2000g -> 2050 kcal
+  await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/history/2026-08-10')
   await expect(page.getByTestId('day-total-kcal')).toHaveText('2050 / 1628 kcal')
 

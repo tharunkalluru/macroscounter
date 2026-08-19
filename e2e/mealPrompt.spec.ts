@@ -91,11 +91,11 @@ test('the Search button opens the add-food sheet for the prompted meal and close
 
   await expect(page.getByTestId('meal-prompt-sheet')).not.toBeVisible()
   await expect(page.getByTestId('bottom-sheet')).toBeVisible()
-  await expect(page.getByRole('heading', { name: 'Add food' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Add to Breakfast' })).toBeVisible()
 
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to Breakfast' }).click()
+  await page.getByTestId('log-entry-button').click()
   await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('41 kcal')
 })
 
@@ -114,7 +114,7 @@ test('logging breakfast normally means no prompt shows on the next app open', as
   await page.getByTestId('add-breakfast').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByRole('button', { name: 'Add to Breakfast' }).click()
+  await page.getByTestId('log-entry-button').click()
   await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('41 kcal')
 
   await page.reload()
