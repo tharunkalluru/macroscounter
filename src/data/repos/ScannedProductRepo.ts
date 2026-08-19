@@ -1,3 +1,4 @@
+import { trackUpsert } from '../../lib/sync/syncTracker'
 import type { MacroDesiDB } from '../db'
 import { db as defaultDb } from '../db'
 import type { ScannedProduct } from '../models'
@@ -10,7 +11,14 @@ export class ScannedProductRepo {
   }
 
   async put(product: ScannedProduct): Promise<string> {
-    return this.db.scannedProducts.put(product)
+    // The barcode is already a globally stable identifier, so it doubles as
+    // this table's sync clientId — no separate uuid needed, and it means
+    // two devices scanning the same product converge on one cached row
+    // instead of two.
+    const barcode = await this.db.scannedProducts.put({ ...product, clientId: product.barcode })
+    const saved = await this.db.scannedProducts.get(barcode)
+    if (saved) await trackUpsert(this.db, 'scannedProducts', barcode, saved)
+    return barcode
   }
 
   async getMany(barcodes: string[]): Promise<ScannedProduct[]> {

@@ -8,8 +8,8 @@ afterEach(async () => {
   await Dexie.delete(DB_NAME)
 })
 
-describe('Dexie migration: v1 -> current (v2), data intact', () => {
-  it('preserves all v1 data and adds the new barcode index on upgrade', async () => {
+describe('Dexie migration: v1 -> current (v3), data intact', () => {
+  it('preserves all v1 data and adds the new barcode/clientId indexes and sync tables on upgrade', async () => {
     // Simulate an existing v1 install (pre-Phase-5, before `barcode` had an index).
     const v1db = new Dexie(DB_NAME)
     v1db.version(1).stores({
@@ -81,12 +81,12 @@ describe('Dexie migration: v1 -> current (v2), data intact', () => {
 
     v1db.close()
 
-    // Reopen with the real app class, which declares v1 AND v2 -- Dexie
+    // Reopen with the real app class, which declares v1 through v3 -- Dexie
     // upgrades automatically.
     const upgraded = new MacroDesiDB(DB_NAME)
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(2)
+    expect(upgraded.verno).toBe(3)
 
     const profiles = await upgraded.profiles.toArray()
     expect(profiles).toHaveLength(1)
@@ -110,10 +110,18 @@ describe('Dexie migration: v1 -> current (v2), data intact', () => {
     const templates = await upgraded.mealTemplates.toArray()
     expect(templates[0].name).toBe('Usual Breakfast')
 
-    // The new v2 index actually works, not just "doesn't crash".
+    // The v2 index actually works, not just "doesn't crash".
     const byBarcode = await upgraded.logEntries.where('barcode').equals('8901491101615').toArray()
     expect(byBarcode).toHaveLength(1)
     expect(byBarcode[0].id).toBe(logEntryId)
+
+    // v3: pre-existing rows have no clientId yet (backfilled lazily by the
+    // sync engine, not by this migration) — the new index still works, it's
+    // just empty for now. The new sync tables exist and are usable.
+    const byClientId = await upgraded.logEntries.where('clientId').equals('anything').toArray()
+    expect(byClientId).toHaveLength(0)
+    expect(await upgraded.syncOutbox.count()).toBe(0)
+    expect(await upgraded.syncMeta.count()).toBe(0)
 
     upgraded.close()
   })

@@ -1,3 +1,4 @@
+import { trackDelete, trackUpsert } from '../../lib/sync/syncTracker'
 import type { MacroDesiDB } from '../db'
 import { db as defaultDb } from '../db'
 import type { WeighIn } from '../models'
@@ -6,15 +7,21 @@ export class WeighInRepo {
   constructor(private db: MacroDesiDB = defaultDb) {}
 
   async add(weighIn: Omit<WeighIn, 'id'>): Promise<number> {
-    return this.db.weighIns.add(weighIn as WeighIn)
+    const id = await this.db.weighIns.add(weighIn as WeighIn)
+    await trackUpsert(this.db, 'weighIns', id, { ...weighIn, id })
+    return id
   }
 
   async update(id: number, changes: Partial<Omit<WeighIn, 'id'>>): Promise<void> {
     await this.db.weighIns.update(id, changes)
+    const updated = await this.db.weighIns.get(id)
+    if (updated) await trackUpsert(this.db, 'weighIns', id, updated)
   }
 
   async delete(id: number): Promise<void> {
+    const existing = await this.db.weighIns.get(id)
     await this.db.weighIns.delete(id)
+    if (existing) await trackDelete(this.db, 'weighIns', existing.clientId)
   }
 
   async getAll(): Promise<WeighIn[]> {

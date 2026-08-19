@@ -11,6 +11,7 @@ import QuickAddPage from './app/QuickAddPage'
 import RecipeBuilderPage from './app/RecipeBuilderPage'
 import ReportPage from './app/ReportPage'
 import AppShell from './app/shell/AppShell'
+import SyncTriggers from './app/shell/SyncTriggers'
 import { ThemeProvider } from './app/shell/ThemeContext'
 import { UIStateProvider } from './app/shell/UIStateContext'
 import SettingsPage from './app/SettingsPage'
@@ -63,6 +64,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <UIStateProvider>
+          <SyncTriggers />
           <Suspense fallback={<RouteLoading />}>
             <Routes>
               {/* Shell routes: header + bottom tab bar + FAB add-food sheet. */}

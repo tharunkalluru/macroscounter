@@ -1,3 +1,4 @@
+import { trackDelete, trackUpsert } from '../../lib/sync/syncTracker'
 import type { MacroDesiDB } from '../db'
 import { db as defaultDb } from '../db'
 import type { LogEntry } from '../models'
@@ -6,15 +7,21 @@ export class LogRepo {
   constructor(private db: MacroDesiDB = defaultDb) {}
 
   async addEntry(entry: Omit<LogEntry, 'id'>): Promise<number> {
-    return this.db.logEntries.add(entry as LogEntry)
+    const id = await this.db.logEntries.add(entry as LogEntry)
+    await trackUpsert(this.db, 'logEntries', id, { ...entry, id })
+    return id
   }
 
   async updateEntry(id: number, changes: Partial<Omit<LogEntry, 'id'>>): Promise<void> {
     await this.db.logEntries.update(id, changes)
+    const updated = await this.db.logEntries.get(id)
+    if (updated) await trackUpsert(this.db, 'logEntries', id, updated)
   }
 
   async deleteEntry(id: number): Promise<void> {
+    const existing = await this.db.logEntries.get(id)
     await this.db.logEntries.delete(id)
+    if (existing) await trackDelete(this.db, 'logEntries', existing.clientId)
   }
 
   async getById(id: number): Promise<LogEntry | undefined> {

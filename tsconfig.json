@@ -20,5 +20,14 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src", "scripts", "vite.config.ts", "playwright.config.ts", "tailwind.config.ts"]
+  "include": [
+    "src",
+    "scripts",
+    "vite.config.ts",
+    "playwright.config.ts",
+    "tailwind.config.ts",
+    "drizzle.config.ts",
+    "drizzle",
+    "api"
+  ]
 }

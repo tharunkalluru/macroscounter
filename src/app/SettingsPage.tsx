@@ -6,6 +6,7 @@ import { computeGoalTargets } from '../domain/goals/goalEngine'
 import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
 import type { ThemePreference } from '../domain/theme/resolveTheme'
 import { todayISO } from '../lib/date'
+import SyncStatusDot from './components/SyncStatusDot'
 import { useTheme } from './shell/ThemeContext'
 
 const ACTIVITY_OPTIONS: { value: ActivityLevel; label: string }[] = [
@@ -152,11 +153,14 @@ export default function SettingsPage() {
       <Link to="/" className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 underline dark:text-brand-400">
         ← Back
       </Link>
-      <h1 className="mb-6 text-2xl font-bold text-brand-700 dark:text-brand-400">
+      <h1 className="mb-2 text-2xl font-bold text-brand-700 dark:text-brand-400">
         Profile & Targets
       </h1>
+      <SyncStatusDot />
 
-      <ThemeToggle />
+      <div className="mt-6">
+        <ThemeToggle />
+      </div>
 
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <label className="flex flex-col gap-1">

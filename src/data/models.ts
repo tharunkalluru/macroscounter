@@ -6,7 +6,21 @@ export type TargetSource = 'computed' | 'manual' | 'adaptive'
 export type Meal = 'breakfast' | 'lunch' | 'snacks' | 'dinner'
 export type Unit = 'portion' | 'grams'
 
-export interface Profile {
+/**
+ * Sync bookkeeping shared by every table that syncs to the cloud (Phase 10).
+ * `clientId` is the stable identity used across devices and on the server —
+ * Dexie's own auto-increment `id` stays purely local. Optional because rows
+ * written before Phase 10 (or while signed out) don't have these yet;
+ * `trackUpsert` (src/lib/sync/syncTracker.ts) backfills them lazily on
+ * first touch rather than via a Dexie migration.
+ */
+export interface Syncable {
+  clientId?: string
+  updatedAt?: number
+  deletedAt?: number | null
+}
+
+export interface Profile extends Syncable {
   id?: number
   name: string
   sex: Sex
@@ -17,7 +31,7 @@ export interface Profile {
   goal: Goal
 }
 
-export interface Targets {
+export interface Targets extends Syncable {
   id?: number
   effectiveDate: string
   kcal: number
@@ -44,7 +58,7 @@ export interface RecipeIngredient {
   grams: number
 }
 
-export interface Recipe {
+export interface Recipe extends Syncable {
   id?: number
   name: string
   ingredients: RecipeIngredient[]
@@ -60,7 +74,7 @@ export interface CustomSnapshot {
   f: number
 }
 
-export interface LogEntry {
+export interface LogEntry extends Syncable {
   id?: number
   date: string
   meal: Meal
@@ -84,13 +98,13 @@ export interface LogEntry {
   f: number
 }
 
-export interface WeighIn {
+export interface WeighIn extends Syncable {
   id?: number
   date: string
   weightKg: number
 }
 
-export interface ScannedProduct {
+export interface ScannedProduct extends Syncable {
   barcode: string
   name: string
   brand?: string
@@ -107,8 +121,20 @@ export interface MealTemplateEntry {
   unit: Unit
 }
 
-export interface MealTemplate {
+export interface MealTemplate extends Syncable {
   id?: number
   name: string
   entries: MealTemplateEntry[]
+}
+
+export type SyncStatus = 'signed-out' | 'synced' | 'syncing' | 'offline' | 'error'
+
+/** Single-row table: who's signed in (if anyone) and when we last pulled from the server. */
+export interface SyncMetaRow {
+  id?: number
+  userId: string | null
+  userEmail: string | null
+  userName: string | null
+  userAvatarUrl: string | null
+  lastSyncedAt: number | null
 }

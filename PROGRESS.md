@@ -711,3 +711,71 @@ and Quick Add, in both light and dark. Found two real bugs the automated suite h
   `page.goto()` to the destination) so this exact class of gap can't recur silently. 235 unit tests
   (unchanged — this was a UI-only pass), 54 E2E specs total (+3), all green. Bundle: 159.57 KB gz
   (budget 300 KB).
+
+## 10.1 — Platform, Sync Engine
+Built the offline-first cloud sync foundation: Postgres schema, Vercel serverless sync endpoints,
+and the client-side outbox/pull engine, all wired into the six existing repos without touching any
+UI. Google sign-in itself is Phase 10.2's job — this sub-phase only builds the machinery a signed-in
+session will drive.
+
+- **Server schema** (`drizzle/schema.ts`, Drizzle ORM + Postgres dialect): `users` plus one table per
+  synced domain type (`profiles`, `targets`, `logEntries`, `weighIns`, `recipes`, `mealTemplates`,
+  `scannedProducts`), mirroring `src/data/models.ts` field-for-field. Every synced table's primary
+  key **is** the client-generated `clientId` UUID (`uuid('id').primaryKey()`) — no separate
+  client-id/server-id mapping table, since it makes every push a plain idempotent upsert. Every
+  table carries `userId` (FK to `users`, cascade delete) and `updatedAt`/`deletedAt` for LWW conflict
+  resolution and sync-safe soft deletes. `npx drizzle-kit generate` produces clean migration SQL
+  (`drizzle/migrations/0000_*.sql`, 8 tables) from the schema with no live database required —
+  actually *applying* it against a real Neon instance is untestable until the database is
+  provisioned (see `SETUP.md`).
+- **Local schema** (`src/data/db.ts`): Dexie v3 adds an indexed `clientId` field to every syncable
+  table plus two new tables, `syncOutbox` (queued pending mutations) and `syncMeta` (single-row:
+  signed-in user + last-pull watermark). Existing v1/v2 rows aren't migrated in the upgrade
+  transaction — `trackUpsert` backfills `clientId` lazily the first time a pre-Phase-10 row is
+  touched again, so the Dexie migration itself stays a pure schema change with no data rewrite.
+- **`/api/sync/push` and `/api/sync/pull`** (Vercel serverless functions, `@vercel/node`): push
+  accepts a batch of outbox mutations and applies each with last-write-wins (skips a mutation if the
+  server's `updatedAt` is already newer — the losing side just picks up the winner on its next pull);
+  pull returns every row changed since a client-supplied watermark, soft-deletes included. Both
+  route on a `getUserId()` cookie stub in `api/_auth.ts` — explicitly a placeholder 10.2 will swap for
+  real Better Auth session verification without touching either handler's actual sync logic.
+- **Client sync engine** (`src/lib/sync/syncEngine.ts`): `runSync()` pushes the outbox, pulls
+  everything since the last watermark, merges pulled rows into Dexie via last-write-wins
+  (`src/domain/sync/lww.ts`), and exposes a subscribable status (`signed-out` / `syncing` / `synced`
+  / `offline` / `error`) rendered as a small dot in Settings (`SyncStatusDot.tsx`). `SyncTriggers`
+  (mounted once in `App.tsx`, outside the route tree so it survives navigation) fires `runSync()` on
+  app open, on the existing `dataVersion` "something changed" signal, and on the browser's `online`
+  event — never blocking a log on the network, since the Dexie write always completes first.
+  `trackUpsert`/`trackDelete` (`src/lib/sync/syncTracker.ts`) are the only new code path each of the
+  six repos runs, right after their existing Dexie write; they no-op entirely while signed out, so
+  guest/local-only usage is byte-for-byte unchanged. `scannedProducts` reuses its barcode as the
+  `clientId` directly (rather than a random UUID) so two devices scanning the same product converge
+  on one server row instead of duplicating it.
+- **Tests**: 22 new pure-function unit tests for the outbox collapse/reconcile and LWW merge logic
+  (`src/domain/sync/outbox.test.ts`, `src/domain/sync/lww.test.ts`), 8 for `trackUpsert`/`trackDelete`
+  against a real `MacroDesiDB` + `LogRepo` (`syncTracker.test.ts`), 6 integration tests for
+  `runSync()` against a hand-built in-memory mock server (`syncEngine.test.ts`) covering the gate's
+  required "offline writes queue → reconnect → flush → pull merges" and "fresh cleared-IndexedDB
+  session pulls all data" cases end-to-end through the real client code paths. New E2E spec
+  (`e2e/sync.spec.ts`): logs a food entry while `context.setOffline(true)`, confirms it's queued
+  locally and the (mocked) server hasn't seen it, goes back online and confirms the dot reaches
+  "Synced" and the mock server received it, then clears IndexedDB, reloads, and confirms the entry
+  reappears via pull — the exact scenario the 10.1 gate row requires. Since Google sign-in doesn't
+  exist yet, the E2E test simulates an authenticated session by writing `syncMeta` directly via
+  IndexedDB (the same technique other specs already use to seed fixture data); 10.2 will replace this
+  with a real cookie-backed session.
+- 271 unit tests total (+36), 55 E2E specs total (+1), all green. `lint && tsc --noEmit && test &&
+  build && test:e2e` all pass. Bundle: 161.41 KB gz initial (budget 300 KB gz) — `drizzle-orm`,
+  `@neondatabase/serverless`, and `better-auth` are only imported from `/api/*.ts`, so Vite's client
+  build correctly excludes them; the entire client-side increase is `src/domain/sync/**` and
+  `src/lib/sync/**`.
+- New: `.env.example` gained the Phase 10 vars (`DATABASE_URL`, `GOOGLE_CLIENT_ID`,
+  `GOOGLE_CLIENT_SECRET`, `AUTH_SECRET`, `VITE_APP_URL`) alongside the existing barcode/label-reader
+  ones; `SETUP.md` documents Neon provisioning via the Vercel Marketplace and the Google Cloud
+  Console OAuth steps 10.2 will need. `npm run db:generate`/`db:migrate` added; `vercel.json`'s
+  `buildCommand` now runs migrations before `vite build` on every Vercel deploy, and its SPA-fallback
+  rewrite excludes `/api/*` so those routes aren't swallowed by the `index.html` catch-all.
+- Not yet done, deferred to later sub-phases as scoped: real Google OAuth (10.2), the time-aware meal
+  prompt (10.3), grams-first logging (10.4), the barcode card polish (10.5), and native-feel/PWA
+  manifest work + an actual `vercel --prod` deploy (10.6, blocked on the user having a real Vercel
+  account).
