@@ -2,8 +2,7 @@ import { BrowserMultiFormatReader } from '@zxing/browser'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal } from '../data/models'
-import { ScannedProductRepo } from '../data/repos/ScannedProductRepo'
-import { lookupProduct } from '../domain/barcode/lookupProduct'
+import { activeMealWindow } from '../domain/mealPrompt/activeMealWindow'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -13,29 +12,36 @@ const MEAL_LABELS: Record<Meal, string> = {
 }
 
 const BARCODE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128']
+const NO_DECODE_TIMEOUT_MS = 5000
 
 export default function ScanPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const meal = (searchParams.get('meal') as Meal) || 'breakfast'
+  const meal = (searchParams.get('meal') as Meal | null) || activeMealWindow(new Date()) || 'breakfast'
 
   const videoRef = useRef<HTMLVideoElement>(null)
+  const trackRef = useRef<MediaStreamTrack | null>(null)
   const [manualBarcode, setManualBarcode] = useState('')
   const [cameraStatus, setCameraStatus] = useState<'starting' | 'active' | 'unavailable'>(
     'starting'
   )
-  const [lookingUp, setLookingUp] = useState(false)
+  const [torchOn, setTorchOn] = useState(false)
+  const [torchSupported, setTorchSupported] = useState(false)
+  const [showManualEntry, setShowManualEntry] = useState(false)
   const handledRef = useRef(false)
 
   useEffect(() => {
     let stopped = false
     let stopFn: (() => void) | undefined
 
-    async function handleDetected(barcode: string) {
+    function handleDetected(barcode: string) {
       if (handledRef.current) return
       handledRef.current = true
       stopFn?.()
-      await resolveBarcode(barcode)
+      // Navigate immediately — the product card owns its own lookup and
+      // shows a skeleton while it's in flight, so the sheet slides up
+      // perceptibly instantly instead of waiting on the network here.
+      navigate(`/scan/product/${barcode.trim()}?meal=${meal}`)
     }
 
     async function start() {
@@ -52,6 +58,11 @@ export default function ScanPage() {
           videoRef.current.srcObject = stream
           await videoRef.current.play()
           setCameraStatus('active')
+
+          const track = stream.getVideoTracks()[0]
+          trackRef.current = track ?? null
+          const capabilities = track?.getCapabilities?.() as (MediaTrackCapabilities & { torch?: boolean }) | undefined
+          setTorchSupported(!!capabilities?.torch)
 
           const detector = new window.BarcodeDetector({ formats: BARCODE_FORMATS })
           const interval = setInterval(() => {
@@ -94,22 +105,34 @@ export default function ScanPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
-  async function resolveBarcode(barcode: string) {
-    setLookingUp(true)
-    const result = await lookupProduct(barcode.trim(), {
-      scannedProductRepo: new ScannedProductRepo(),
-      fdcApiKey: import.meta.env.VITE_FDC_API_KEY || undefined,
-    })
-    if (result.product) {
-      navigate(`/scan/product/${barcode.trim()}?meal=${meal}`)
-    } else {
-      navigate(`/scan/not-found/${barcode.trim()}?meal=${meal}`)
+  // Failure UX: no camera at all -> show manual entry right away. A camera
+  // that's active but hasn't found anything after 5s -> surface it too.
+  useEffect(() => {
+    if (cameraStatus === 'unavailable') {
+      setShowManualEntry(true)
+      return
+    }
+    if (cameraStatus === 'active') {
+      const timer = setTimeout(() => setShowManualEntry(true), NO_DECODE_TIMEOUT_MS)
+      return () => clearTimeout(timer)
+    }
+  }, [cameraStatus])
+
+  async function handleToggleTorch() {
+    const track = trackRef.current
+    if (!track) return
+    const next = !torchOn
+    try {
+      await track.applyConstraints({ advanced: [{ torch: next } as MediaTrackConstraintSet] })
+      setTorchOn(next)
+    } catch {
+      /* torch toggle failed (device doesn't actually support it despite capabilities) — no-op */
     }
   }
 
   function handleManualSubmit(e: FormEvent) {
     e.preventDefault()
-    if (manualBarcode.trim()) resolveBarcode(manualBarcode.trim())
+    if (manualBarcode.trim()) navigate(`/scan/product/${manualBarcode.trim()}?meal=${meal}`)
   }
 
   return (
@@ -124,35 +147,50 @@ export default function ScanPage() {
         Scan barcode · {MEAL_LABELS[meal]}
       </h1>
 
-      <div className="mt-3 overflow-hidden rounded-xl bg-slate-900" data-testid="camera-preview">
+      <div className="relative mt-3 overflow-hidden rounded-xl bg-slate-900" data-testid="camera-preview">
         <video ref={videoRef} className="aspect-video w-full object-cover" muted playsInline />
         {cameraStatus === 'unavailable' && (
           <p className="p-4 text-center text-sm text-slate-300">
             Camera unavailable — use manual entry below.
           </p>
         )}
+        {cameraStatus === 'active' && torchSupported && (
+          <button
+            type="button"
+            onClick={handleToggleTorch}
+            aria-label={torchOn ? 'Turn off torch' : 'Turn on torch'}
+            aria-pressed={torchOn}
+            data-testid="torch-toggle"
+            className={`absolute bottom-2 right-2 flex min-h-touch min-w-touch items-center justify-center rounded-full ${torchOn ? 'bg-amber-400 text-slate-900' : 'bg-slate-800/80 text-white'}`}
+          >
+            <span aria-hidden="true">💡</span>
+          </button>
+        )}
       </div>
 
-      {lookingUp && (
-        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Looking up product…</p>
+      {showManualEntry && (
+        <div className="mt-4" data-testid="manual-entry-fallback">
+          <p className="mb-2 text-sm text-slate-500 dark:text-slate-400">
+            Having trouble? Type the barcode.
+          </p>
+          <form onSubmit={handleManualSubmit} className="flex gap-2">
+            <label className="flex-1">
+              <span className="sr-only">Barcode number</span>
+              <input
+                type="text"
+                inputMode="numeric"
+                placeholder="Enter barcode number"
+                className="min-h-touch w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+                value={manualBarcode}
+                onChange={(e) => setManualBarcode(e.target.value)}
+              />
+            </label>
+            <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
+              Look up
+            </button>
+          </form>
+        </div>
       )}
-
-      <form onSubmit={handleManualSubmit} className="mt-4 flex gap-2">
-        <label className="flex-1">
-          <span className="sr-only">Barcode number</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            placeholder="Enter barcode number"
-            className="min-h-touch w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
-            value={manualBarcode}
-            onChange={(e) => setManualBarcode(e.target.value)}
-          />
-        </label>
-        <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
-          Look up
-        </button>
-      </form>
     </div>
   )
 }

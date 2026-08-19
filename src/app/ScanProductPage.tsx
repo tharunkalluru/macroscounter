@@ -1,12 +1,14 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import type { Meal, ScannedProduct } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { ScannedProductRepo } from '../data/repos/ScannedProductRepo'
-import { computeMacrosForGrams, gramsForPortion } from '../domain/logging/portionMath'
 import { getServingOptions } from '../domain/barcode/servingOptions'
+import { lookupProduct } from '../domain/barcode/lookupProduct'
+import { activeMealWindow } from '../domain/mealPrompt/activeMealWindow'
 import { todayISO } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
+import PortionStep, { type PortionSaveData } from './components/PortionStep'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -14,70 +16,69 @@ const MEAL_LABELS: Record<Meal, string> = {
   snacks: 'Snacks',
   dinner: 'Dinner',
 }
+const MEALS: Meal[] = ['breakfast', 'lunch', 'snacks', 'dinner']
+
+function Pulse({ className }: { className: string }) {
+  return <div className={`motion-safe:animate-pulse rounded bg-slate-200 dark:bg-slate-700 ${className}`} />
+}
+
+function ProductCardSkeleton() {
+  return (
+    <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-surface-dark-card" data-testid="product-card-skeleton">
+      <div className="flex items-center gap-3">
+        <Pulse className="h-16 w-16 shrink-0 rounded" />
+        <div className="min-w-0 flex-1">
+          <Pulse className="h-5 w-3/4" />
+          <Pulse className="mt-2 h-3 w-1/3" />
+        </div>
+      </div>
+      <Pulse className="mt-4 h-3 w-1/2" />
+      <Pulse className="mt-4 h-10 w-full" />
+    </div>
+  )
+}
 
 export default function ScanProductPage() {
   const { barcode } = useParams<{ barcode: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
-  const meal = (searchParams.get('meal') as Meal) || 'breakfast'
+  const requestedMeal = searchParams.get('meal') as Meal | null
+  const [meal, setMeal] = useState<Meal>(requestedMeal || activeMealWindow(new Date()) || 'breakfast')
 
   const [product, setProduct] = useState<ScannedProduct | null | undefined>(undefined)
-  const [portionIndex, setPortionIndex] = useState(0)
-  const [qty, setQty] = useState('1')
 
   useEffect(() => {
     if (!barcode) return
-    new ScannedProductRepo().get(barcode).then((p) => setProduct(p ?? null))
+    let cancelled = false
+    ;(async () => {
+      const result = await lookupProduct(barcode, {
+        scannedProductRepo: new ScannedProductRepo(),
+        fdcApiKey: import.meta.env.VITE_FDC_API_KEY || undefined,
+      })
+      if (cancelled) return
+      if (result.product) {
+        setProduct(result.product)
+      } else {
+        navigate(`/scan/not-found/${barcode}?meal=${meal}`, { replace: true })
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [barcode])
 
-  const portions = useMemo(() => (product ? getServingOptions(product) : []), [product])
-
-  const grams = portions[portionIndex]
-    ? gramsForPortion(Number(qty) || 0, portions[portionIndex].grams)
-    : 0
-  const preview = product && grams > 0 ? computeMacrosForGrams(product.per100g, grams) : null
-
-  async function handleSave() {
-    if (!product || !preview || !barcode) return
+  async function handleSave(data: PortionSaveData) {
+    if (!product || !barcode) return
     await new LogRepo().addEntry({
       date: todayISO(),
       meal,
       barcode: product.barcode,
       name: product.name,
-      portionSummary: `${qty} x ${portions[portionIndex].label}`,
-      portionLabel: portions[portionIndex].label,
-      qty: Number(qty) || 0,
-      unit: 'portion',
-      grams,
-      kcal: preview.kcal,
-      p: preview.p,
-      c: preview.c,
-      f: preview.f,
+      ...data,
     })
     vibrateTiny()
     navigate('/')
-  }
-
-  if (product === undefined) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-slate-500 dark:text-slate-400">
-        Loading…
-      </div>
-    )
-  }
-
-  if (product === null) {
-    return (
-      <div className="mx-auto max-w-md px-6 py-8">
-        <Link
-          to="/scan"
-          className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-        >
-          ← Back to scan
-        </Link>
-        <p className="text-slate-500 dark:text-slate-400">Product not found in the local cache.</p>
-      </div>
-    )
   }
 
   return (
@@ -89,64 +90,68 @@ export default function ScanProductPage() {
         ← Back to scan
       </Link>
 
-      <div className="rounded-lg bg-white dark:bg-surface-dark-card p-4 shadow-sm">
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="font-semibold" data-testid="scanned-product-name">
-              {product.name}
-            </h1>
-            {product.brand && (
-              <p className="text-xs text-slate-500 dark:text-slate-400">{product.brand}</p>
+      {product === undefined && <ProductCardSkeleton />}
+
+      {product === null && (
+        <p className="text-slate-500 dark:text-slate-400">Product not found in the local cache.</p>
+      )}
+
+      {product && (
+        <div className="rounded-lg bg-white p-4 shadow-sm dark:bg-surface-dark-card">
+          <div className="flex items-start gap-3">
+            {product.imageUrl && (
+              <img
+                src={product.imageUrl}
+                alt=""
+                className="h-16 w-16 shrink-0 rounded object-cover"
+                data-testid="scanned-product-image"
+              />
             )}
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-2">
+                <h1 className="font-semibold" data-testid="scanned-product-name">
+                  {product.name}
+                </h1>
+                <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 text-caption text-slate-500 dark:bg-slate-700 dark:text-slate-400">
+                  {product.source}
+                </span>
+              </div>
+              {product.brand && (
+                <p className="text-caption text-slate-500 dark:text-slate-400">{product.brand}</p>
+              )}
+              <p className="mt-1 text-caption tabular-nums text-slate-500 dark:text-slate-400">
+                Per 100 g: {Math.round(product.per100g.kcal)} kcal · {product.per100g.p}p /{' '}
+                {product.per100g.c}c / {product.per100g.f}f
+              </p>
+            </div>
           </div>
-          <span className="rounded bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-xs text-slate-500 dark:text-slate-400">
-            {product.source}
-          </span>
-        </div>
 
-        <div className="mt-3 flex flex-col gap-2">
-          <select
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
-            value={portionIndex}
-            onChange={(e) => setPortionIndex(Number(e.target.value))}
-          >
-            {portions.map((portion, i) => (
-              <option key={portion.label} value={i}>
-                {portion.label}
-              </option>
-            ))}
-          </select>
-          <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium">Quantity</span>
-            <input
-              type="number"
-              min="0"
-              step="0.5"
-              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
-              value={qty}
-              onChange={(e) => setQty(e.target.value)}
-            />
+          <label className="mt-4 flex flex-col gap-1">
+            <span className="text-sm font-medium">Meal</span>
+            <select
+              className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+              data-testid="scanned-product-meal-select"
+              value={meal}
+              onChange={(e) => setMeal(e.target.value as Meal)}
+            >
+              {MEALS.map((m) => (
+                <option key={m} value={m}>
+                  {MEAL_LABELS[m]}
+                </option>
+              ))}
+            </select>
           </label>
+
+          <div className="mt-3">
+            <PortionStep
+              per100g={product.per100g}
+              referencePortions={getServingOptions(product)}
+              quickGrams={[]}
+              onSave={handleSave}
+            />
+          </div>
         </div>
-
-        {preview && (
-          <p
-            className="mt-3 text-sm text-slate-600 dark:text-slate-300"
-            data-testid="entry-preview"
-          >
-            {Math.round(preview.kcal)} kcal · {preview.p}p / {preview.c}c / {preview.f}f
-          </p>
-        )}
-
-        <button
-          type="button"
-          disabled={!preview || grams <= 0}
-          onClick={handleSave}
-          className="mt-4 w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
-        >
-          Add to {MEAL_LABELS[meal]}
-        </button>
-      </div>
+      )}
     </div>
   )
 }

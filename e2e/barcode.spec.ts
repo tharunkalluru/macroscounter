@@ -44,7 +44,7 @@ test('manual barcode entry finds a product via Open Food Facts and logs it', asy
   await expect(page.getByTestId('scanned-product-name')).toHaveText('Amul Butter')
   await expect(page.getByTestId('entry-preview')).toContainText('72 kcal') // 1 serving = 10g -> 71.7 -> rounds to 72
 
-  await page.getByRole('button', { name: 'Add to Breakfast' }).click()
+  await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('72 kcal')
 })
@@ -78,7 +78,7 @@ test('not-found flow: manual save persists the product, then a second scan hits 
 
   await expect(page).toHaveURL('/scan/product/9999999999999?meal=lunch')
   await expect(page.getByTestId('scanned-product-name')).toHaveText('Homemade Protein Bar')
-  await page.getByRole('button', { name: 'Add to Lunch' }).click()
+  await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/')
 
   expect(offCallCount).toBe(1)

@@ -1,0 +1,21 @@
+{
+  "code": "8901063212345",
+  "status": 1,
+  "status_verbose": "product found",
+  "product": {
+    "code": "8901063212345",
+    "product_name": "Cola Can",
+    "brands": "Generic Cola",
+    "quantity": "250 ml",
+    "serving_size": "250 ml",
+    "nutrition_data_per": "100g",
+    "nutriments": {
+      "energy-kcal_100g": 42,
+      "proteins_100g": 0,
+      "carbohydrates_100g": 10.6,
+      "fat_100g": 0,
+      "sugars_100g": 10.6,
+      "sodium_100g": 0.01
+    }
+  }
+}

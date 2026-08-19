@@ -6,7 +6,7 @@ import { LogRepo } from '../../data/repos/LogRepo'
 import { RecipeRepo } from '../../data/repos/RecipeRepo'
 import { todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
-import { nameOf, type Selected } from '../foodSelection'
+import { nameOf, per100gOf, portionsOf, type Selected } from '../foodSelection'
 import { useFoodIndex } from '../hooks/useFoodIndex'
 import PortionStep, { type PortionSaveData } from '../components/PortionStep'
 import { BarcodeIcon } from '../shell/icons'
@@ -195,11 +195,25 @@ export default function AddFoodSheetContent({
       )}
 
       {selected && (
-        <PortionStep
-          selected={selected}
-          onChangeFood={() => setSelected(null)}
-          onSave={(data) => handleSave(selected, data)}
-        />
+        <div className="rounded-card bg-white dark:bg-surface-dark-card">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold">{nameOf(selected)}</h3>
+            <button
+              type="button"
+              className="min-h-touch text-sm text-slate-500 dark:text-slate-400 underline"
+              onClick={() => setSelected(null)}
+            >
+              Change
+            </button>
+          </div>
+          <div className="mt-3">
+            <PortionStep
+              per100g={per100gOf(selected)}
+              referencePortions={portionsOf(selected)}
+              onSave={(data) => handleSave(selected, data)}
+            />
+          </div>
+        </div>
       )}
     </div>
   )

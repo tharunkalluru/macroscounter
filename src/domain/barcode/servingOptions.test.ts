@@ -9,9 +9,9 @@ describe('getServingOptions', () => {
     const product = parseOFFResponse('8901491101615', amulButter)!
     const options = getServingOptions(product)
     expect(options).toEqual([
-      { label: '1 serving (10 g)', grams: 10 },
-      { label: '1 pack (500 g)', grams: 500 },
-      { label: '½ pack (250 g)', grams: 250 },
+      { label: '1 serving', grams: 10 },
+      { label: '1 pack', grams: 500 },
+      { label: '½ pack', grams: 250 },
     ])
   })
 
@@ -20,7 +20,7 @@ describe('getServingOptions', () => {
   })
 
   it('handles serving size without a known package quantity', () => {
-    expect(getServingOptions({ servingSize: 25 })).toEqual([{ label: '1 serving (25 g)', grams: 25 }])
+    expect(getServingOptions({ servingSize: 25 })).toEqual([{ label: '1 serving', grams: 25 }])
   })
 })
 

@@ -104,13 +104,28 @@ export interface WeighIn extends Syncable {
   weightKg: number
 }
 
+export interface ScannedProductMacros {
+  kcal: number
+  p: number
+  c: number
+  f: number
+  fiber?: number
+  sugar?: number
+  saturatedFat?: number
+  sodium?: number
+}
+
 export interface ScannedProduct extends Syncable {
   barcode: string
   name: string
   brand?: string
-  per100g: { kcal: number; p: number; c: number; f: number }
-  perServing?: { kcal: number; p: number; c: number; f: number }
+  imageUrl?: string
+  per100g: ScannedProductMacros
+  perServing?: ScannedProductMacros
   servingSize?: number
+  servingSizeText?: string
+  /** The package's total grams, when known (e.g. "2 x 40 g" -> 80) — powers the "1 pack"/"½ pack" chips. */
+  quantity?: number
   source: string
   firstScanned: string
 }

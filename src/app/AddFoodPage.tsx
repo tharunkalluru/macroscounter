@@ -6,7 +6,7 @@ import { LogRepo } from '../data/repos/LogRepo'
 import { RecipeRepo } from '../data/repos/RecipeRepo'
 import { isFutureDate, todayISO } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
-import { nameOf, type Selected } from './foodSelection'
+import { nameOf, per100gOf, portionsOf, type Selected } from './foodSelection'
 import { useFoodIndex } from './hooks/useFoodIndex'
 import PortionStep, { type PortionSaveData } from './components/PortionStep'
 
@@ -205,14 +205,26 @@ export default function AddFoodPage() {
       )}
 
       {selected && (
-        <div className="mt-4">
-          <PortionStep
-            selected={selected}
-            initialGrams={editingGrams}
-            saveLabel={editingId !== null ? 'Save changes' : undefined}
-            onChangeFood={() => setSelected(null)}
-            onSave={(data) => handleSave(selected, data)}
-          />
+        <div className="mt-4 rounded-lg bg-white dark:bg-surface-dark-card p-4 shadow-sm">
+          <div className="flex items-center justify-between">
+            <h2 className="font-semibold">{nameOf(selected)}</h2>
+            <button
+              type="button"
+              className="text-sm text-slate-500 dark:text-slate-400 underline"
+              onClick={() => setSelected(null)}
+            >
+              Change
+            </button>
+          </div>
+          <div className="mt-3">
+            <PortionStep
+              per100g={per100gOf(selected)}
+              referencePortions={portionsOf(selected)}
+              initialGrams={editingGrams}
+              saveLabel={editingId !== null ? 'Save changes' : undefined}
+              onSave={(data) => handleSave(selected, data)}
+            />
+          </div>
         </div>
       )}
     </div>

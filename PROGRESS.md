@@ -966,3 +966,75 @@ portions now only exist as gram-filling shortcut chips, never a stored unit, exa
   check:tokens && test && build && test:e2e` all pass. Bundle: 173.42 KB gz initial (budget 300 KB
   gz) — essentially flat versus 10.3 despite the new component, since it replaced roughly as much
   toggle/select/qty code as it added.
+
+## 10.5 — Seamless Barcode Flow
+Rebuilt the scan → product card → log path on the same grams-first foundation as 10.4, moved the
+lookup off the critical path so the card can appear before the network responds, and along the way
+found and fixed a real Phase-5 bug where the product's pack/quantity info was silently dropped by the
+local cache.
+
+- **Serving-size parser** (`src/domain/barcode/servingSizeParser.ts`, new): `parseServingSize(text)`
+  handles "75 g" / "75g", "2 x 40g" (a multi-pack — count × unit weight), and "250 ml" (liquids, 1 ml
+  ≈ 1 g), replacing `offParser.ts`'s old private regex that only matched a bare "N g" and silently
+  mis-parsed "2 x 40g" as 40 instead of 80. 15 unit tests (the spec's exact three examples plus case
+  variants and unparsable-input cases). Wired into `parseOFFResponse` for both `serving_size` and
+  `quantity`; FDC's `servingSize` field is already numeric, so `fdcParser.ts` didn't need it.
+- **Extended `ParsedProduct`/`ScannedProduct`**: `imageUrl`, `servingSizeText` (the source's raw text,
+  kept for display), and per100g/perServing nutriment details (`fiber`, `sugar`, `saturatedFat`,
+  `sodium`, all optional) — the spec's "store everything the barcode source returns." Two new OFF
+  fixtures (`off-multipack-biscuits.json`, `off-cola-can.json`) exercise the multi-pack and ml parsing
+  paths against realistically-shaped payloads, not just bare strings.
+- **Real bug found and fixed**: `quantity` (the package's total grams, e.g. "2 x 40 g" → 80) was
+  parsed correctly on first scan but `toScannedProduct()` never copied it onto the persisted
+  `ScannedProduct` — it only existed on the transient `ParsedProduct` for the first, uncached response.
+  Every *cached* rescan of a multi-pack product was silently missing its "1 pack"/"½ pack" chips ever
+  since Phase 5, since `ScannedProduct` had no `quantity` field at all to put it in. Caught by the new
+  E2E test (10.5's own gate requirement) rather than any pre-existing test, since nothing had
+  previously exercised a product with real pack info end-to-end through the cache. Fixed by adding
+  `quantity` to the model and threading it through `toScannedProduct()`; regression test added to
+  `lookupProduct.test.ts` that explicitly asserts the field survives a second, cache-hit lookup, not
+  just the first one.
+- **Lookup moved into the product page**: previously `ScanPage` awaited the full cache→OFF→FDC chain
+  before navigating, showing a blocking "Looking up product…" text. Now `ScanPage` navigates to
+  `/scan/product/:barcode` immediately on decode (or manual submit) — the spec's "<300ms perceived" —
+  and `ScanProductPage` owns the lookup itself, rendering a skeleton (`ProductCardSkeleton`, mirroring
+  `DashboardSkeleton`'s `Pulse` pattern) while it's in flight and redirecting to `/scan/not-found/...`
+  on an actual miss. `ScanNotFoundPage.tsx` is untouched per spec ("unchanged, but ending in the same
+  product card UI") — its manual-save flow already funneled back into this same page.
+- **`PortionStep` generalized** (was food/recipe-specific as of 10.4): now takes `per100g` +
+  `referencePortions` directly instead of a `Selected`, plus an optional `quickGrams` list (default
+  `[50,100,150,200]`, empty for the product card so its only chips are `getServingOptions()`'s own
+  ½-pack/1-pack/serving options — matching the spec's literal 3-chip example instead of cluttering it
+  with an unrelated fixed set). `AddFoodSheetContent`/`AddFoodPage` now own their "name + Change"
+  header directly (moved out of `PortionStep`, since the product card's header needs brand/image/source
+  too) and pass the same per100g/portions shape food selections already had.
+- **Product card**: name, brand, image (when the source provided one), a per-100g summary line, and a
+  small meal `<select>` — defaults to `activeMealWindow(new Date())` when the URL has no `?meal=`
+  (also applied to `ScanPage`'s own fallback, for consistency), changeable before logging, matching
+  "meal auto-selected by time, changeable via small selector."
+- **Failure UX**: a feature-detected torch toggle (`track.getCapabilities().torch`, only surfaced on
+  the native-`BarcodeDetector` path where the raw `MediaStreamTrack` is available) and a "Having
+  trouble? Type the barcode." fallback — shown immediately when the camera is confirmed unavailable
+  (the common case in this app's own test environment, and for desktop/permission-denied users), or
+  after 5s of an active-but-non-decoding camera. Manual entry is no longer unconditionally visible —
+  it's the recovery affordance for exactly these two failure modes, not the default UI.
+- **Tests**: reliably faking a genuinely *decoding* camera (real video frames, native
+  `BarcodeDetector` timing) inside headless Playwright proved too flaky to trust — a canvas-based fake
+  `getUserMedia` stream got stuck before `video.play()` ever resolved. Moved torch-toggle and 5s-timer
+  coverage to a Vitest component test (`src/app/ScanPage.test.tsx`, 3 tests) instead: a stubbed
+  `BarcodeDetector` + `getUserMedia` forces the exact same component code path deterministically, with
+  `vi.advanceTimersByTimeAsync` correctly interleaving the fake timer with the real
+  getUserMedia/video.play() microtask chain. `ScanProductPage.test.tsx` (5, new) covers the spec's
+  "scan→card prefilled with serving grams→one-tap add to time-correct meal" integration line directly:
+  skeleton-then-card, prefill from detected serving size, one-tap add to the URL's meal, the
+  `activeMealWindow` default when no meal is given (via mocking that function directly rather than the
+  system clock, since its own boundary logic already has 15 dedicated tests), the meal selector
+  actually controlling the logged entry, and a rescan hitting cache with zero network calls. New E2E
+  (`e2e/barcodeScanFlow.spec.ts`, 1 spec, mocked OFF response): the full brand/image/per-100g/prefill/
+  pack-chip/log journey against a multi-pack fixture — doubling as the regression check for the
+  `quantity`-persistence bug. `e2e/barcode.spec.ts`'s existing two specs (manual entry, not-found →
+  cache-hit rescan offline) already covered "rescan offline hits cache" from Phase 5; updated only for
+  the new `log-entry-button` test id.
+- 338 unit tests total (+27: 15+2+1+5+3+1), 70 E2E specs total (+1), all green. `lint && tsc --noEmit
+  && check:tokens && test && build && test:e2e` all pass. Bundle: 173.60 KB gz initial (budget 300 KB
+  gz).

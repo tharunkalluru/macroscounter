@@ -6,6 +6,7 @@ import amulButter from './fixtures/off-amul-butter.json'
 import offNotFound from './fixtures/off-not-found.json'
 import fdcBranded from './fixtures/fdc-search-branded.json'
 import fdcEmpty from './fixtures/fdc-search-empty.json'
+import multipackBiscuits from './fixtures/off-multipack-biscuits.json'
 import { lookupProduct } from './lookupProduct'
 
 let db: MacroDesiDB
@@ -104,6 +105,28 @@ describe('lookupProduct — chain order', () => {
     const fetchImpl = vi.fn().mockRejectedValue(new Error('network down'))
     const result = await lookupProduct('0000000000000', { scannedProductRepo: repo, fetchImpl })
     expect(result.source).toBe('not-found')
+  })
+
+  it('persists imageUrl/servingSizeText/quantity to the cache, not just at first-parse time', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(multipackBiscuits))
+    const result = await lookupProduct('8901030811234', { scannedProductRepo: repo, fetchImpl })
+
+    expect(result.product?.imageUrl).toBe(
+      'https://images.openfoodfacts.org/images/products/890/103/081/1234/front.jpg'
+    )
+    expect(result.product?.servingSizeText).toBe('40 g')
+    expect(result.product?.quantity).toBe(80) // "2 x 40 g" -> the pack chips depend on this
+
+    // Confirm it actually round-trips through the cache (was previously
+    // dropped by toScannedProduct(), so quantity/imageUrl only survived
+    // for the first, never-cached response).
+    fetchImpl.mockClear()
+    const cached = await lookupProduct('8901030811234', { scannedProductRepo: repo, fetchImpl })
+    expect(cached.source).toBe('cache')
+    expect(cached.product?.quantity).toBe(80)
+    expect(cached.product?.imageUrl).toBe(
+      'https://images.openfoodfacts.org/images/products/890/103/081/1234/front.jpg'
+    )
   })
 })
 

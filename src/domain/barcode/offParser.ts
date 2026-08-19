@@ -1,3 +1,4 @@
+import { parseServingSize } from './servingSizeParser'
 import type { ParsedProduct } from './types'
 
 function round1(n: number): number {
@@ -6,15 +7,6 @@ function round1(n: number): number {
 
 function round2(n: number): number {
   return Math.round(n * 100) / 100
-}
-
-/** Parses grams out of an OFF quantity/serving_size string like "500 g" or "10g". Returns undefined if unparsable. */
-function parseGrams(text: string | undefined): number | undefined {
-  if (!text) return undefined
-  const match = text.match(/([\d.]+)\s*g\b/i)
-  if (!match) return undefined
-  const value = Number(match[1])
-  return Number.isFinite(value) ? value : undefined
 }
 
 /**
@@ -46,7 +38,23 @@ export function parseOFFResponse(barcode: string, json: unknown): ParsedProduct 
     return null
   }
 
-  const per100g = { kcal: round1(kcal100), p: round1(p100), c: round1(c100), f: round1(f100) }
+  const numField = (key: string): number | undefined => {
+    const v = nutriments?.[key]
+    return typeof v === 'number' ? v : undefined
+  }
+  const optionalRound = (value: number | undefined, round: (n: number) => number) =>
+    value === undefined ? undefined : round(value)
+
+  const per100g = {
+    kcal: round1(kcal100),
+    p: round1(p100),
+    c: round1(c100),
+    f: round1(f100),
+    fiber: optionalRound(numField('fiber_100g'), round1),
+    sugar: optionalRound(numField('sugars_100g'), round1),
+    saturatedFat: optionalRound(numField('saturated-fat_100g'), round1),
+    sodium: optionalRound(numField('sodium_100g'), round2),
+  }
 
   const kcalServing = nutriments?.['energy-kcal_serving']
   const pServing = nutriments?.['proteins_serving']
@@ -58,10 +66,13 @@ export function parseOFFResponse(barcode: string, json: unknown): ParsedProduct 
     typeof cServing === 'number' &&
     typeof fServing === 'number'
 
+  const servingSizeText = product.serving_size as string | undefined
+
   return {
     barcode,
     name: typeof product.product_name === 'string' ? product.product_name : 'Unknown product',
     brand: typeof product.brands === 'string' ? product.brands : undefined,
+    imageUrl: typeof product.image_url === 'string' ? product.image_url : undefined,
     per100g,
     perServing: hasServing
       ? {
@@ -71,8 +82,9 @@ export function parseOFFResponse(barcode: string, json: unknown): ParsedProduct 
           f: round2(fServing as number),
         }
       : undefined,
-    servingSize: parseGrams(product.serving_size as string | undefined),
-    quantity: parseGrams(product.quantity as string | undefined),
+    servingSize: parseServingSize(servingSizeText),
+    servingSizeText,
+    quantity: parseServingSize(product.quantity as string | undefined),
     source: 'off',
   }
 }

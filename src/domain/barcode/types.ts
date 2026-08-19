@@ -3,15 +3,23 @@ export interface ParsedProductMacros {
   p: number
   c: number
   f: number
+  fiber?: number
+  sugar?: number
+  saturatedFat?: number
+  sodium?: number
 }
 
 export interface ParsedProduct {
   barcode: string
   name: string
   brand?: string
+  imageUrl?: string
   per100g: ParsedProductMacros
   perServing?: ParsedProductMacros
+  /** Grams, parsed from the source's serving-size text. */
   servingSize?: number
+  /** The source's raw serving-size text, e.g. "75 g" or "2 x 40g" — kept for display. */
+  servingSizeText?: string
   quantity?: number
   source: 'off' | 'fdc' | 'manual'
 }

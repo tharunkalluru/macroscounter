@@ -27,9 +27,12 @@ function toScannedProduct(parsed: ParsedProduct): ScannedProduct {
     barcode: parsed.barcode,
     name: parsed.name,
     brand: parsed.brand,
+    imageUrl: parsed.imageUrl,
     per100g: parsed.per100g,
     perServing: parsed.perServing,
     servingSize: parsed.servingSize,
+    servingSizeText: parsed.servingSizeText,
+    quantity: parsed.quantity,
     source: parsed.source,
     firstScanned: todayISO(),
   }

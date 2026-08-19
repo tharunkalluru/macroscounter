@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { computeMacrosForGrams } from '../../domain/logging/portionMath'
-import { nameOf, per100gOf, portionsOf, type Selected } from '../foodSelection'
+import { computeMacrosForGrams, type Per100g } from '../../domain/logging/portionMath'
+import type { Portion } from '../../domain/fooddb/types'
 
 export interface PortionSaveData {
   portionSummary: string
@@ -14,30 +14,42 @@ export interface PortionSaveData {
 }
 
 interface Props {
-  selected: Selected
-  /** Pre-fills the field (edit mode: the entry's current grams). Defaults to the food's typical serving. */
+  per100g: Per100g
+  /** Household-unit shortcuts rendered as gram-filling chips, e.g. "1 idli" or "1 pack". */
+  referencePortions: Portion[]
+  /** Fixed quick-adjust values shown alongside the reference portions. Pass `[]` to omit (e.g. a scanned product's own pack-based options are already enough). */
+  quickGrams?: number[]
+  /** Pre-fills the field (edit mode: the entry's current grams). Defaults to the first reference portion. */
   initialGrams?: number
   /** Overrides the button's dynamic "Add {g} g · {kcal} kcal" text — used for edit mode ("Save changes"). */
   saveLabel?: string
-  onChangeFood: () => void
   onSave: (data: PortionSaveData) => void | Promise<void>
 }
 
-const QUICK_GRAMS = [50, 100, 150, 200]
+const DEFAULT_QUICK_GRAMS = [50, 100, 150, 200]
 
 /**
- * Grams-first portion entry (Phase 10.4): a single grams field is the only
- * way to set a quantity. Household-unit reference portions ("1 idli") are
- * rendered as gram-filling shortcuts, not a stored unit — every entry this
- * writes is `unit: 'grams'`, matching the spec's "household units become
- * gram shortcuts, never the stored unit."
+ * Grams-first portion entry (Phase 10.4, reused for the scanned-product card
+ * in 10.5): a single grams field is the only way to set a quantity.
+ * Household-unit reference portions ("1 idli", "1 pack") are rendered as
+ * gram-filling shortcuts, not a stored unit — every entry this writes is
+ * `unit: 'grams'`, matching the spec's "household units become gram
+ * shortcuts, never the stored unit."
  */
-export default function PortionStep({ selected, initialGrams, saveLabel, onChangeFood, onSave }: Props) {
-  const portions = portionsOf(selected)
-  const [gramsValue, setGramsValue] = useState(String(initialGrams ?? portions[0]?.grams ?? 100))
+export default function PortionStep({
+  per100g,
+  referencePortions,
+  quickGrams = DEFAULT_QUICK_GRAMS,
+  initialGrams,
+  saveLabel,
+  onSave,
+}: Props) {
+  const [gramsValue, setGramsValue] = useState(
+    String(initialGrams ?? referencePortions[0]?.grams ?? 100)
+  )
 
   const grams = Number(gramsValue) || 0
-  const preview = grams > 0 ? computeMacrosForGrams(per100gOf(selected), grams) : null
+  const preview = grams > 0 ? computeMacrosForGrams(per100g, grams) : null
 
   async function handleSave() {
     if (!preview || grams <= 0) return
@@ -54,19 +66,8 @@ export default function PortionStep({ selected, initialGrams, saveLabel, onChang
   }
 
   return (
-    <div className="rounded-card bg-white dark:bg-surface-dark-card">
-      <div className="flex items-center justify-between">
-        <h3 className="font-semibold">{nameOf(selected)}</h3>
-        <button
-          type="button"
-          className="min-h-touch text-sm text-slate-500 dark:text-slate-400 underline"
-          onClick={onChangeFood}
-        >
-          Change
-        </button>
-      </div>
-
-      <label className="mt-3 flex flex-col gap-1">
+    <div>
+      <label className="flex flex-col gap-1">
         <span className="text-sm font-medium">Grams</span>
         <input
           type="number"
@@ -82,7 +83,7 @@ export default function PortionStep({ selected, initialGrams, saveLabel, onChang
       </label>
 
       <div className="mt-2 flex flex-wrap gap-2">
-        {QUICK_GRAMS.map((g) => (
+        {quickGrams.map((g) => (
           <button
             key={g}
             type="button"
@@ -93,7 +94,7 @@ export default function PortionStep({ selected, initialGrams, saveLabel, onChang
             {g} g
           </button>
         ))}
-        {portions.map((portion) => (
+        {referencePortions.map((portion) => (
           <button
             key={portion.label}
             type="button"
