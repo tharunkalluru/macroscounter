@@ -12,8 +12,15 @@ import AdaptiveTargetPrompt from './components/AdaptiveTargetPrompt'
 import CaloriesRing from './components/CaloriesRing'
 import DateNav from './components/DateNav'
 import MacroBar from './components/MacroBar'
+import MacroBreakdownSheet from './components/MacroBreakdownSheet'
 import MealSection from './components/MealSection'
 import { useUIState } from './shell/UIStateContext'
+
+const MACRO_DEFS = {
+  p: { key: 'p' as const, label: 'Protein', colorClass: 'bg-protein-500' },
+  c: { key: 'c' as const, label: 'Carbs', colorClass: 'bg-carbs-500' },
+  f: { key: 'f' as const, label: 'Fat', colorClass: 'bg-fat-500' },
+}
 
 type LoadState = 'loading' | 'ready' | 'no-profile'
 
@@ -38,6 +45,9 @@ export default function Dashboard() {
   const [state, setState] = useState<LoadState>('loading')
   const [targets, setTargets] = useState<Targets | null>(null)
   const [entries, setEntries] = useState<LogEntry[]>([])
+  const [breakdownMacro, setBreakdownMacro] = useState<(typeof MACRO_DEFS)[keyof typeof MACRO_DEFS] | null>(
+    null
+  )
 
   const logRepo = new LogRepo()
 
@@ -149,6 +159,7 @@ export default function Dashboard() {
               target={target.proteinG}
               colorClass="bg-protein-500"
               testId="protein-bar"
+              onTap={() => setBreakdownMacro(MACRO_DEFS.p)}
             />
             <MacroBar
               label="Carbs"
@@ -156,6 +167,7 @@ export default function Dashboard() {
               target={target.carbsG}
               colorClass="bg-carbs-500"
               testId="carbs-bar"
+              onTap={() => setBreakdownMacro(MACRO_DEFS.c)}
             />
             <MacroBar
               label="Fat"
@@ -163,6 +175,7 @@ export default function Dashboard() {
               target={target.fatG}
               colorClass="bg-fat-500"
               testId="fat-bar"
+              onTap={() => setBreakdownMacro(MACRO_DEFS.f)}
             />
           </div>
         </div>
@@ -180,6 +193,13 @@ export default function Dashboard() {
           />
         ))}
       </motion.div>
+
+      <MacroBreakdownSheet
+        open={breakdownMacro !== null}
+        onClose={() => setBreakdownMacro(null)}
+        macro={breakdownMacro}
+        entries={entries}
+      />
     </div>
   )
 }

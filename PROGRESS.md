@@ -441,3 +441,42 @@ set of gated sub-phases (9A–9F) on top of the existing app, same protocol as P
   not a regression. 188 unit + 31 E2E, all green, zero a11y violations across all 9 scanned pages.
 - Gate: `lint && tsc --noEmit && check:tokens && test && build && test:e2e` → all green. Bundle:
   153.69 KB gz initial (budget 300 KB).
+
+## 9C — Summary Card
+- Ring rebuilt to spec: `src/domain/ring/ringState.ts` is a pure function (`computeRingState`)
+  mapping `(consumedKcal, targetKcal)` → `{ band, centerText, subLabel, fillPct }`, unit-tested in
+  isolation (7 cases: under/at/over target, rounding, zero-target no-div-by-zero, zero-consumed,
+  fillPct clamped). `CaloriesRing.tsx` consumes it twice — once against the raw (unanimated) totals
+  to drive the SVG stroke's fill/color via `framer-motion`'s own `animate` transition (450ms
+  `cubic-bezier(0.22,1,0.36,1)`, 8px stroke, rounded caps), and once against a RAF-driven count-up
+  value (`useCountUp`, 300ms ease-out-quint, `useReducedMotion`-aware) to drive the center text —
+  so the number always animates smoothly toward its target regardless of whether it's counting down
+  ("remaining") or up ("+n over"), and both converge to the same value once the count-up finishes.
+  Over-budget (`remaining < 0`) turns the ring `semantic.warn` (amber) instead of `semantic.success`
+  (brand green) and swaps the center text to `+n` / "over". Below the ring, a new Eaten/Remaining/
+  Target row (`tabular-nums`) per spec; the ring itself carries `role="img"` + a full-sentence
+  `aria-label` ("200 of 1628 calories remaining" / "…, +372 over").
+- Macro bars rewritten to animate `scaleX` on a fixed-width transformed layer (not `width`, per the
+  spec's 60fps transform-only rule) — `MacroBar.tsx`. Fixed the spec's named "floating-dot bug"
+  (a real percentage-based scale can shrink a small-but-nonzero value down to an invisible sliver)
+  by flooring the scale at `MIN_VISIBLE_SCALE = 0.025` whenever `consumed > 0`, so any logged amount
+  stays visibly represented. Bars are now tappable (`onTap`, 44px min-height button when a handler
+  is supplied) and open a new per-meal breakdown sheet.
+- `src/domain/logging/macroBreakdown.ts` (`computeMacroBreakdown`, pure, unit-tested — 3 cases:
+  normal split across meals, all three macros, all-zero/no-entries) + `MacroBreakdownSheet.tsx`
+  (built on the existing `BottomSheet` primitive) show a per-meal gram breakdown with a total row
+  when a bar is tapped.
+- Self-caught bug, before any test ran: the first draft of the ring only animated the center number
+  for the over-budget case (`eaten - target`) and left the normal case reading straight off the
+  static `computeRingState` result, so "remaining" never counted up while "+n over" did. Fixed by
+  the dual-`RingState` split described above before it ever reached a test run.
+- Tests: 10 new unit tests (`ringState.test.ts` ×7, `macroBreakdown.test.ts` ×3) — 198 unit tests
+  total, all green, no regressions in the existing 31 E2E specs despite the full rewrite of both
+  components (confirms `kcal-remaining`, `*-bar-value`, and `targets-card` testids/formats held).
+  Added 3 new E2E tests (`e2e/summaryCard.spec.ts`): over-budget turns the ring amber and shows
+  "+n over" (asserted against both the rendered text and the SVG `stroke` attribute), under-target
+  stays brand-colored with a full-sentence accessible name, and tapping a macro bar opens the
+  breakdown sheet with the correct per-meal grams and total. 34 E2E specs total, all green.
+- Gate: `lint && tsc --noEmit && check:tokens && test && build && test:e2e` → all green. Bundle:
+  154.73 KB gz initial (budget 300 KB, no new dependency weight — `framer-motion` was already
+  counted in 9B).
