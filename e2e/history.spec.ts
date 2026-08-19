@@ -58,7 +58,7 @@ test('navigate to a past day, edit an entry, verify the calendar color updates',
   await expect(page.getByTestId('day-total-kcal')).toHaveText('41 / 1628 kcal')
 
   // Bump quantity way up so the day crosses into the red band (>1790.8 kcal).
-  await page.getByRole('link', { name: 'Edit' }).click()
+  await page.getByRole('button', { name: 'Edit Idli' }).click()
   await page.getByLabel('Quantity').fill('50') // 50 x 40g = 2000g -> 2050 kcal
   await page.getByRole('button', { name: 'Save changes' }).click()
   await expect(page).toHaveURL('/history/2026-08-10')

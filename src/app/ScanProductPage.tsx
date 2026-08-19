@@ -42,6 +42,7 @@ export default function ScanProductPage() {
       barcode: product.barcode,
       name: product.name,
       portionSummary: `${qty} x ${portions[portionIndex].label}`,
+      portionLabel: portions[portionIndex].label,
       qty: Number(qty) || 0,
       unit: 'portion',
       grams,

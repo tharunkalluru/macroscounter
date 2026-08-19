@@ -11,6 +11,7 @@ export interface AppliedTemplateEntry extends MacroTotals {
   foodId: string
   name: string
   portionSummary: string
+  portionLabel?: string
   qty: number
   unit: Unit
   grams: number
@@ -34,6 +35,7 @@ export function applyTemplate(
 
     let grams: number
     let portionSummary: string
+    let portionLabel: string | undefined
     if (entry.unit === 'grams') {
       grams = entry.qty
       portionSummary = `${grams} g`
@@ -41,9 +43,19 @@ export function applyTemplate(
       const portion = food.portions[0]
       grams = gramsForPortion(entry.qty, portion.grams)
       portionSummary = `${entry.qty} x ${portion.label}`
+      portionLabel = portion.label
     }
 
     const macros = computeMacrosForGrams(food.per100g, grams)
-    return { foodId: entry.foodId, name: food.name, portionSummary, qty: entry.qty, unit: entry.unit, grams, ...macros }
+    return {
+      foodId: entry.foodId,
+      name: food.name,
+      portionSummary,
+      portionLabel,
+      qty: entry.qty,
+      unit: entry.unit,
+      grams,
+      ...macros,
+    }
   })
 }

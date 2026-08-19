@@ -5,9 +5,10 @@ import { LogRepo } from '../data/repos/LogRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
 import { findApplicableTarget } from '../domain/history/targetForDate'
 import { sumMacros } from '../domain/logging/portionMath'
-import { isFutureDate } from '../lib/date'
+import { addDaysISO, isFutureDate } from '../lib/date'
 import MacroBar from './components/MacroBar'
 import MealSection from './components/MealSection'
+import { useUIState } from './shell/UIStateContext'
 
 const MEALS: { key: Meal; label: string }[] = [
   { key: 'breakfast', label: 'Breakfast' },
@@ -18,7 +19,9 @@ const MEALS: { key: Meal; label: string }[] = [
 
 export default function DayDetailPage() {
   const { date } = useParams<{ date: string }>()
+  const { dataVersion } = useUIState()
   const [entries, setEntries] = useState<LogEntry[]>([])
+  const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
   const [target, setTarget] = useState<Targets | null>(null)
   const [loading, setLoading] = useState(true)
 
@@ -26,19 +29,21 @@ export default function DayDetailPage() {
 
   const load = useCallback(async () => {
     if (!date) return
-    const [dayEntries, allTargets] = await Promise.all([
+    const [dayEntries, allTargets, historyRange] = await Promise.all([
       logRepo.getEntriesForDate(date),
       new TargetRepo().getAll(),
+      logRepo.getEntriesForDateRange(addDaysISO(date, -14), date),
     ])
     setEntries(dayEntries)
     setTarget(findApplicableTarget(date, allTargets) ?? null)
+    setHistoryEntries(historyRange)
     setLoading(false)
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date])
 
   useEffect(() => {
     load()
-  }, [load])
+  }, [load, dataVersion])
 
   async function handleDelete(id: number) {
     await logRepo.deleteEntry(id)
@@ -76,9 +81,9 @@ export default function DayDetailPage() {
       </p>
 
       <div className="mt-4 flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm">
-        <MacroBar label="Protein" consumed={totals.p} target={dayTarget.proteinG} colorClass="bg-brand-700" testId="day-protein-bar" />
-        <MacroBar label="Carbs" consumed={totals.c} target={dayTarget.carbsG} colorClass="bg-amber-500" testId="day-carbs-bar" />
-        <MacroBar label="Fat" consumed={totals.f} target={dayTarget.fatG} colorClass="bg-sky-500" testId="day-fat-bar" />
+        <MacroBar label="Protein" consumed={totals.p} target={dayTarget.proteinG} colorClass="bg-protein-500" testId="day-protein-bar" />
+        <MacroBar label="Carbs" consumed={totals.c} target={dayTarget.carbsG} colorClass="bg-carbs-500" testId="day-carbs-bar" />
+        <MacroBar label="Fat" consumed={totals.f} target={dayTarget.fatG} colorClass="bg-fat-500" testId="day-fat-bar" />
       </div>
 
       {MEALS.map(({ key, label }) => (
@@ -89,6 +94,7 @@ export default function DayDetailPage() {
           entries={entries.filter((e) => e.meal === key)}
           onDelete={handleDelete}
           date={date}
+          historyEntries={historyEntries}
         />
       ))}
     </div>

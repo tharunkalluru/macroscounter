@@ -45,6 +45,7 @@ export default function Dashboard() {
   const [state, setState] = useState<LoadState>('loading')
   const [targets, setTargets] = useState<Targets | null>(null)
   const [entries, setEntries] = useState<LogEntry[]>([])
+  const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
   const [breakdownMacro, setBreakdownMacro] = useState<(typeof MACRO_DEFS)[keyof typeof MACRO_DEFS] | null>(
     null
   )
@@ -68,13 +69,15 @@ export default function Dashboard() {
         setState('no-profile')
         return
       }
-      const [allTargets, dayEntries] = await Promise.all([
+      const [allTargets, dayEntries, historyRange] = await Promise.all([
         targetRepo.getAll(),
         new LogRepo().getEntriesForDate(date),
+        new LogRepo().getEntriesForDateRange(addDaysISO(date, -14), date),
       ])
       if (cancelled) return
       setTargets(findApplicableTarget(date, allTargets) ?? null)
       setEntries(dayEntries)
+      setHistoryEntries(historyRange)
       setState('ready')
     })()
     return () => {
@@ -190,6 +193,7 @@ export default function Dashboard() {
             entries={entries.filter((e) => e.meal === key)}
             onDelete={handleDelete}
             date={isToday ? undefined : date}
+            historyEntries={historyEntries}
           />
         ))}
       </motion.div>

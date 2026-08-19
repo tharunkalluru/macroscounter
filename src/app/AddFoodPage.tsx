@@ -114,6 +114,7 @@ export default function AddFoodPage() {
       recipeId: selected.kind === 'recipe' ? selected.recipe.id : undefined,
       name: nameOf(selected),
       portionSummary,
+      portionLabel: mode === 'portion' ? portions[portionIndex].label : undefined,
       qty: mode === 'grams' ? grams : Number(qty) || 0,
       unit: mode,
       grams,

@@ -73,6 +73,8 @@ export interface LogEntry {
   name: string
   /** Denormalized human-readable portion, e.g. "3 x 1 idli" or "120 g". */
   portionSummary: string
+  /** The raw picked portion's label (e.g. "1 idli"), when `unit === 'portion'`. Powers `formatPortion()`; absent for grams-mode and custom entries. */
+  portionLabel?: string
   qty: number
   unit: Unit
   grams: number

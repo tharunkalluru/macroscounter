@@ -480,3 +480,72 @@ set of gated sub-phases (9A–9F) on top of the existing app, same protocol as P
 - Gate: `lint && tsc --noEmit && check:tokens && test && build && test:e2e` → all green. Bundle:
   154.73 KB gz initial (budget 300 KB, no new dependency weight — `framer-motion` was already
   counted in 9B).
+
+## 9D — Meal Sections
+- `formatPortion()` (`src/domain/logging/formatPortion.ts`) renders logged portions in household
+  units — "3 idli", "1½ idli", plain "313 g" for the barcode-scan 100g fallback — instead of the
+  old raw `"{qty} x {portion.label}"` string (which could read as "3.13 x 100 g", exactly the
+  pattern the spec called out to eliminate). It works off a new `portionLabel` field added to
+  `LogEntry` (the picked portion's raw label, e.g. "1 idli") alongside the existing denormalized
+  `portionSummary` string — `portionSummary` is left alone for CSV export / template listings,
+  `portionLabel` is the new structured input `formatPortion()` needs to reconstruct natural
+  language. Wired into every entry-creation site (`AddFoodPage`, `AddFoodSheetContent`,
+  `ScanProductPage`, `applyTemplate`); quick-add/custom entries render as "Custom entry" via an
+  explicit flag rather than a fragile "0 g" fallback. 14 unit tests.
+- Meal cards rebuilt end to end (`MealSection.tsx`): header now carries a subtotal + an overflow
+  (⋯) button opening `MealOverflowSheet` (Save as template / Log template — a second-level list of
+  saved templates, applied via the existing `applyTemplate` domain fn / Copy from yesterday — clones
+  the prior day's entries for that meal via a new pure `buildCopiedEntries()` transform). Rows are
+  now a single tappable button (`aria-label="Edit {name}"`, navigates to the existing edit routes)
+  wrapped in a new `SwipeToDeleteRow` — no more permanent inline "Edit"/"Delete" text links. The
+  old four-link footer ("+ Add food" / "+ Custom" / "Scan barcode" / "Save as template") collapsed
+  into a single 44px ghost "+ Add" button that opens the same FAB sheet from 9B, scoped to that
+  meal; a new "Enter calories manually" link inside the sheet (`AddFoodSheetContent`) keeps
+  quick-add reachable now that MealSection no longer links to `/log/quick-add` directly, and the
+  sheet's existing barcode icon keeps scan-to-log reachable, so no functionality was lost — it's
+  parented under the search sheet instead of a per-meal link row per DayDetailPage/Dashboard's own
+  "+Add" (past-day view keeps the full-screen `/log/add` route, since the sheet only knows how to
+  log to *today*).
+- **Smart empty states**: before a meal's first log of the day, `computeMealSuggestions()` (pure,
+  domain-level) scans the trailing 14 days of that meal slot for the most-repeated exact food+qty
+  combo (grouped by day, ranked by recurrence count then recency) and surfaces up to 2 one-tap
+  chips ("3 Idli + Sambar"); meals with no repeat history fall back to meal-specific empty copy
+  ("Nothing for breakfast yet."). Tapping a chip resolves each food's *current* per-100g values
+  against the *historical* grams (so a repeat log reflects any food-DB updates but the same
+  portion), reusing `formatPortion()` for the new entries' display text. 10 seeded-history unit
+  tests.
+- Swipe-to-delete (`SwipeToDeleteRow.tsx`, framer-motion `drag="x"`) is optimistic-delete-then-undo,
+  not a deferred delete: swiping past -80px immediately calls the same `onDelete` the row's edit
+  button used to trigger via a link, then shows a 5s `Snackbar` ("Deleted {name} · Undo") whose
+  Undo action just re-`addEntry()`s a snapshot of what was removed — reusing the already-tested
+  delete pipeline in both directions instead of inventing a separate "pending" state machine that
+  has to stay in sync with the ring/macro-bar totals during the undo window.
+- **Two real gesture bugs found only by getting swipe-to-delete under an actual (non-mocked)
+  pointer sequence, not by unit tests**: (1) the Today dashboard already wraps its body in a
+  horizontal `drag="x"` for date-swipe navigation (9B); a row's own `drag="x"` nested inside it
+  competes for the same framer-motion axis lock on every pointerdown, and the *page's* swipe can
+  silently win the race and swallow the row's gesture instead of deleting it — fixed by calling
+  `stopPropagation()` on the row's own `onPointerDown` so the gesture never reaches the ancestor.
+  (2) A real swipe's `pointerup` fires the browser's native `click` on the row's nested edit button
+  *before* framer-motion's own `onDragEnd` callback resolves (it's scheduled through Framer's
+  internal frame queue, not synchronous with the DOM event) — so a naive "check drag distance in
+  onDragEnd" guard is already too late to stop the click, and a delete swipe was immediately
+  followed by a spurious navigation to the (just-deleted) entry's edit screen. Fixed by tracking
+  "did this pointer sequence move" live during `onDrag` (which does fire before pointerup) in a
+  ref, and swallowing the subsequent click in an `onClickCapture` on the same element. Both were
+  invisible to any assertion that only checks pre/post state — they only showed up once the actual
+  event sequence was reproduced and traced end to end.
+- Tests: 30 new unit tests (`formatPortion.test.ts` ×14, `suggestions.test.ts` ×10,
+  `copyEntries.test.ts` ×6) — 228 unit tests total, all green. 5 new E2E specs
+  (`e2e/mealSections.spec.ts`): household-unit portion display, overflow menu present on all 4
+  meals, swipe-delete + undo restores the entry and totals, copy-from-yesterday, and log-via-
+  suggestion-chip (seeded 14-day history). Updated existing E2E specs across `barcode.spec.ts`,
+  `history.spec.ts`, `logging.spec.ts`, `templates-and-export.spec.ts`, and `summaryCard.spec.ts`
+  for the removed footer links/Edit-Delete links — legitimate UI-evolution updates, not
+  regressions (same pattern as every prior sub-phase). 39 E2E specs total, all green (verified
+  stable across two consecutive full runs). E2E swipe-gesture tests dispatch real `PointerEvent`s
+  directly via Playwright's `locator.dispatchEvent()` rather than simulating raw OS mouse
+  coordinates, which proved unreliable at reproducing framer-motion's drag-recognition window in a
+  headless browser.
+- Gate: `lint && tsc --noEmit && check:tokens && test && build && test:e2e` → all green. Bundle:
+  157.38 KB gz initial (budget 300 KB).

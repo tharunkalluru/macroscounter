@@ -21,9 +21,10 @@ interface Props {
   meal: Meal
   onSaved: () => void
   onRequestScan: () => void
+  onRequestCustom: () => void
 }
 
-export default function AddFoodSheetContent({ meal, onSaved, onRequestScan }: Props) {
+export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRequestCustom }: Props) {
   const navigate = useNavigate()
   const { foods, service, loading } = useFoodIndex()
 
@@ -85,6 +86,7 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan }: Pr
       recipeId: selected.kind === 'recipe' ? selected.recipe.id : undefined,
       name: nameOf(selected),
       portionSummary,
+      portionLabel: mode === 'portion' ? portions[portionIndex].label : undefined,
       qty: mode === 'grams' ? grams : Number(qty) || 0,
       unit: mode,
       grams,
@@ -99,6 +101,11 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan }: Pr
   function handleScan() {
     onRequestScan()
     navigate(`/scan?meal=${meal}`)
+  }
+
+  function handleCustom() {
+    onRequestCustom()
+    navigate(`/log/quick-add?meal=${meal}`)
   }
 
   if (loading) {
@@ -128,6 +135,15 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan }: Pr
               <BarcodeIcon />
             </button>
           </div>
+
+          <button
+            type="button"
+            onClick={handleCustom}
+            data-testid="sheet-custom-button"
+            className="mt-2 min-h-touch text-caption text-brand-700 underline"
+          >
+            Enter calories manually
+          </button>
 
           {query.trim() ? (
             <ul

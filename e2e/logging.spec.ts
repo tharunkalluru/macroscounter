@@ -1,5 +1,37 @@
-import { expect, type Page } from '@playwright/test'
+import { expect, type Locator, type Page } from '@playwright/test'
 import { test } from '@playwright/test'
+
+async function swipeToDelete(page: Page, row: Locator) {
+  await row.scrollIntoViewIfNeeded()
+  const box = await row.boundingBox()
+  if (!box) throw new Error('row not found for swipe-to-delete')
+  const startX = box.x + box.width - 20
+  const startY = box.y + box.height / 2
+  // Dispatch real pointer events directly rather than simulating OS-level
+  // mouse movement: framer-motion's drag gesture needs several distinct
+  // pointermove events (with real time between them, and staying within the
+  // row's -120px drag constraint) before it registers as a drag rather than
+  // a click, and coordinate-based mouse simulation proved unreliable at
+  // hitting that window reliably in a headless browser.
+  const pointerInit = (x: number) => ({
+    bubbles: true,
+    cancelable: true,
+    composed: true,
+    pointerId: 1,
+    pointerType: 'mouse',
+    isPrimary: true,
+    button: 0,
+    buttons: 1,
+    clientX: x,
+    clientY: startY,
+  })
+  await row.dispatchEvent('pointerdown', pointerInit(startX))
+  for (let i = 1; i <= 7; i++) {
+    await row.dispatchEvent('pointermove', pointerInit(startX - i * 15))
+    await page.waitForTimeout(16)
+  }
+  await row.dispatchEvent('pointerup', { ...pointerInit(startX - 105), buttons: 0 })
+}
 
 async function onboard(page: Page) {
   await page.goto('/')
@@ -21,8 +53,8 @@ test('full journey: onboard, search idli, log 3 idli + sambar for breakfast, rin
 }) => {
   await onboard(page)
 
-  await page.getByTestId('meal-section-breakfast').getByRole('link', { name: '+ Add food' }).click()
-  await expect(page).toHaveURL(/\/log\/add\?meal=breakfast/)
+  await page.getByTestId('add-breakfast').click()
+  await expect(page.getByTestId('bottom-sheet')).toBeVisible()
 
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
@@ -34,7 +66,7 @@ test('full journey: onboard, search idli, log 3 idli + sambar for breakfast, rin
   await expect(page.getByTestId('kcal-remaining')).toHaveText('1505') // 1628 - 123
   await expect(page.getByTestId('protein-bar-value')).toHaveText('5 / 126 g')
 
-  await page.getByTestId('meal-section-breakfast').getByRole('link', { name: '+ Add food' }).click()
+  await page.getByTestId('add-breakfast').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('sambhar')
   await page.getByTestId('search-results').getByRole('button', { name: 'Sambar', exact: true }).click()
   await expect(page.getByTestId('entry-preview')).toContainText('93 kcal')
@@ -60,7 +92,7 @@ test('offline logging: once seeded, adding a food entry works entirely without n
 
   await context.setOffline(true)
 
-  await page.getByTestId('meal-section-lunch').getByRole('link', { name: '+ Add food' }).click()
+  await page.getByTestId('add-lunch').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('chicken curry')
   await page.getByTestId('search-results').getByRole('button', { name: 'Chicken Curry', exact: true }).click()
   await page.getByRole('button', { name: 'Add to Lunch' }).click()
@@ -74,18 +106,18 @@ test('offline logging: once seeded, adding a food entry works entirely without n
 test('editing quantity and deleting an entry update the day totals', async ({ page }) => {
   await onboard(page)
 
-  await page.getByTestId('meal-section-dinner').getByRole('link', { name: '+ Add food' }).click()
+  await page.getByTestId('add-dinner').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
   await page.getByRole('button', { name: 'Add to Dinner' }).click()
 
   await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('41 kcal') // 1 idli (40g), 102.5*0.4=41
 
-  await page.getByTestId('meal-section-dinner').getByRole('link', { name: 'Edit' }).click()
+  await page.getByRole('button', { name: 'Edit Idli' }).click()
   await page.getByLabel('Quantity').fill('2')
   await page.getByRole('button', { name: 'Save changes' }).click()
   await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('82 kcal') // 2 idli (80g), 102.5*0.8=82
 
-  await page.getByTestId('meal-section-dinner').getByRole('button', { name: 'Delete' }).click()
+  await swipeToDelete(page, page.getByRole('button', { name: 'Edit Idli' }))
   await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('0 kcal')
 })

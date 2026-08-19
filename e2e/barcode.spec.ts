@@ -28,7 +28,8 @@ test('manual barcode entry finds a product via Open Food Facts and logs it', asy
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(amulButter) })
   )
 
-  await page.getByTestId('meal-section-breakfast').getByRole('link', { name: 'Scan barcode' }).click()
+  await page.getByTestId('add-breakfast').click()
+  await page.getByTestId('sheet-scan-button').click()
   await expect(page).toHaveURL(/\/scan\?meal=breakfast/)
 
   await page.getByPlaceholder('Enter barcode number').fill('8901491101615')
@@ -55,7 +56,8 @@ test('not-found flow: manual save persists the product, then a second scan hits 
     return route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(offNotFound) })
   })
 
-  await page.getByTestId('meal-section-lunch').getByRole('link', { name: 'Scan barcode' }).click()
+  await page.getByTestId('add-lunch').click()
+  await page.getByTestId('sheet-scan-button').click()
   await page.getByPlaceholder('Enter barcode number').fill('9999999999999')
   await page.getByRole('button', { name: 'Look up' }).click()
 
@@ -78,7 +80,8 @@ test('not-found flow: manual save persists the product, then a second scan hits 
 
   // Second scan of the same barcode, fully offline: cache hit, no network needed.
   await context.setOffline(true)
-  await page.getByTestId('meal-section-dinner').getByRole('link', { name: 'Scan barcode' }).click()
+  await page.getByTestId('add-dinner').click()
+  await page.getByTestId('sheet-scan-button').click()
   await page.getByPlaceholder('Enter barcode number').fill('9999999999999')
   await page.getByRole('button', { name: 'Look up' }).click()
 
