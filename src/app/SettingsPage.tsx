@@ -105,7 +105,7 @@ export default function SettingsPage() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
-      <Link to="/" className="mb-4 text-sm text-brand-600 underline">
+      <Link to="/" className="mb-4 text-sm text-brand-700 underline">
         ← Back
       </Link>
       <h1 className="mb-6 text-2xl font-bold text-brand-700">Profile & Targets</h1>
@@ -206,10 +206,10 @@ export default function SettingsPage() {
             {error}
           </p>
         )}
-        {saved && <p className="text-sm text-brand-600">Saved — targets recalculated.</p>}
+        {saved && <p className="text-sm text-brand-700">Saved — targets recalculated.</p>}
 
         <div className="mt-2 flex gap-3">
-          <button type="submit" className="rounded bg-brand-600 px-4 py-2 font-medium text-white">
+          <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
             Save & recalculate
           </button>
           <button type="button" onClick={() => navigate('/')} className="rounded px-4 py-2 text-slate-600">

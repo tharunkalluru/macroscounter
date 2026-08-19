@@ -64,7 +64,7 @@ export default function TemplatesPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to="/" className="mb-4 inline-block text-sm text-brand-700 underline">
         ← Back
       </Link>
       <h1 className="mb-4 text-xl font-bold text-brand-700">Templates</h1>
@@ -93,7 +93,7 @@ export default function TemplatesPage() {
                 type="button"
                 disabled={logging === template.id}
                 onClick={() => handleLogNow(template)}
-                className="rounded bg-brand-600 px-3 py-1 text-sm font-medium text-white disabled:opacity-50"
+                className="rounded bg-brand-700 px-3 py-1 text-sm font-medium text-white disabled:opacity-50"
               >
                 {logging === template.id ? 'Logging…' : 'Log now'}
               </button>

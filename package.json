@@ -17,6 +17,7 @@
     "validate:fooddb": "vitest run src/domain/fooddb/validate.test.ts",
     "build:fooddb": "tsx scripts/build-fooddb.ts",
     "check:bundle": "tsx scripts/check-bundle.ts",
+    "check:tokens": "tsx scripts/check-tokens.ts",
     "lighthouse": "lighthouse http://localhost:4173 --preset=desktop --chrome-flags=\"--headless=new\""
   },
   "dependencies": {

@@ -91,7 +91,7 @@ export default function Dashboard() {
     <div className="mx-auto max-w-md px-6 py-8 pb-16">
       <div className="flex items-baseline justify-between">
         <h1 className="text-2xl font-bold text-brand-700">MacroDesi</h1>
-        <Link to="/settings" className="text-sm text-brand-600 underline">
+        <Link to="/settings" className="text-sm text-brand-700 underline">
           Hi {profile?.name}
         </Link>
       </div>
@@ -112,7 +112,7 @@ export default function Dashboard() {
             label="Protein"
             consumed={totals.p}
             target={target.proteinG}
-            colorClass="bg-brand-600"
+            colorClass="bg-brand-700"
             testId="protein-bar"
           />
           <MacroBar
@@ -145,22 +145,22 @@ export default function Dashboard() {
       ))}
 
       <div className="mt-8 flex flex-wrap justify-center gap-4">
-        <Link to="/history" className="text-sm text-brand-600 underline">
+        <Link to="/history" className="text-sm text-brand-700 underline">
           History
         </Link>
-        <Link to="/weight" className="text-sm text-brand-600 underline">
+        <Link to="/weight" className="text-sm text-brand-700 underline">
           Weight
         </Link>
-        <Link to="/templates" className="text-sm text-brand-600 underline">
+        <Link to="/templates" className="text-sm text-brand-700 underline">
           Templates
         </Link>
-        <Link to="/report" className="text-sm text-brand-600 underline">
+        <Link to="/report" className="text-sm text-brand-700 underline">
           Report
         </Link>
-        <Link to="/export" className="text-sm text-brand-600 underline">
+        <Link to="/export" className="text-sm text-brand-700 underline">
           Export
         </Link>
-        <Link to="/recipes/new" className="text-sm text-brand-600 underline">
+        <Link to="/recipes/new" className="text-sm text-brand-700 underline">
           + New recipe
         </Link>
       </div>

@@ -42,7 +42,7 @@ export default function MealSection({ meal, label, entries, onDelete, date }: Pr
                     ? `/log/quick-add?entryId=${entry.id}`
                     : `/log/edit/${entry.id}`
                 }
-                className="text-brand-600 underline"
+                className="text-brand-700 underline"
               >
                 Edit
               </Link>
@@ -59,21 +59,21 @@ export default function MealSection({ meal, label, entries, onDelete, date }: Pr
       </ul>
 
       <div className="mt-2 flex gap-4 text-sm">
-        <Link to={`/log/add?meal=${meal}${dateSuffix}`} className="text-brand-600 underline">
+        <Link to={`/log/add?meal=${meal}${dateSuffix}`} className="text-brand-700 underline">
           + Add food
         </Link>
-        <Link to={`/log/quick-add?meal=${meal}${dateSuffix}`} className="text-brand-600 underline">
+        <Link to={`/log/quick-add?meal=${meal}${dateSuffix}`} className="text-brand-700 underline">
           + Custom
         </Link>
         {!date && (
-          <Link to={`/scan?meal=${meal}`} className="text-brand-600 underline">
+          <Link to={`/scan?meal=${meal}`} className="text-brand-700 underline">
             Scan barcode
           </Link>
         )}
         {entries.length > 0 && (
           <Link
             to={`/templates/new?meal=${meal}${dateSuffix}`}
-            className="text-brand-600 underline"
+            className="text-brand-700 underline"
             data-testid={`save-template-${meal}`}
           >
             Save as template

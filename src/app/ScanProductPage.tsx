@@ -60,7 +60,7 @@ export default function ScanProductPage() {
   if (product === null) {
     return (
       <div className="mx-auto max-w-md px-6 py-8">
-        <Link to="/scan" className="mb-4 inline-block text-sm text-brand-600 underline">
+        <Link to="/scan" className="mb-4 inline-block text-sm text-brand-700 underline">
           ← Back to scan
         </Link>
         <p className="text-slate-500">Product not found in the local cache.</p>
@@ -70,7 +70,7 @@ export default function ScanProductPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/scan" className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to="/scan" className="mb-4 inline-block text-sm text-brand-700 underline">
         ← Back to scan
       </Link>
 
@@ -120,7 +120,7 @@ export default function ScanProductPage() {
           type="button"
           disabled={!preview || grams <= 0}
           onClick={handleSave}
-          className="mt-4 w-full rounded bg-brand-600 px-4 py-2 font-medium text-white disabled:opacity-50"
+          className="mt-4 w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
         >
           Add to {MEAL_LABELS[meal]}
         </button>

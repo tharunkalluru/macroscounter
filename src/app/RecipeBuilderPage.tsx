@@ -78,7 +78,7 @@ export default function RecipeBuilderPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to="/" className="mb-4 inline-block text-sm text-brand-700 underline">
         ← Back
       </Link>
       <h1 className="mb-4 text-xl font-bold text-brand-700">New recipe</h1>
@@ -166,7 +166,7 @@ export default function RecipeBuilderPage() {
       <button
         type="button"
         onClick={handleSave}
-        className="mt-4 w-full rounded bg-brand-600 px-4 py-2 font-medium text-white"
+        className="mt-4 w-full rounded bg-brand-700 px-4 py-2 font-medium text-white"
       >
         Save recipe
       </button>

@@ -84,7 +84,7 @@ export default function QuickAddPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to={backTo} className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to={backTo} className="mb-4 inline-block text-sm text-brand-700 underline">
         ← Back
       </Link>
       <h1 className="mb-4 text-xl font-bold text-brand-700">
@@ -148,7 +148,7 @@ export default function QuickAddPage() {
           </p>
         )}
 
-        <button type="submit" className="rounded bg-brand-600 px-4 py-2 font-medium text-white">
+        <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
           {editingId !== null ? 'Save changes' : `Add to ${MEAL_LABELS[meal]}`}
         </button>
       </form>

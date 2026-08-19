@@ -50,7 +50,7 @@ export default function DayDetailPage() {
   if (isFutureDate(date)) {
     return (
       <div className="mx-auto max-w-md px-6 py-8">
-        <Link to="/history" className="mb-4 inline-block text-sm text-brand-600 underline">
+        <Link to="/history" className="mb-4 inline-block text-sm text-brand-700 underline">
           ← Back
         </Link>
         <p className="text-slate-500">You can't log or view future days.</p>
@@ -67,7 +67,7 @@ export default function DayDetailPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8 pb-16">
-      <Link to="/history" className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to="/history" className="mb-4 inline-block text-sm text-brand-700 underline">
         ← Back to calendar
       </Link>
       <h1 className="text-xl font-bold text-brand-700">{date}</h1>
@@ -76,7 +76,7 @@ export default function DayDetailPage() {
       </p>
 
       <div className="mt-4 flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm">
-        <MacroBar label="Protein" consumed={totals.p} target={dayTarget.proteinG} colorClass="bg-brand-600" testId="day-protein-bar" />
+        <MacroBar label="Protein" consumed={totals.p} target={dayTarget.proteinG} colorClass="bg-brand-700" testId="day-protein-bar" />
         <MacroBar label="Carbs" consumed={totals.c} target={dayTarget.carbsG} colorClass="bg-amber-500" testId="day-carbs-bar" />
         <MacroBar label="Fat" consumed={totals.f} target={dayTarget.fatG} colorClass="bg-sky-500" testId="day-fat-bar" />
       </div>

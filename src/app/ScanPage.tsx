@@ -108,7 +108,7 @@ export default function ScanPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to="/" className="mb-4 inline-block text-sm text-brand-700 underline">
         ← Back
       </Link>
       <h1 className="mb-1 text-xl font-bold text-brand-700">Scan barcode · {MEAL_LABELS[meal]}</h1>
@@ -136,7 +136,7 @@ export default function ScanPage() {
             onChange={(e) => setManualBarcode(e.target.value)}
           />
         </label>
-        <button type="submit" className="rounded bg-brand-600 px-4 py-2 font-medium text-white">
+        <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
           Look up
         </button>
       </form>

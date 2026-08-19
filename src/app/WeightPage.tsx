@@ -13,6 +13,7 @@ import type { WeighIn } from '../data/models'
 import { WeighInRepo } from '../data/repos/WeighInRepo'
 import { computeEMA } from '../domain/history/ema'
 import { isFutureDate, todayISO } from '../lib/date'
+import { neutral, semantic } from '../theme/tokens'
 
 export default function WeightPage() {
   const [weighIns, setWeighIns] = useState<WeighIn[]>([])
@@ -70,7 +71,7 @@ export default function WeightPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to="/" className="mb-4 inline-block text-sm text-brand-700 underline">
         ← Back
       </Link>
       <h1 className="mb-4 text-xl font-bold text-brand-700">Weight tracking</h1>
@@ -96,7 +97,7 @@ export default function WeightPage() {
             onChange={(e) => setWeightKg(e.target.value)}
           />
         </label>
-        <button type="submit" className="rounded bg-brand-600 px-4 py-2 font-medium text-white">
+        <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
           Log
         </button>
       </form>
@@ -110,12 +111,19 @@ export default function WeightPage() {
         <div className="mt-6 h-56 rounded-xl bg-white p-4 shadow-sm" data-testid="weight-chart">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <CartesianGrid strokeDasharray="3 3" stroke={neutral[200]} />
               <XAxis dataKey="label" tick={{ fontSize: 12 }} />
               <YAxis domain={['dataMin - 1', 'dataMax + 1']} tick={{ fontSize: 12 }} />
               <Tooltip />
-              <Line type="monotone" dataKey="weightKg" stroke="#94a3b8" dot={{ r: 2 }} name="Weight" />
-              <Line type="monotone" dataKey="ema" stroke="#16a34a" strokeWidth={2} dot={false} name="7-day trend" />
+              <Line type="monotone" dataKey="weightKg" stroke={neutral[400]} dot={{ r: 2 }} name="Weight" />
+              <Line
+                type="monotone"
+                dataKey="ema"
+                stroke={semantic.success[600]}
+                strokeWidth={2}
+                dot={false}
+                name="7-day trend"
+              />
             </LineChart>
           </ResponsiveContainer>
         </div>

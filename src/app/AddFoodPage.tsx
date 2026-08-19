@@ -158,7 +158,7 @@ export default function AddFoodPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to={backTo} className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to={backTo} className="mb-4 inline-block text-sm text-brand-700 underline">
         ← Back
       </Link>
       <h1 className="mb-1 text-xl font-bold text-brand-700">
@@ -238,14 +238,14 @@ export default function AddFoodPage() {
           <div className="mt-3 flex gap-2">
             <button
               type="button"
-              className={`rounded px-3 py-1 text-sm ${mode === 'portion' ? 'bg-brand-600 text-white' : 'bg-slate-100'}`}
+              className={`rounded px-3 py-1 text-sm ${mode === 'portion' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
               onClick={() => setMode('portion')}
             >
               Household unit
             </button>
             <button
               type="button"
-              className={`rounded px-3 py-1 text-sm ${mode === 'grams' ? 'bg-brand-600 text-white' : 'bg-slate-100'}`}
+              className={`rounded px-3 py-1 text-sm ${mode === 'grams' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
               onClick={() => setMode('grams')}
             >
               Grams
@@ -300,7 +300,7 @@ export default function AddFoodPage() {
             type="button"
             disabled={!preview || grams <= 0}
             onClick={handleSave}
-            className="mt-4 w-full rounded bg-brand-600 px-4 py-2 font-medium text-white disabled:opacity-50"
+            className="mt-4 w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
           >
             {editingId !== null ? 'Save changes' : `Add to ${MEAL_LABELS[meal]}`}
           </button>

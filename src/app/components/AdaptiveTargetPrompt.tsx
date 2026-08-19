@@ -112,7 +112,7 @@ export default function AdaptiveTargetPrompt({ onAccepted }: Props) {
           type="button"
           disabled={saving}
           onClick={handleAccept}
-          className="rounded bg-brand-600 px-3 py-1 font-medium text-white disabled:opacity-50"
+          className="rounded bg-brand-700 px-3 py-1 font-medium text-white disabled:opacity-50"
         >
           Accept
         </button>

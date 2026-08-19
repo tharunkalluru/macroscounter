@@ -66,7 +66,7 @@ export default function ScanNotFoundPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/scan" className="mb-4 inline-block text-sm text-brand-600 underline">
+      <Link to="/scan" className="mb-4 inline-block text-sm text-brand-700 underline">
         ← Back to scan
       </Link>
       <h1 className="mb-1 text-xl font-bold text-brand-700">Product not found</h1>
@@ -167,7 +167,7 @@ export default function ScanNotFoundPage() {
           </p>
         )}
 
-        <button type="submit" className="mt-2 rounded bg-brand-600 px-4 py-2 font-medium text-white">
+        <button type="submit" className="mt-2 rounded bg-brand-700 px-4 py-2 font-medium text-white">
           Save & continue
         </button>
       </form>

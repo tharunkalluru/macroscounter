@@ -1,3 +1,5 @@
+import { neutral, semantic } from '../../theme/tokens'
+
 interface Props {
   consumedKcal: number
   targetKcal: number
@@ -16,13 +18,13 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
   return (
     <div className="relative flex h-[180px] w-[180px] items-center justify-center" data-testid="calories-ring">
       <svg width={180} height={180} viewBox="0 0 180 180">
-        <circle cx={90} cy={90} r={RADIUS} fill="none" stroke="#e2e8f0" strokeWidth={STROKE} />
+        <circle cx={90} cy={90} r={RADIUS} fill="none" stroke={neutral[200]} strokeWidth={STROKE} />
         <circle
           cx={90}
           cy={90}
           r={RADIUS}
           fill="none"
-          stroke={over ? '#dc2626' : '#16a34a'}
+          stroke={over ? semantic.danger[600] : semantic.success[600]}
           strokeWidth={STROKE}
           strokeLinecap="round"
           strokeDasharray={CIRCUMFERENCE}
