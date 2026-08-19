@@ -6,6 +6,7 @@ import { ScannedProductRepo } from '../data/repos/ScannedProductRepo'
 import { computeMacrosForGrams, gramsForPortion } from '../domain/logging/portionMath'
 import { getServingOptions } from '../domain/barcode/servingOptions'
 import { todayISO } from '../lib/date'
+import { vibrateTiny } from '../lib/haptics'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -31,7 +32,9 @@ export default function ScanProductPage() {
 
   const portions = useMemo(() => (product ? getServingOptions(product) : []), [product])
 
-  const grams = portions[portionIndex] ? gramsForPortion(Number(qty) || 0, portions[portionIndex].grams) : 0
+  const grams = portions[portionIndex]
+    ? gramsForPortion(Number(qty) || 0, portions[portionIndex].grams)
+    : 0
   const preview = product && grams > 0 ? computeMacrosForGrams(product.per100g, grams) : null
 
   async function handleSave() {
@@ -51,44 +54,59 @@ export default function ScanProductPage() {
       c: preview.c,
       f: preview.f,
     })
+    vibrateTiny()
     navigate('/')
   }
 
   if (product === undefined) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-500 dark:text-slate-400">
+        Loading…
+      </div>
+    )
   }
 
   if (product === null) {
     return (
       <div className="mx-auto max-w-md px-6 py-8">
-        <Link to="/scan" className="mb-4 inline-block text-sm text-brand-700 underline">
+        <Link
+          to="/scan"
+          className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        >
           ← Back to scan
         </Link>
-        <p className="text-slate-500">Product not found in the local cache.</p>
+        <p className="text-slate-500 dark:text-slate-400">Product not found in the local cache.</p>
       </div>
     )
   }
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/scan" className="mb-4 inline-block text-sm text-brand-700 underline">
+      <Link
+        to="/scan"
+        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+      >
         ← Back to scan
       </Link>
 
-      <div className="rounded-lg bg-white p-4 shadow-sm">
+      <div className="rounded-lg bg-white dark:bg-surface-dark-card p-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="font-semibold" data-testid="scanned-product-name">
               {product.name}
             </h1>
-            {product.brand && <p className="text-xs text-slate-500">{product.brand}</p>}
+            {product.brand && (
+              <p className="text-xs text-slate-500 dark:text-slate-400">{product.brand}</p>
+            )}
           </div>
-          <span className="rounded bg-slate-100 px-2 py-0.5 text-xs text-slate-500">{product.source}</span>
+          <span className="rounded bg-slate-100 dark:bg-slate-700 px-2 py-0.5 text-xs text-slate-500 dark:text-slate-400">
+            {product.source}
+          </span>
         </div>
 
         <div className="mt-3 flex flex-col gap-2">
           <select
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={portionIndex}
             onChange={(e) => setPortionIndex(Number(e.target.value))}
           >
@@ -104,7 +122,7 @@ export default function ScanProductPage() {
               type="number"
               min="0"
               step="0.5"
-              className="rounded border border-slate-300 px-3 py-2"
+              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={qty}
               onChange={(e) => setQty(e.target.value)}
             />
@@ -112,7 +130,10 @@ export default function ScanProductPage() {
         </div>
 
         {preview && (
-          <p className="mt-3 text-sm text-slate-600" data-testid="entry-preview">
+          <p
+            className="mt-3 text-sm text-slate-600 dark:text-slate-300"
+            data-testid="entry-preview"
+          >
             {Math.round(preview.kcal)} kcal · {preview.p}p / {preview.c}c / {preview.f}f
           </p>
         )}

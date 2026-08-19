@@ -22,16 +22,22 @@ export default function DateNav({ date, onChange }: Props) {
   const nextDisabled = isFutureDate(nextDate)
 
   return (
-    <div className="mx-auto flex max-w-md items-center justify-center gap-1 px-6" data-testid="date-nav">
+    <div
+      className="mx-auto flex max-w-md items-center justify-center gap-1 px-6"
+      data-testid="date-nav"
+    >
       <button
         type="button"
         aria-label="Previous day"
         onClick={() => onChange(addDaysISO(date, -1))}
-        className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100"
+        className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
       >
         <ChevronLeftIcon />
       </button>
-      <span className="min-w-[9rem] text-center text-body font-medium" data-testid="date-nav-label">
+      <span
+        className="min-w-[9rem] text-center text-body font-medium text-slate-900 dark:text-slate-100"
+        data-testid="date-nav-label"
+      >
         {formatLabel(date)}
       </span>
       <button
@@ -39,7 +45,7 @@ export default function DateNav({ date, onChange }: Props) {
         aria-label="Next day"
         onClick={() => !nextDisabled && onChange(nextDate)}
         disabled={nextDisabled}
-        className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-30"
+        className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800"
       >
         <ChevronRightIcon />
       </button>

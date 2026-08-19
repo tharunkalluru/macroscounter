@@ -48,7 +48,7 @@ export default function MealOverflowSheet({
               disabled={!hasEntries}
               onClick={onSaveTemplate}
               data-testid="overflow-save-template"
-              className="min-h-touch w-full px-1 py-3 text-left disabled:text-slate-400"
+              className="min-h-touch w-full px-1 py-3 text-left text-slate-900 disabled:text-slate-400 dark:text-slate-100 dark:disabled:text-slate-500"
             >
               Save as template
             </button>
@@ -58,7 +58,7 @@ export default function MealOverflowSheet({
               type="button"
               onClick={() => setView('templates')}
               data-testid="overflow-log-template"
-              className="min-h-touch w-full px-1 py-3 text-left"
+              className="min-h-touch w-full px-1 py-3 text-left text-slate-900 dark:text-slate-100"
             >
               Log template
             </button>
@@ -68,7 +68,7 @@ export default function MealOverflowSheet({
               type="button"
               onClick={onCopyFromYesterday}
               data-testid="overflow-copy-yesterday"
-              className="min-h-touch w-full px-1 py-3 text-left"
+              className="min-h-touch w-full px-1 py-3 text-left text-slate-900 dark:text-slate-100"
             >
               Copy from yesterday
             </button>
@@ -77,20 +77,28 @@ export default function MealOverflowSheet({
       )}
 
       {view === 'templates' && (
-        <ul className="flex flex-col divide-y divide-slate-100" data-testid="overflow-template-list">
+        <ul
+          className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700"
+          data-testid="overflow-template-list"
+        >
           {templates.map((t) => (
             <li key={t.id}>
               <button
                 type="button"
                 onClick={() => onLogTemplate(t)}
-                className="min-h-touch w-full px-1 py-3 text-left"
+                className="min-h-touch w-full px-1 py-3 text-left text-slate-900 dark:text-slate-100"
               >
-                {t.name} <span className="text-caption text-slate-500">· {t.entries.length} items</span>
+                {t.name}{' '}
+                <span className="text-caption text-slate-500 dark:text-slate-400">
+                  · {t.entries.length} items
+                </span>
               </button>
             </li>
           ))}
           {templates.length === 0 && (
-            <li className="px-1 py-3 text-caption text-slate-500">No templates saved yet.</li>
+            <li className="px-1 py-3 text-caption text-slate-500 dark:text-slate-400">
+              No templates saved yet.
+            </li>
           )}
         </ul>
       )}

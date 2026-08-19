@@ -10,6 +10,7 @@ import { sumMacros } from '../domain/logging/portionMath'
 import { addDaysISO, isFutureDate, todayISO } from '../lib/date'
 import AdaptiveTargetPrompt from './components/AdaptiveTargetPrompt'
 import CaloriesRing from './components/CaloriesRing'
+import DashboardSkeleton from './components/DashboardSkeleton'
 import DateNav from './components/DateNav'
 import MacroBar from './components/MacroBar'
 import MacroBreakdownSheet from './components/MacroBreakdownSheet'
@@ -46,9 +47,9 @@ export default function Dashboard() {
   const [targets, setTargets] = useState<Targets | null>(null)
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
-  const [breakdownMacro, setBreakdownMacro] = useState<(typeof MACRO_DEFS)[keyof typeof MACRO_DEFS] | null>(
-    null
-  )
+  const [breakdownMacro, setBreakdownMacro] = useState<
+    (typeof MACRO_DEFS)[keyof typeof MACRO_DEFS] | null
+  >(null)
 
   const logRepo = new LogRepo()
 
@@ -113,7 +114,7 @@ export default function Dashboard() {
   }
 
   if (state === 'loading') {
-    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
+    return <DashboardSkeleton />
   }
 
   if (state === 'no-profile') {
@@ -132,7 +133,7 @@ export default function Dashboard() {
             type="button"
             onClick={() => goToDate(todayISO())}
             data-testid="return-to-today"
-            className="min-h-touch rounded-full bg-brand-50 px-3 py-1.5 text-caption font-medium text-brand-700"
+            className="min-h-touch rounded-full bg-brand-50 px-3 py-1.5 text-caption font-medium text-brand-700 dark:bg-slate-800 dark:text-brand-400"
           >
             Return to today
           </button>
@@ -147,11 +148,14 @@ export default function Dashboard() {
         onDragEnd={prefersReducedMotion ? undefined : handleDragEnd}
       >
         <div
-          className="flex flex-col items-center rounded-card bg-white p-6 shadow-card"
+          className="flex flex-col items-center rounded-card bg-white p-6 shadow-card dark:bg-surface-dark-card dark:shadow-card-dark"
           data-testid="targets-card"
         >
           <CaloriesRing consumedKcal={totals.kcal} targetKcal={target.kcal} />
-          <p className="mt-2 text-caption text-slate-500" data-testid="kcal-target">
+          <p
+            className="mt-2 text-caption text-slate-500 dark:text-slate-400"
+            data-testid="kcal-target"
+          >
             {target.kcal} kcal target
           </p>
 

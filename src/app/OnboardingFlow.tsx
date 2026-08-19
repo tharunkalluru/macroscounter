@@ -98,8 +98,10 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-10">
-      <h1 className="mb-1 text-2xl font-bold text-brand-700">Welcome to MacroDesi</h1>
-      <p className="mb-6 text-sm text-slate-500">
+      <h1 className="mb-1 text-2xl font-bold text-brand-700 dark:text-brand-400">
+        Welcome to MacroDesi
+      </h1>
+      <p className="mb-6 text-sm text-slate-500 dark:text-slate-400">
         Tell us about yourself so we can set your daily calorie and macro targets.
       </p>
 
@@ -107,7 +109,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Name</span>
           <input
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
@@ -136,7 +138,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
           <span className="text-sm font-medium">Age</span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={age}
             onChange={(e) => setAge(e.target.value)}
             placeholder="years"
@@ -147,7 +149,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
           <span className="text-sm font-medium">Height (cm)</span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={heightCm}
             onChange={(e) => setHeightCm(e.target.value)}
             placeholder="cm"
@@ -158,7 +160,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
           <span className="text-sm font-medium">Weight (kg)</span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
             placeholder="kg"
@@ -168,7 +170,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Activity level</span>
           <select
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={activityLevel}
             onChange={(e) => setActivityLevel(e.target.value as ActivityLevel)}
           >
@@ -199,7 +201,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         </fieldset>
 
         {error && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
         )}

@@ -55,16 +55,23 @@ export default function DayDetailPage() {
   if (isFutureDate(date)) {
     return (
       <div className="mx-auto max-w-md px-6 py-8">
-        <Link to="/history" className="mb-4 inline-block text-sm text-brand-700 underline">
+        <Link
+          to="/history"
+          className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+        >
           ← Back
         </Link>
-        <p className="text-slate-500">You can't log or view future days.</p>
+        <p className="text-slate-500 dark:text-slate-400">You can't log or view future days.</p>
       </div>
     )
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-500 dark:text-slate-400">
+        Loading…
+      </div>
+    )
   }
 
   const totals = sumMacros(entries)
@@ -72,18 +79,39 @@ export default function DayDetailPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8 pb-16">
-      <Link to="/history" className="mb-4 inline-block text-sm text-brand-700 underline">
+      <Link
+        to="/history"
+        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+      >
         ← Back to calendar
       </Link>
-      <h1 className="text-xl font-bold text-brand-700">{date}</h1>
-      <p className="mt-1 text-sm text-slate-500" data-testid="day-total-kcal">
+      <h1 className="text-xl font-bold text-brand-700 dark:text-brand-400">{date}</h1>
+      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400" data-testid="day-total-kcal">
         {Math.round(totals.kcal)} / {dayTarget.kcal} kcal
       </p>
 
-      <div className="mt-4 flex flex-col gap-3 rounded-xl bg-white p-4 shadow-sm">
-        <MacroBar label="Protein" consumed={totals.p} target={dayTarget.proteinG} colorClass="bg-protein-500" testId="day-protein-bar" />
-        <MacroBar label="Carbs" consumed={totals.c} target={dayTarget.carbsG} colorClass="bg-carbs-500" testId="day-carbs-bar" />
-        <MacroBar label="Fat" consumed={totals.f} target={dayTarget.fatG} colorClass="bg-fat-500" testId="day-fat-bar" />
+      <div className="mt-4 flex flex-col gap-3 rounded-xl bg-white dark:bg-surface-dark-card p-4 shadow-sm">
+        <MacroBar
+          label="Protein"
+          consumed={totals.p}
+          target={dayTarget.proteinG}
+          colorClass="bg-protein-500"
+          testId="day-protein-bar"
+        />
+        <MacroBar
+          label="Carbs"
+          consumed={totals.c}
+          target={dayTarget.carbsG}
+          colorClass="bg-carbs-500"
+          testId="day-carbs-bar"
+        />
+        <MacroBar
+          label="Fat"
+          consumed={totals.f}
+          target={dayTarget.fatG}
+          colorClass="bg-fat-500"
+          testId="day-fat-bar"
+        />
       </div>
 
       {MEALS.map(({ key, label }) => (

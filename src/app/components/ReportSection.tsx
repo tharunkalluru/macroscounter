@@ -35,47 +35,59 @@ export default function ReportSection() {
   return (
     <div>
       <div className="mb-4 grid grid-cols-2 gap-3">
-        <div className="rounded-card bg-white p-3 shadow-card" data-testid="streak-widget">
-          <p className="text-caption text-slate-500">Logging streak</p>
+        <div
+          className="rounded-card bg-white dark:bg-surface-dark-card p-3 shadow-card"
+          data-testid="streak-widget"
+        >
+          <p className="text-caption text-slate-500 dark:text-slate-400">Logging streak</p>
           <p className="text-lg font-semibold tabular-nums">
             {streak} day{streak === 1 ? '' : 's'}
           </p>
         </div>
-        <div className="rounded-card bg-white p-3 shadow-card" data-testid="consistency-widget">
-          <p className="text-caption text-slate-500">Consistency (30d)</p>
+        <div
+          className="rounded-card bg-white dark:bg-surface-dark-card p-3 shadow-card"
+          data-testid="consistency-widget"
+        >
+          <p className="text-caption text-slate-500 dark:text-slate-400">Consistency (30d)</p>
           <p className="text-lg font-semibold tabular-nums">{Math.round(consistency * 100)}%</p>
         </div>
       </div>
 
       {report && report.daysCounted > 0 ? (
         <div className="flex flex-col gap-3">
-          <div className="rounded-card bg-white p-4 shadow-card">
-            <p className="text-caption text-slate-500">Avg calories (last 7 logged days)</p>
+          <div className="rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card">
+            <p className="text-caption text-slate-500 dark:text-slate-400">
+              Avg calories (last 7 logged days)
+            </p>
             <p className="text-display tabular-nums" data-testid="report-avg-kcal">
               {report.avgKcal} kcal
             </p>
           </div>
-          <div className="rounded-card bg-white p-4 shadow-card">
-            <p className="text-caption text-slate-500">Protein target hit-rate</p>
+          <div className="rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card">
+            <p className="text-caption text-slate-500 dark:text-slate-400">
+              Protein target hit-rate
+            </p>
             <p className="text-display tabular-nums" data-testid="report-protein-hitrate">
               {Math.round(report.proteinHitRate * 100)}%
             </p>
           </div>
-          <div className="rounded-card bg-white p-4 shadow-card">
-            <p className="text-caption text-slate-500">Best day</p>
+          <div className="rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card">
+            <p className="text-caption text-slate-500 dark:text-slate-400">Best day</p>
             <p data-testid="report-best-day">
               {report.bestDay?.date} — {report.bestDay?.kcal} kcal
             </p>
           </div>
-          <div className="rounded-card bg-white p-4 shadow-card">
-            <p className="text-caption text-slate-500">Toughest day</p>
+          <div className="rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card">
+            <p className="text-caption text-slate-500 dark:text-slate-400">Toughest day</p>
             <p data-testid="report-worst-day">
               {report.worstDay?.date} — {report.worstDay?.kcal} kcal
             </p>
           </div>
         </div>
       ) : (
-        <p className="text-sm text-slate-500">Log a few days to see your weekly report.</p>
+        <p className="text-sm text-slate-500 dark:text-slate-400">
+          Log a few days to see your weekly report.
+        </p>
       )}
     </div>
   )

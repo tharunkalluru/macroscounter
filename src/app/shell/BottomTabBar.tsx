@@ -35,7 +35,7 @@ export default function BottomTabBar() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)]"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-slate-700 dark:bg-surface-dark-card"
       aria-label="Primary"
       data-testid="bottom-tab-bar"
     >
@@ -54,7 +54,7 @@ export default function BottomTabBar() {
           >
             <ScanIcon />
           </button>
-          <span className="pointer-events-none mt-8 text-caption text-slate-500">Scan</span>
+          <span className="pointer-events-none mt-8 text-caption text-slate-500 dark:text-slate-400">Scan</span>
         </div>
 
         {TABS.slice(2).map((tab) => (
@@ -81,7 +81,7 @@ function TabLink({ tab, active }: { tab: TabDef; active: boolean }) {
       aria-current={active ? 'page' : undefined}
       data-testid={`tab-${tab.key}`}
       className={`flex min-h-touch min-w-touch flex-1 flex-col items-center justify-center gap-0.5 py-1.5 ${
-        active ? 'text-brand-700' : 'text-slate-500'
+        active ? 'text-brand-700 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'
       }`}
     >
       <Icon active={active} />

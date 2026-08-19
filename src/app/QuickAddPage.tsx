@@ -3,6 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { isFutureDate, todayISO } from '../lib/date'
+import { vibrateTiny } from '../lib/haptics'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -77,6 +78,7 @@ export default function QuickAddPage() {
     } else {
       await logRepo.addEntry(entryData)
     }
+    vibrateTiny()
     navigate(backTo)
   }
 
@@ -84,10 +86,13 @@ export default function QuickAddPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to={backTo} className="mb-4 inline-block text-sm text-brand-700 underline">
+      <Link
+        to={backTo}
+        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+      >
         ← Back
       </Link>
-      <h1 className="mb-4 text-xl font-bold text-brand-700">
+      <h1 className="mb-4 text-xl font-bold text-brand-700 dark:text-brand-400">
         {editingId !== null ? 'Edit custom entry' : `Custom add · ${MEAL_LABELS[meal]}`}
       </h1>
 
@@ -95,7 +100,7 @@ export default function QuickAddPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Name</span>
           <input
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Restaurant meal"
@@ -106,7 +111,7 @@ export default function QuickAddPage() {
           <span className="text-sm font-medium">Calories (kcal)</span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={kcal}
             onChange={(e) => setKcal(e.target.value)}
           />
@@ -117,7 +122,7 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Protein (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 px-3 py-2"
+              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={p}
               onChange={(e) => setP(e.target.value)}
             />
@@ -126,7 +131,7 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Carbs (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 px-3 py-2"
+              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={c}
               onChange={(e) => setC(e.target.value)}
             />
@@ -135,7 +140,7 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Fat (g)</span>
             <input
               type="number"
-              className="rounded border border-slate-300 px-3 py-2"
+              className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={f}
               onChange={(e) => setF(e.target.value)}
             />
@@ -143,7 +148,7 @@ export default function QuickAddPage() {
         </div>
 
         {error && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
         )}

@@ -41,11 +41,11 @@ export default function SwipeToDeleteRow({ onDelete, deleteLabel, children }: Pr
   }
 
   if (prefersReducedMotion) {
-    return <div className="relative bg-white">{children}</div>
+    return <div className="relative bg-white dark:bg-surface-dark-card">{children}</div>
   }
 
   return (
-    <div className="relative overflow-hidden bg-white">
+    <div className="relative overflow-hidden bg-white dark:bg-surface-dark-card">
       <motion.div
         style={{ opacity: deleteOpacity }}
         className="pointer-events-none absolute inset-0 flex items-center justify-end bg-danger-600 pr-4 text-caption font-medium text-white"
@@ -68,7 +68,7 @@ export default function SwipeToDeleteRow({ onDelete, deleteLabel, children }: Pr
         // page instead of deleting the row. Stopping propagation here keeps the
         // row's own drag exclusive.
         onPointerDown={(e: PointerEvent) => e.stopPropagation()}
-        className="relative z-10 bg-white"
+        className="relative z-10 bg-white dark:bg-surface-dark-card"
       >
         {children}
       </motion.div>

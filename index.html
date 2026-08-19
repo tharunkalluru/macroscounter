@@ -10,6 +10,18 @@
       content="MacroDesi — fat-loss focused calorie and macro tracker with an Indian food database"
     />
     <title>MacroDesi</title>
+    <script>
+      // Applied synchronously, before first paint, to avoid a light->dark flash.
+      // Mirrors the resolution logic in src/app/shell/ThemeContext.tsx.
+      ;(function () {
+        try {
+          var stored = localStorage.getItem('macrodesi-theme')
+          var pref = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
+          var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
+          if (dark) document.documentElement.classList.add('dark')
+        } catch (e) {}
+      })()
+    </script>
   </head>
   <body>
     <div id="root"></div>

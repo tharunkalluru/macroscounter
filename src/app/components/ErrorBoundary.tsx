@@ -28,8 +28,10 @@ export default class ErrorBoundary extends Component<Props, State> {
     if (this.state.error) {
       return (
         <div className="flex min-h-screen flex-col items-center justify-center gap-3 px-6 text-center">
-          <h1 className="text-xl font-bold text-slate-800">Something went wrong</h1>
-          <p className="max-w-sm text-sm text-slate-500">
+          <h1 className="text-xl font-bold text-slate-800 dark:text-slate-100">
+            Something went wrong
+          </h1>
+          <p className="max-w-sm text-sm text-slate-500 dark:text-slate-400">
             MacroDesi hit an unexpected error. Your logged data is safe on this device — try
             reloading.
           </p>

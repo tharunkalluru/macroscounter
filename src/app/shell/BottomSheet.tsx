@@ -63,7 +63,7 @@ export default function BottomSheet({ open, onClose, title, children, headerExtr
             aria-modal="true"
             aria-labelledby="bottom-sheet-title"
             tabIndex={-1}
-            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-card bg-white shadow-card outline-none"
+            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-card bg-white shadow-card outline-none dark:bg-surface-dark-card dark:shadow-card-dark"
             initial={{ y: '100%' }}
             animate={{ y: 0 }}
             exit={{ y: '100%' }}
@@ -75,9 +75,9 @@ export default function BottomSheet({ open, onClose, title, children, headerExtr
             data-testid="bottom-sheet"
           >
             <div className="flex shrink-0 flex-col items-center pt-2">
-              <div className="h-1 w-10 rounded-full bg-slate-300" aria-hidden="true" />
+              <div className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" aria-hidden="true" />
               <div className="mt-2 flex w-full items-center justify-between px-4 pb-2">
-                <h2 id="bottom-sheet-title" className="text-title">
+                <h2 id="bottom-sheet-title" className="text-title text-slate-900 dark:text-slate-100">
                   {title}
                 </h2>
                 <div className="flex items-center gap-2">
@@ -86,7 +86,7 @@ export default function BottomSheet({ open, onClose, title, children, headerExtr
                     type="button"
                     onClick={onClose}
                     aria-label="Close"
-                    className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100"
+                    className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
                   >
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
                       <path

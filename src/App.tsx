@@ -11,6 +11,7 @@ import QuickAddPage from './app/QuickAddPage'
 import RecipeBuilderPage from './app/RecipeBuilderPage'
 import ReportPage from './app/ReportPage'
 import AppShell from './app/shell/AppShell'
+import { ThemeProvider } from './app/shell/ThemeContext'
 import { UIStateProvider } from './app/shell/UIStateContext'
 import SettingsPage from './app/SettingsPage'
 import TemplateNewPage from './app/TemplateNewPage'
@@ -60,35 +61,37 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <UIStateProvider>
-        <Suspense fallback={<RouteLoading />}>
-          <Routes>
-            {/* Shell routes: header + bottom tab bar + FAB add-food sheet. */}
-            <Route element={<AppShell />}>
-              <Route path="/" element={<Dashboard />} />
-              <Route path="/history" element={<HistoryPage />} />
-              <Route path="/history/:date" element={<DayDetailPage />} />
-              <Route path="/trends" element={<TrendsPage />} />
-              <Route path="/settings" element={<SettingsPage />} />
-              <Route path="/weight" element={<WeightPage />} />
-              <Route path="/report" element={<ReportPage />} />
-              <Route path="/templates" element={<TemplatesPage />} />
-              <Route path="/export" element={<ExportPage />} />
-            </Route>
+      <ThemeProvider>
+        <UIStateProvider>
+          <Suspense fallback={<RouteLoading />}>
+            <Routes>
+              {/* Shell routes: header + bottom tab bar + FAB add-food sheet. */}
+              <Route element={<AppShell />}>
+                <Route path="/" element={<Dashboard />} />
+                <Route path="/history" element={<HistoryPage />} />
+                <Route path="/history/:date" element={<DayDetailPage />} />
+                <Route path="/trends" element={<TrendsPage />} />
+                <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/weight" element={<WeightPage />} />
+                <Route path="/report" element={<ReportPage />} />
+                <Route path="/templates" element={<TemplatesPage />} />
+                <Route path="/export" element={<ExportPage />} />
+              </Route>
 
-            {/* Full-screen task flows: no shell chrome. */}
-            <Route path="/onboarding" element={<OnboardingFlow />} />
-            <Route path="/log/add" element={<AddFoodPage />} />
-            <Route path="/log/edit/:entryId" element={<AddFoodPage />} />
-            <Route path="/log/quick-add" element={<QuickAddPage />} />
-            <Route path="/recipes/new" element={<RecipeBuilderPage />} />
-            <Route path="/scan" element={<ScanPage />} />
-            <Route path="/scan/product/:barcode" element={<ScanProductPage />} />
-            <Route path="/scan/not-found/:barcode" element={<ScanNotFoundPage />} />
-            <Route path="/templates/new" element={<TemplateNewPage />} />
-          </Routes>
-        </Suspense>
-      </UIStateProvider>
+              {/* Full-screen task flows: no shell chrome. */}
+              <Route path="/onboarding" element={<OnboardingFlow />} />
+              <Route path="/log/add" element={<AddFoodPage />} />
+              <Route path="/log/edit/:entryId" element={<AddFoodPage />} />
+              <Route path="/log/quick-add" element={<QuickAddPage />} />
+              <Route path="/recipes/new" element={<RecipeBuilderPage />} />
+              <Route path="/scan" element={<ScanPage />} />
+              <Route path="/scan/product/:barcode" element={<ScanProductPage />} />
+              <Route path="/scan/not-found/:barcode" element={<ScanNotFoundPage />} />
+              <Route path="/templates/new" element={<TemplateNewPage />} />
+            </Routes>
+          </Suspense>
+        </UIStateProvider>
+      </ThemeProvider>
     </ErrorBoundary>
   )
 }

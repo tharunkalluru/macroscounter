@@ -6,6 +6,7 @@ import { LogRepo } from '../../data/repos/LogRepo'
 import { RecipeRepo } from '../../data/repos/RecipeRepo'
 import { computeMacrosForGrams, gramsForPortion } from '../../domain/logging/portionMath'
 import { todayISO } from '../../lib/date'
+import { vibrateTiny } from '../../lib/haptics'
 import { nameOf, per100gOf, portionsOf, type Selected } from '../foodSelection'
 import { useFoodIndex } from '../hooks/useFoodIndex'
 import { BarcodeIcon } from '../shell/icons'
@@ -24,7 +25,12 @@ interface Props {
   onRequestCustom: () => void
 }
 
-export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRequestCustom }: Props) {
+export default function AddFoodSheetContent({
+  meal,
+  onSaved,
+  onRequestScan,
+  onRequestCustom,
+}: Props) {
   const navigate = useNavigate()
   const { foods, service, loading } = useFoodIndex()
 
@@ -77,7 +83,8 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
   async function handleSave() {
     if (!selected || !preview || grams <= 0) return
 
-    const portionSummary = mode === 'grams' ? `${grams} g` : `${qty} x ${portions[portionIndex].label}`
+    const portionSummary =
+      mode === 'grams' ? `${grams} g` : `${qty} x ${portions[portionIndex].label}`
 
     await new LogRepo().addEntry({
       date: todayISO(),
@@ -95,6 +102,7 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
       c: preview.c,
       f: preview.f,
     })
+    vibrateTiny()
     onSaved()
   }
 
@@ -109,7 +117,7 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
   }
 
   if (loading) {
-    return <div className="py-8 text-center text-slate-500">Loading…</div>
+    return <div className="py-8 text-center text-slate-500 dark:text-slate-400">Loading…</div>
   }
 
   return (
@@ -120,7 +128,7 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
             <input
               type="text"
               placeholder="Search foods (e.g. idli, sambar)"
-              className="min-h-touch flex-1 rounded border border-slate-300 px-3 py-2"
+              className="min-h-touch flex-1 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               autoFocus
@@ -130,7 +138,7 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
               onClick={handleScan}
               aria-label="Scan a barcode"
               data-testid="sheet-scan-button"
-              className="flex min-h-touch min-w-touch items-center justify-center rounded border border-slate-300 text-slate-600"
+              className="flex min-h-touch min-w-touch items-center justify-center rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 text-slate-600 dark:text-slate-300"
             >
               <BarcodeIcon />
             </button>
@@ -140,28 +148,32 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
             type="button"
             onClick={handleCustom}
             data-testid="sheet-custom-button"
-            className="mt-2 min-h-touch text-caption text-brand-700 underline"
+            className="mt-2 min-h-touch text-caption text-brand-700 dark:text-brand-400 underline"
           >
             Enter calories manually
           </button>
 
           {query.trim() ? (
             <ul
-              className="mt-3 divide-y divide-slate-100 rounded-lg bg-white shadow-sm"
+              className="mt-3 divide-y divide-slate-100 dark:divide-slate-700 rounded-lg bg-white dark:bg-surface-dark-card shadow-sm"
               data-testid="search-results"
             >
               {results.map((food) => (
                 <li key={food.id}>
                   <button
                     type="button"
-                    className="min-h-touch w-full px-3 py-2 text-left hover:bg-slate-50"
+                    className="min-h-touch w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
                     onClick={() => setSelected({ kind: 'food', food: food as FoodRecord })}
                   >
                     {food.name}
                   </button>
                 </li>
               ))}
-              {results.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">No matches.</li>}
+              {results.length === 0 && (
+                <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">
+                  No matches.
+                </li>
+              )}
             </ul>
           ) : (
             <div className="mt-4 flex flex-col gap-4">
@@ -181,13 +193,15 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
               )}
               {recipes.length > 0 && (
                 <div>
-                  <p className="mb-1 text-caption font-medium uppercase text-slate-500">My Recipes</p>
+                  <p className="mb-1 text-caption font-medium uppercase text-slate-500 dark:text-slate-400">
+                    My Recipes
+                  </p>
                   <div className="flex flex-wrap gap-2">
                     {recipes.map((recipe) => (
                       <button
                         key={recipe.id}
                         type="button"
-                        className="min-h-touch rounded-full bg-white px-3 py-1 text-sm shadow-sm"
+                        className="min-h-touch rounded-full bg-white dark:bg-surface-dark-card px-3 py-1 text-sm shadow-sm"
                         onClick={() => setSelected({ kind: 'recipe', recipe })}
                       >
                         {recipe.name}
@@ -197,7 +211,9 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
                 </div>
               )}
               {foods && foods.length === 0 && (
-                <p className="text-sm text-slate-500">Food database still loading…</p>
+                <p className="text-sm text-slate-500 dark:text-slate-400">
+                  Food database still loading…
+                </p>
               )}
             </div>
           )}
@@ -205,12 +221,12 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
       )}
 
       {selected && (
-        <div className="rounded-card bg-white">
+        <div className="rounded-card bg-white dark:bg-surface-dark-card">
           <div className="flex items-center justify-between">
             <h3 className="font-semibold">{nameOf(selected)}</h3>
             <button
               type="button"
-              className="min-h-touch text-sm text-slate-500 underline"
+              className="min-h-touch text-sm text-slate-500 dark:text-slate-400 underline"
               onClick={() => setSelected(null)}
             >
               Change
@@ -237,7 +253,7 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
           {mode === 'portion' ? (
             <div className="mt-3 flex flex-col gap-2">
               <select
-                className="min-h-touch rounded border border-slate-300 px-3 py-2"
+                className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
                 value={portionIndex}
                 onChange={(e) => setPortionIndex(Number(e.target.value))}
               >
@@ -253,7 +269,7 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
                   type="number"
                   min="0"
                   step="0.5"
-                  className="min-h-touch rounded border border-slate-300 px-3 py-2"
+                  className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
                   value={qty}
                   onChange={(e) => setQty(e.target.value)}
                 />
@@ -265,7 +281,7 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
               <input
                 type="number"
                 min="0"
-                className="min-h-touch rounded border border-slate-300 px-3 py-2"
+                className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
                 value={gramsValue}
                 onChange={(e) => setGramsValue(e.target.value)}
               />
@@ -273,7 +289,10 @@ export default function AddFoodSheetContent({ meal, onSaved, onRequestScan, onRe
           )}
 
           {preview && (
-            <p className="mt-3 text-sm text-slate-600 tabular-nums" data-testid="entry-preview">
+            <p
+              className="mt-3 text-sm text-slate-600 dark:text-slate-300 tabular-nums"
+              data-testid="entry-preview"
+            >
               {Math.round(preview.kcal)} kcal · {preview.p}p / {preview.c}c / {preview.f}f
             </p>
           )}
@@ -303,13 +322,15 @@ function FoodChipList({
 }) {
   return (
     <div>
-      <p className="mb-1 text-caption font-medium uppercase text-slate-500">{title}</p>
+      <p className="mb-1 text-caption font-medium uppercase text-slate-500 dark:text-slate-400">
+        {title}
+      </p>
       <div className="flex flex-wrap gap-2">
         {foods.map((food) => (
           <button
             key={food.id}
             type="button"
-            className="min-h-touch rounded-full bg-white px-3 py-1 text-sm shadow-sm"
+            className="min-h-touch rounded-full bg-white dark:bg-surface-dark-card px-3 py-1 text-sm shadow-sm"
             onClick={() => onSelect(food)}
           >
             {food.name}

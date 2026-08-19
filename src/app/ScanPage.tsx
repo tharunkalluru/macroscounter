@@ -21,7 +21,9 @@ export default function ScanPage() {
 
   const videoRef = useRef<HTMLVideoElement>(null)
   const [manualBarcode, setManualBarcode] = useState('')
-  const [cameraStatus, setCameraStatus] = useState<'starting' | 'active' | 'unavailable'>('starting')
+  const [cameraStatus, setCameraStatus] = useState<'starting' | 'active' | 'unavailable'>(
+    'starting'
+  )
   const [lookingUp, setLookingUp] = useState(false)
   const handledRef = useRef(false)
 
@@ -69,9 +71,13 @@ export default function ScanPage() {
           }
         } else {
           const reader = new BrowserMultiFormatReader()
-          const controls = await reader.decodeFromVideoDevice(undefined, videoRef.current, (result) => {
-            if (result) handleDetected(result.getText())
-          })
+          const controls = await reader.decodeFromVideoDevice(
+            undefined,
+            videoRef.current,
+            (result) => {
+              if (result) handleDetected(result.getText())
+            }
+          )
           setCameraStatus('active')
           stopFn = () => controls.stop()
         }
@@ -108,10 +114,15 @@ export default function ScanPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-700 underline">
+      <Link
+        to="/"
+        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+      >
         ← Back
       </Link>
-      <h1 className="mb-1 text-xl font-bold text-brand-700">Scan barcode · {MEAL_LABELS[meal]}</h1>
+      <h1 className="mb-1 text-xl font-bold text-brand-700 dark:text-brand-400">
+        Scan barcode · {MEAL_LABELS[meal]}
+      </h1>
 
       <div className="mt-3 overflow-hidden rounded-xl bg-slate-900" data-testid="camera-preview">
         <video ref={videoRef} className="aspect-video w-full object-cover" muted playsInline />
@@ -122,7 +133,9 @@ export default function ScanPage() {
         )}
       </div>
 
-      {lookingUp && <p className="mt-3 text-sm text-slate-500">Looking up product…</p>}
+      {lookingUp && (
+        <p className="mt-3 text-sm text-slate-500 dark:text-slate-400">Looking up product…</p>
+      )}
 
       <form onSubmit={handleManualSubmit} className="mt-4 flex gap-2">
         <label className="flex-1">
@@ -131,7 +144,7 @@ export default function ScanPage() {
             type="text"
             inputMode="numeric"
             placeholder="Enter barcode number"
-            className="w-full rounded border border-slate-300 px-3 py-2"
+            className="w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={manualBarcode}
             onChange={(e) => setManualBarcode(e.target.value)}
           />

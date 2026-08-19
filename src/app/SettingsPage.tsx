@@ -4,7 +4,9 @@ import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
 import { computeGoalTargets } from '../domain/goals/goalEngine'
 import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
+import type { ThemePreference } from '../domain/theme/resolveTheme'
 import { todayISO } from '../lib/date'
+import { useTheme } from './shell/ThemeContext'
 
 const ACTIVITY_OPTIONS: { value: ActivityLevel; label: string }[] = [
   { value: 'sedentary', label: 'Sedentary' },
@@ -19,6 +21,44 @@ const GOAL_OPTIONS: { value: Goal; label: string }[] = [
   { value: 'maintain', label: 'Maintain weight' },
   { value: 'gain', label: 'Gain weight' },
 ]
+
+const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
+  { value: 'light', label: 'Light' },
+  { value: 'dark', label: 'Dark' },
+  { value: 'system', label: 'System' },
+]
+
+function ThemeToggle() {
+  const { preference, setPreference } = useTheme()
+  return (
+    <fieldset className="flex flex-col gap-1">
+      <legend className="text-sm font-medium text-slate-900 dark:text-slate-100">Appearance</legend>
+      <div
+        className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800"
+        role="radiogroup"
+        aria-label="Appearance"
+      >
+        {THEME_OPTIONS.map((opt) => (
+          <button
+            key={opt.value}
+            type="button"
+            role="radio"
+            aria-checked={preference === opt.value}
+            data-testid={`theme-option-${opt.value}`}
+            onClick={() => setPreference(opt.value)}
+            className={`min-h-touch flex-1 rounded-md px-2 text-sm font-medium transition-colors ${
+              preference === opt.value
+                ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-400'
+                : 'text-slate-600 dark:text-slate-300'
+            }`}
+          >
+            {opt.label}
+          </button>
+        ))}
+      </div>
+    </fieldset>
+  )
+}
 
 export default function SettingsPage() {
   const navigate = useNavigate()
@@ -100,31 +140,42 @@ export default function SettingsPage() {
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-500 dark:text-slate-400">
+        Loading…
+      </div>
+    )
   }
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-10">
-      <Link to="/" className="mb-4 text-sm text-brand-700 underline">
+      <Link to="/" className="mb-4 text-sm text-brand-700 underline dark:text-brand-400">
         ← Back
       </Link>
-      <h1 className="mb-6 text-2xl font-bold text-brand-700">Profile & Targets</h1>
+      <h1 className="mb-6 text-2xl font-bold text-brand-700 dark:text-brand-400">
+        Profile & Targets
+      </h1>
 
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <ThemeToggle />
+
+      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Name</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Name</span>
           <input
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
         </label>
 
         <fieldset className="flex flex-col gap-1">
-          <legend className="text-sm font-medium">Sex</legend>
+          <legend className="text-sm font-medium text-slate-900 dark:text-slate-100">Sex</legend>
           <div className="flex gap-4">
             {(['male', 'female'] as const).map((value) => (
-              <label key={value} className="flex items-center gap-2">
+              <label
+                key={value}
+                className="flex items-center gap-2 text-slate-900 dark:text-slate-100"
+              >
                 <input
                   type="radio"
                   name="sex"
@@ -139,39 +190,45 @@ export default function SettingsPage() {
         </fieldset>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Age</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Age</span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={age}
             onChange={(e) => setAge(e.target.value)}
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Height (cm)</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            Height (cm)
+          </span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={heightCm}
             onChange={(e) => setHeightCm(e.target.value)}
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Weight (kg)</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            Weight (kg)
+          </span>
           <input
             type="number"
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
           />
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Activity level</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            Activity level
+          </span>
           <select
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
             value={activityLevel}
             onChange={(e) => setActivityLevel(e.target.value as ActivityLevel)}
           >
@@ -184,10 +241,13 @@ export default function SettingsPage() {
         </label>
 
         <fieldset className="flex flex-col gap-1">
-          <legend className="text-sm font-medium">Goal</legend>
+          <legend className="text-sm font-medium text-slate-900 dark:text-slate-100">Goal</legend>
           <div className="flex flex-col gap-2">
             {GOAL_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex items-center gap-2">
+              <label
+                key={opt.value}
+                className="flex items-center gap-2 text-slate-900 dark:text-slate-100"
+              >
                 <input
                   type="radio"
                   name="goal"
@@ -202,17 +262,25 @@ export default function SettingsPage() {
         </fieldset>
 
         {error && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
         )}
-        {saved && <p className="text-sm text-brand-700">Saved — targets recalculated.</p>}
+        {saved && (
+          <p className="text-sm text-brand-700 dark:text-brand-400">
+            Saved — targets recalculated.
+          </p>
+        )}
 
         <div className="mt-2 flex gap-3">
           <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
             Save & recalculate
           </button>
-          <button type="button" onClick={() => navigate('/')} className="rounded px-4 py-2 text-slate-600">
+          <button
+            type="button"
+            onClick={() => navigate('/')}
+            className="rounded px-4 py-2 text-slate-600 dark:text-slate-300"
+          >
             Done
           </button>
         </div>

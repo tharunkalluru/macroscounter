@@ -2,6 +2,7 @@ import { Outlet } from 'react-router-dom'
 import BottomSheet from './BottomSheet'
 import BottomTabBar from './BottomTabBar'
 import Header from './Header'
+import PageTransition from './PageTransition'
 import { useUIState } from './UIStateContext'
 import AddFoodSheetContent from '../sheets/AddFoodSheetContent'
 
@@ -14,10 +15,12 @@ export default function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-surface">
+    <div className="min-h-screen bg-surface dark:bg-surface-dark">
       <Header />
       <main className="pb-24">
-        <Outlet />
+        <PageTransition>
+          <Outlet />
+        </PageTransition>
       </main>
       <BottomTabBar />
 

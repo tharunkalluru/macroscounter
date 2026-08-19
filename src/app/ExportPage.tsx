@@ -28,10 +28,13 @@ export default function ExportPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-700 underline">
+      <Link
+        to="/"
+        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+      >
         ← Back
       </Link>
-      <h1 className="mb-4 text-xl font-bold text-brand-700">Export data</h1>
+      <h1 className="mb-4 text-xl font-bold text-brand-700 dark:text-brand-400">Export data</h1>
 
       <div className="flex flex-col gap-3">
         <button

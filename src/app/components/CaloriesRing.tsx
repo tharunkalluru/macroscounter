@@ -2,6 +2,7 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { computeRingState } from '../../domain/ring/ringState'
 import { motion as motionTokens, neutral, semantic } from '../../theme/tokens'
 import { useCountUp } from '../hooks/useCountUp'
+import { useTheme } from '../shell/ThemeContext'
 
 interface Props {
   consumedKcal: number
@@ -14,6 +15,8 @@ const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
   const prefersReducedMotion = useReducedMotion()
+  const { resolvedTheme } = useTheme()
+  const trackColor = resolvedTheme === 'dark' ? neutral[700] : neutral[200]
 
   // Ring fill/color track the final (settled) values — framer-motion handles
   // their own smooth interpolation via the `animate` transition below.
@@ -43,7 +46,7 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
         aria-label={ariaLabel}
       >
         <svg width={180} height={180} viewBox="0 0 180 180">
-          <circle cx={90} cy={90} r={RADIUS} fill="none" stroke={neutral[200]} strokeWidth={STROKE} />
+          <circle cx={90} cy={90} r={RADIUS} fill="none" stroke={trackColor} strokeWidth={STROKE} />
           <motion.circle
             cx={90}
             cy={90}
@@ -64,10 +67,15 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
           />
         </svg>
         <div className="absolute flex flex-col items-center" aria-hidden="true">
-          <span className="text-display tabular-nums text-slate-900" data-testid="kcal-remaining">
+          <span
+            className="text-display tabular-nums text-slate-900 dark:text-slate-100"
+            data-testid="kcal-remaining"
+          >
             {textState.centerText}
           </span>
-          <span className="text-caption text-slate-500">{textState.subLabel}</span>
+          <span className="text-caption text-slate-500 dark:text-slate-400">
+            {textState.subLabel}
+          </span>
         </div>
       </div>
 
@@ -90,8 +98,10 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
 function Figure({ label, value, testId }: { label: string; value: number; testId: string }) {
   return (
     <div data-testid={testId}>
-      <p className="text-body font-semibold tabular-nums text-slate-800">{value}</p>
-      <p className="text-caption text-slate-500">{label}</p>
+      <p className="text-body font-semibold tabular-nums text-slate-800 dark:text-slate-100">
+        {value}
+      </p>
+      <p className="text-caption text-slate-500 dark:text-slate-400">{label}</p>
     </div>
   )
 }

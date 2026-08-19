@@ -549,3 +549,72 @@ set of gated sub-phases (9A–9F) on top of the existing app, same protocol as P
   headless browser.
 - Gate: `lint && tsc --noEmit && check:tokens && test && build && test:e2e` → all green. Bundle:
   157.38 KB gz initial (budget 300 KB).
+
+## 9E — Motion & Feel
+- **Screen transitions**: `PageTransition.tsx` wraps the shell's `<Outlet/>` in an
+  `AnimatePresence mode="wait"`, keyed by `location.pathname`, fading/sliding (8px) between tabs
+  over the shared `motion.screenTransitionMs` (200ms) token — collapses to a plain opacity fade
+  with `useReducedMotion`.
+- **Count-up everywhere a running total changes**: the ring's center number already counted up
+  (9C) via `useCountUp`; meal subtotals (`meal-subtotal-{meal}`) now use the same hook (300ms),
+  so logging/deleting/copying/undoing a meal's items animates its kcal total instead of snapping.
+- **FLIP list animations**: each meal's entry rows are wrapped in `AnimatePresence` +
+  `motion.div layout` (fade+height, 200ms) in `MealSection.tsx` — adding an entry (search, template,
+  suggestion chip, copy-from-yesterday) grows it in, removing one (swipe-delete) shrinks it out, and
+  surrounding rows reflow smoothly instead of jumping.
+- **Haptics**: `src/lib/haptics.ts` (`vibrateTiny`, feature-detected `navigator.vibrate(10)`) fires
+  on every successful log (`AddFoodSheetContent`, `AddFoodPage`, `QuickAddPage`, `ScanProductPage`,
+  and MealSection's suggestion-chip/template/copy-from-yesterday paths) and on the swipe-delete
+  undo action.
+- **Skeleton loader**: `DashboardSkeleton.tsx` mirrors the loaded Today page's exact shape (date
+  nav, ring, three macro bars, four meal cards) using `motion-safe:animate-pulse` blocks — reserves
+  the same heights as the real content so nothing shifts once data arrives, and collapses to static
+  grey blocks under `prefers-reduced-motion` (Tailwind's `motion-safe:` variant, not a custom check).
+- **Dark mode** — the largest piece of this sub-phase: `ThemeContext.tsx` (`light`/`dark`/`system`
+  preference, `localStorage`-persisted, resolved against `matchMedia('(prefers-color-scheme:
+  dark)')` with a live listener while on "system") applies/removes a `dark` class on
+  `<html>`; an inline blocking script in `index.html` mirrors the same resolution logic to set that
+  class *before first paint*, avoiding a light-then-dark flash. A 3-way toggle lives in Settings
+  (`data-testid="theme-option-{light,dark,system}"`). `tailwind.config.ts`'s `darkMode: 'class'`
+  and the `surface-dark`/`card-dark` tokens were already in place from 9A — this phase is what
+  actually *uses* them: `body`'s default text/background (`src/index.css`) got `dark:` variants,
+  which alone fixed every plain, unstyled paragraph/span across the app (most pages rely on that
+  inherited default rather than an explicit color class), and every explicit `bg-white`/
+  `text-slate-*`/`border-slate-*`/`divide-slate-*` class across `src/app/**` got a paired `dark:`
+  variant (dark-mode text mapping: slate-800/900→slate-100, slate-600/700→slate-200/300,
+  slate-500→slate-400 — the same "shift one notch lighter" pattern needed to hold 4.5:1 against the
+  dark card background, computed and verified the same way as the 9A brand-600→700 fix). Framer's
+  own `stroke`/`fill` SVG props (the ring's background track, `WeightSection`'s Recharts grid/axis/
+  tooltip colors) aren't reachable by Tailwind's `dark:` variant at all, so those read
+  `resolvedTheme` from `useTheme()` directly and pick a token color in JS.
+- **A real contrast bug the dark-mode a11y scan caught, not manual review**: `text-brand-700` (the
+  5.13:1-on-white color chosen in 9A specifically for text) is only 3.24:1 against the dark card
+  background (`#132119`) — fails 4.5:1. It was used bare, with no dark override, in 14 files (every
+  "← Back" link, several buttons) and `text-red-600`/`text-red-700` (delete/error text) had the same
+  problem in 9 more (2.58–3.45:1 against the dark card). Fixed by pairing every bare occurrence with
+  `dark:text-brand-400` (10.74:1) / `dark:text-red-400` (6.03:1) app-wide. Caught by the new
+  dark-mode axe scan on the Add Food sheet — the light-mode a11y suite (still fully green) could
+  never have caught this since the failure only exists once the dark palette is active, which is
+  exactly why 9E adds its own dark-mode a11y coverage rather than trusting the existing light-mode
+  scans to generalize.
+- **Two real framer-motion gesture bugs found only by reproducing the actual event sequence**,
+  while first building 9D's swipe-to-delete and now touched again for FLIP: documented in the 9D
+  section above; the FLIP work here reused the same `SwipeToDeleteRow` unchanged; noted here because
+  the fixes (drag-axis `stopPropagation`, live `onDrag`-based click suppression) are why the new FLIP
+  animations and the pre-existing swipe gesture continue to coexist correctly on the same row.
+- Tests: `resolveTheme.test.ts` (3 cases — explicit dark/light always win, "system" defers to the OS
+  flag), `haptics.test.ts` (2 cases — calls `navigator.vibrate(10)` when available, no-ops/no-throw
+  when the API is absent), and a reduced-motion pair for `useCountUp` split across two files
+  (`useCountUp.reducedMotion.test.tsx` / `useCountUp.normalMotion.test.tsx`) — framer-motion caches
+  its OS-preference detection once per module load, so the two preference states needed separate
+  module registries (separate test files) rather than one file toggling a mock mid-suite, which is
+  the same "isolation" reasoning documented for the E2E gesture-dispatch fix above, one layer down
+  the stack. 235 unit tests total (+7), all green. New `e2e/darkMode.spec.ts` (4 specs): toggle
+  persists across reload (and across a full page navigation, and back to Light), 0 axe violations
+  on the dashboard/Settings/Add-Food-sheet in dark mode. 43 E2E specs total, all green (verified
+  stable across three consecutive full runs — one transient "element outside viewport" failure
+  during development was confirmed as parallel-worker timing flakiness, not a real regression, by
+  reproducing it 3x in isolation with zero failures).
+- Gate: `lint && tsc --noEmit && check:tokens && test && build && test:e2e` → all green. Bundle:
+  159.31 KB gz initial (budget 300 KB) — no new runtime dependency; the CSS bump (+0.15KB gz) is
+  from the doubled `dark:` variant classes.

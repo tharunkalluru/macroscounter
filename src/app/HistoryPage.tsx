@@ -11,10 +11,10 @@ import { addDaysISO, getMonthGrid, isFutureDate, todayISO } from '../lib/date'
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
 const BAND_CLASSES: Record<DayColorBand, string> = {
-  none: 'bg-slate-100 text-slate-600',
-  green: 'bg-brand-100 text-brand-700',
-  amber: 'bg-amber-100 text-amber-800',
-  red: 'bg-red-100 text-red-700',
+  none: 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300',
+  green: 'bg-brand-100 text-brand-700 dark:bg-brand-900/40 dark:text-brand-400',
+  amber: 'bg-amber-100 text-amber-800 dark:bg-amber-900/40 dark:text-amber-300',
+  red: 'bg-red-100 text-red-700 dark:text-red-400 dark:bg-red-900/40 dark:text-red-300',
 }
 
 export default function HistoryPage() {
@@ -35,7 +35,10 @@ export default function HistoryPage() {
     const days = grid.filter((d): d is string => d !== null)
     if (days.length === 0) return
     ;(async () => {
-      const monthEntries = await new LogRepo().getEntriesForDateRange(days[0], days[days.length - 1])
+      const monthEntries = await new LogRepo().getEntriesForDateRange(
+        days[0],
+        days[days.length - 1]
+      )
       setEntries(monthEntries)
     })()
   }, [grid])
@@ -74,7 +77,10 @@ export default function HistoryPage() {
       newYear += 1
     }
     // Guard: don't allow navigating into a future month.
-    if (newYear > today.getFullYear() || (newYear === today.getFullYear() && newMonth > today.getMonth())) {
+    if (
+      newYear > today.getFullYear() ||
+      (newYear === today.getFullYear() && newMonth > today.getMonth())
+    ) {
       return
     }
     setYear(newYear)
@@ -90,9 +96,13 @@ export default function HistoryPage() {
       </Link>
       <h1 className="mb-4 text-xl font-bold text-brand-700">History</h1>
 
-      <div className="rounded-xl bg-white p-4 shadow-sm">
+      <div className="rounded-xl bg-white dark:bg-surface-dark-card p-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between text-sm">
-          <button type="button" onClick={() => changeMonth(-1)} className="text-brand-700 underline">
+          <button
+            type="button"
+            onClick={() => changeMonth(-1)}
+            className="text-brand-700 underline"
+          >
             ← Prev
           </button>
           <span className="font-medium">{monthLabel}</span>
@@ -106,7 +116,7 @@ export default function HistoryPage() {
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 text-center text-xs text-slate-500">
+        <div className="grid grid-cols-7 gap-1 text-center text-xs text-slate-500 dark:text-slate-400">
           {WEEKDAY_LABELS.map((d) => (
             <div key={d}>{d}</div>
           ))}
@@ -125,7 +135,7 @@ export default function HistoryPage() {
             return future ? (
               <div
                 key={date}
-                className="flex aspect-square items-center justify-center rounded text-sm bg-slate-50 text-slate-600"
+                className="flex aspect-square items-center justify-center rounded text-sm bg-slate-50 dark:bg-slate-800 text-slate-600 dark:text-slate-300"
                 data-testid={`day-${date}`}
               >
                 {dayNum}
@@ -146,13 +156,23 @@ export default function HistoryPage() {
       </div>
 
       <div className="mt-6 grid grid-cols-2 gap-3">
-        <div className="rounded-lg bg-white p-3 shadow-sm" data-testid="avg-7day">
-          <p className="text-xs text-slate-500">7-day avg</p>
-          <p className="text-lg font-semibold">{avg7.daysCounted > 0 ? `${avg7.kcal} kcal` : '—'}</p>
+        <div
+          className="rounded-lg bg-white dark:bg-surface-dark-card p-3 shadow-sm"
+          data-testid="avg-7day"
+        >
+          <p className="text-xs text-slate-500 dark:text-slate-400">7-day avg</p>
+          <p className="text-lg font-semibold">
+            {avg7.daysCounted > 0 ? `${avg7.kcal} kcal` : '—'}
+          </p>
         </div>
-        <div className="rounded-lg bg-white p-3 shadow-sm" data-testid="avg-30day">
-          <p className="text-xs text-slate-500">30-day avg</p>
-          <p className="text-lg font-semibold">{avg30.daysCounted > 0 ? `${avg30.kcal} kcal` : '—'}</p>
+        <div
+          className="rounded-lg bg-white dark:bg-surface-dark-card p-3 shadow-sm"
+          data-testid="avg-30day"
+        >
+          <p className="text-xs text-slate-500 dark:text-slate-400">30-day avg</p>
+          <p className="text-lg font-semibold">
+            {avg30.daysCounted > 0 ? `${avg30.kcal} kcal` : '—'}
+          </p>
         </div>
       </div>
 

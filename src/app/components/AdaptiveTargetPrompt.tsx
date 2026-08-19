@@ -48,7 +48,12 @@ export default function AdaptiveTargetPrompt({ onAccepted }: Props) {
       // Don't re-suggest the same week's adjustment again once it's already been accepted.
       if (targets.source === 'adaptive' && targets.effectiveDate >= windowStart) return
 
-      const floorKcal = computeKcalFloor(profile.sex, profile.weightKg, profile.heightCm, profile.age)
+      const floorKcal = computeKcalFloor(
+        profile.sex,
+        profile.weightKg,
+        profile.heightCm,
+        profile.age
+      )
       const result = computeAdaptiveAdjustment({
         loggedDays: groupEntriesByDate(entries),
         weighIns: weighIns.map((w) => ({ date: w.date, weightKg: w.weightKg })),
@@ -70,7 +75,10 @@ export default function AdaptiveTargetPrompt({ onAccepted }: Props) {
       const currentTargets = await new TargetRepo().getLatest()
       const proteinG = currentTargets?.proteinG ?? 0
       const fatG = currentTargets?.fatG ?? 0
-      const carbsG = Math.max(0, Math.round((recommendation.suggestedKcal - proteinG * 4 - fatG * 9) / 4))
+      const carbsG = Math.max(
+        0,
+        Math.round((recommendation.suggestedKcal - proteinG * 4 - fatG * 9) / 4)
+      )
 
       await new TargetRepo().add({
         effectiveDate: todayISO(),
@@ -98,13 +106,13 @@ export default function AdaptiveTargetPrompt({ onAccepted }: Props) {
 
   return (
     <div
-      className="mt-4 rounded-lg border border-brand-100 bg-brand-50 p-4 text-sm"
+      className="mt-4 rounded-lg border border-brand-100 bg-brand-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-800"
       data-testid="adaptive-prompt"
     >
-      <p className="font-medium text-brand-700" data-testid="adaptive-headline">
+      <p className="font-medium text-brand-700 dark:text-brand-400" data-testid="adaptive-headline">
         Suggestion: {direction} your target to {recommendation.suggestedKcal} kcal
       </p>
-      <p className="mt-1 text-slate-600" data-testid="adaptive-reason">
+      <p className="mt-1 text-slate-600 dark:text-slate-300" data-testid="adaptive-reason">
         {recommendation.reason}
       </p>
       <div className="mt-3 flex gap-3">
@@ -116,7 +124,11 @@ export default function AdaptiveTargetPrompt({ onAccepted }: Props) {
         >
           Accept
         </button>
-        <button type="button" onClick={handleDismiss} className="rounded px-3 py-1 text-slate-500 underline">
+        <button
+          type="button"
+          onClick={handleDismiss}
+          className="rounded px-3 py-1 text-slate-500 underline dark:text-slate-400"
+        >
           Dismiss
         </button>
       </div>

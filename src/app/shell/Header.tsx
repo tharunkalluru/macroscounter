@@ -35,12 +35,12 @@ export default function Header() {
   return (
     <header className="mx-auto flex max-w-md items-center justify-between px-6 pb-2 pt-6">
       <div>
-        <p className="text-title text-brand-700">MacroDesi</p>
+        <p className="text-title text-brand-700 dark:text-brand-400">MacroDesi</p>
         {streak > 0 && (
           <Link
             to="/trends"
             data-testid="streak-chip"
-            className="mt-1 inline-flex min-h-touch items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-caption font-medium text-brand-700"
+            className="mt-1 inline-flex min-h-touch items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-caption font-medium text-brand-700 dark:bg-slate-800 dark:text-brand-400"
           >
             <span aria-hidden="true">🔥</span>
             <span>
@@ -54,7 +54,7 @@ export default function Header() {
         to="/settings"
         aria-label="Settings"
         data-testid="avatar-link"
-        className="flex min-h-touch min-w-touch items-center justify-center rounded-full bg-brand-100 text-title text-brand-700"
+        className="flex min-h-touch min-w-touch items-center justify-center rounded-full bg-brand-100 text-title text-brand-700 dark:bg-slate-800 dark:text-brand-400"
       >
         {initial}
       </Link>

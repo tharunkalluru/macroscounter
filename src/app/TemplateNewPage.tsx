@@ -30,7 +30,8 @@ export default function TemplateNewPage() {
     e.preventDefault()
     setError(null)
     if (!name.trim()) return setError('Please name this template.')
-    if (templatable.length === 0) return setError('No foods in this meal can be saved as a template.')
+    if (templatable.length === 0)
+      return setError('No foods in this meal can be saved as a template.')
 
     await new MealTemplateRepo().add({
       name: name.trim(),
@@ -44,21 +45,30 @@ export default function TemplateNewPage() {
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-500 dark:text-slate-400">
+        Loading…
+      </div>
+    )
   }
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-700 underline">
+      <Link
+        to="/"
+        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+      >
         ← Back
       </Link>
-      <h1 className="mb-1 text-xl font-bold text-brand-700">Save as template</h1>
-      <p className="mb-4 text-sm text-slate-500">
+      <h1 className="mb-1 text-xl font-bold text-brand-700 dark:text-brand-400">
+        Save as template
+      </h1>
+      <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
         Saving {templatable.length} food{templatable.length === 1 ? '' : 's'} from this meal.
         {skipped > 0 && ` (${skipped} custom/recipe entr${skipped === 1 ? 'y' : 'ies'} skipped.)`}
       </p>
 
-      <ul className="mb-4 divide-y divide-slate-100 rounded-lg bg-white shadow-sm">
+      <ul className="mb-4 divide-y divide-slate-100 dark:divide-slate-700 rounded-lg bg-white dark:bg-surface-dark-card shadow-sm">
         {templatable.map((entry) => (
           <li key={entry.id} className="px-3 py-2 text-sm">
             {entry.name} · {entry.portionSummary}
@@ -70,7 +80,7 @@ export default function TemplateNewPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Template name</span>
           <input
-            className="rounded border border-slate-300 px-3 py-2"
+            className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Usual Breakfast"
@@ -79,7 +89,7 @@ export default function TemplateNewPage() {
         </label>
 
         {error && (
-          <p role="alert" className="text-sm text-red-600">
+          <p role="alert" className="text-sm text-red-600 dark:text-red-400">
             {error}
           </p>
         )}

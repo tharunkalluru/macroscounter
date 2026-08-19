@@ -59,25 +59,37 @@ export default function TemplatesPage() {
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-500 dark:text-slate-400">
+        Loading…
+      </div>
+    )
   }
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link to="/" className="mb-4 inline-block text-sm text-brand-700 underline">
+      <Link
+        to="/"
+        className="mb-4 inline-block text-sm text-brand-700 dark:text-brand-400 underline"
+      >
         ← Back
       </Link>
-      <h1 className="mb-4 text-xl font-bold text-brand-700">Templates</h1>
+      <h1 className="mb-4 text-xl font-bold text-brand-700 dark:text-brand-400">Templates</h1>
 
       <ul className="flex flex-col gap-3" data-testid="templates-list">
         {templates.map((template) => (
-          <li key={template.id} className="rounded-lg bg-white p-4 shadow-sm">
+          <li
+            key={template.id}
+            className="rounded-lg bg-white dark:bg-surface-dark-card p-4 shadow-sm"
+          >
             <p className="font-medium">{template.name}</p>
-            <p className="text-xs text-slate-500">{template.entries.length} items</p>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              {template.entries.length} items
+            </p>
 
             <div className="mt-3 flex items-center gap-2">
               <select
-                className="rounded border border-slate-300 px-2 py-1 text-sm"
+                className="rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-2 py-1 text-sm"
                 value={mealByTemplate[template.id!] ?? 'breakfast'}
                 onChange={(e) =>
                   setMealByTemplate((prev) => ({ ...prev, [template.id!]: e.target.value as Meal }))
@@ -100,7 +112,7 @@ export default function TemplatesPage() {
               <button
                 type="button"
                 onClick={() => handleDelete(template.id)}
-                className="ml-auto text-sm text-red-600 underline"
+                className="ml-auto text-sm text-red-600 dark:text-red-400 underline"
               >
                 Delete
               </button>
@@ -108,7 +120,7 @@ export default function TemplatesPage() {
           </li>
         ))}
         {templates.length === 0 && (
-          <li className="text-sm text-slate-500">
+          <li className="text-sm text-slate-500 dark:text-slate-400">
             No templates yet — save a meal from the Today view as a template to see it here.
           </li>
         )}

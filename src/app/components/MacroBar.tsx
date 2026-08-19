@@ -23,27 +23,27 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
 
   const content = (
     <>
-      <div className="flex justify-between text-caption text-slate-500">
+      <div className="flex justify-between text-caption text-slate-500 dark:text-slate-400">
         <span>{label}</span>
         <span className="tabular-nums" data-testid={`${testId}-value`}>
           {Math.round(consumed)} / {Math.round(target)} g
         </span>
       </div>
-      <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100">
+      <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
         <motion.div
           className={`h-2 w-full origin-left rounded-full ${colorClass}`}
           initial={false}
           animate={{ scaleX: scale }}
-          transition={prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }}
+          transition={
+            prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
+          }
         />
       </div>
     </>
   )
 
   if (!onTap) {
-    return (
-      <div data-testid={testId}>{content}</div>
-    )
+    return <div data-testid={testId}>{content}</div>
   }
 
   return (
