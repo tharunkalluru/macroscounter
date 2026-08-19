@@ -6,6 +6,8 @@ test('completing onboarding computes and shows the correct kcal target on the da
   page,
 }) => {
   await page.goto('/')
+  await expect(page).toHaveURL(/\/welcome$/)
+  await page.getByTestId('signin-skip-button').click()
   await expect(page).toHaveURL(/\/onboarding$/)
   await expect(page.getByRole('heading', { name: /macrodesi/i })).toBeVisible()
 
@@ -28,6 +30,7 @@ test('completing onboarding computes and shows the correct kcal target on the da
 
 test('data persists across a reload after onboarding', async ({ page }) => {
   await page.goto('/')
+  await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Reload Check')
   await page.getByRole('radio', { name: 'female', exact: true }).check()
   await page.getByPlaceholder('years').fill('26')

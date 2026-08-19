@@ -11,6 +11,7 @@ const offNotFound = JSON.parse(readFileSync(resolve(fixturesDir, 'off-not-found.
 
 async function onboard(page: Page) {
   await page.goto('/')
+  await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Barcode Persona')
   await page.getByRole('radio', { name: 'male', exact: true }).check()
   await page.getByPlaceholder('years').fill('28')

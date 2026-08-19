@@ -6,6 +6,7 @@ import { computeGoalTargets } from '../domain/goals/goalEngine'
 import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
 import type { ThemePreference } from '../domain/theme/resolveTheme'
 import { todayISO } from '../lib/date'
+import AccountSection from './components/AccountSection'
 import SyncStatusDot from './components/SyncStatusDot'
 import { useTheme } from './shell/ThemeContext'
 
@@ -157,6 +158,10 @@ export default function SettingsPage() {
         Profile & Targets
       </h1>
       <SyncStatusDot />
+
+      <div className="mt-4">
+        <AccountSection />
+      </div>
 
       <div className="mt-6">
         <ThemeToggle />

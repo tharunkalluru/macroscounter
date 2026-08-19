@@ -4,6 +4,7 @@ import { test } from '@playwright/test'
 
 async function onboard(page: Page) {
   await page.goto('/')
+  await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('A11y Persona')
   await page.getByPlaceholder('years').fill('28')
   await page.getByPlaceholder('cm').fill('170')
@@ -19,8 +20,15 @@ async function expectNoViolations(page: Page) {
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
 }
 
+test('sign-in (welcome) screen has no WCAG A/AA violations', async ({ page }) => {
+  await page.goto('/')
+  await expect(page).toHaveURL(/\/welcome$/)
+  await expectNoViolations(page)
+})
+
 test('onboarding form has no WCAG A/AA violations', async ({ page }) => {
   await page.goto('/')
+  await page.getByTestId('signin-skip-button').click()
   await expectNoViolations(page)
 })
 

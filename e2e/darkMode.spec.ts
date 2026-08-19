@@ -4,6 +4,7 @@ import { test } from '@playwright/test'
 
 async function onboard(page: Page) {
   await page.goto('/')
+  await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Dark Mode Persona')
   await page.getByRole('radio', { name: 'male', exact: true }).check()
   await page.getByPlaceholder('years').fill('28')
@@ -37,6 +38,16 @@ test('dark-mode toggle persists across reload', async ({ page }) => {
   await expect(page.locator('html')).not.toHaveClass(/dark/)
   await page.reload()
   await expect(page.locator('html')).not.toHaveClass(/dark/)
+})
+
+test('sign-in (welcome) screen has no WCAG A/AA violations in dark mode', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('macrodesi-theme', 'dark'))
+  await page.goto('/')
+  await expect(page).toHaveURL(/\/welcome$/)
+  await expect(page.locator('html')).toHaveClass(/dark/)
+
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
 })
 
 test('dashboard has no WCAG A/AA violations in dark mode', async ({ page }) => {

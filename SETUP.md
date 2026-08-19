@@ -5,10 +5,11 @@ This doc covers provisioning the pieces needed for cloud sync and Google
 sign-in, which only you (the project owner) can do since they require
 creating real accounts and credentials.
 
-Status: Phase 10.1 (sync engine + database schema) is built and tested
-against a mocked server. Phase 10.2 (real Google sign-in) has not landed
-yet — the steps below can be done now, but sign-in itself will still show a
-placeholder until 10.2 ships.
+Status: the sync engine, database schema, and Google sign-in (via Better
+Auth) are all built and tested against mocks/fixtures — but none of it has
+run against a real Neon database or real Google OAuth credentials, since
+those require you to provision real accounts. Follow the steps below to
+make it real.
 
 ## 1. Database — Neon via Vercel Marketplace
 
@@ -34,9 +35,7 @@ today is Neon through the Vercel Marketplace.
    npm run db:migrate    # apply pending migrations to $DATABASE_URL
    ```
 
-## 2. Google OAuth (needed for Phase 10.2)
-
-Not required yet, but set it up now if you want it ready:
+## 2. Google OAuth
 
 1. [Google Cloud Console](https://console.cloud.google.com/) → create a
    project (or reuse one) → **APIs & Services → OAuth consent screen** →
@@ -45,12 +44,20 @@ Not required yet, but set it up now if you want it ready:
 2. **APIs & Services → Credentials → Create Credentials → OAuth client ID**
    → Application type "Web application".
 3. Authorized JavaScript origins: your Vercel production domain (e.g.
-   `https://macrodesi.vercel.app`) and `http://localhost:5173` (Vite dev
-   server) / `http://localhost:4173` (preview server).
+   `https://macrodesi.vercel.app`) and any Vercel preview domains you use.
 4. Authorized redirect URIs: `<origin>/api/auth/callback/google` for each
-   origin above (Better Auth's default callback path).
+   origin above (Better Auth's callback path — see `api/auth/[...all].ts`).
 5. Copy the generated **Client ID** and **Client secret** into
    `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
+
+**Local testing note:** `npm run dev` / `npm run preview` (plain Vite)
+cannot run `/api/*.ts` at all — there's nothing to redirect back to, so
+Google sign-in only works against a real Vercel deployment (or `vercel dev`
+with the env vars below pulled locally via `vercel env pull`). This is why
+`http://localhost:*` isn't listed as an authorized origin above. Guest mode
+needs none of this and works fully in plain local dev — the app detects the
+missing `/api` routes and fails the session check fast instead of hanging
+(see the `apiNotFoundInDev` Vite plugin in `vite.config.ts`).
 
 ## 3. Environment variables
 

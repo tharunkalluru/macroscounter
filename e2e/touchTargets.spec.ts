@@ -5,6 +5,7 @@ const MIN_SIZE = 44
 
 async function onboard(page: Page) {
   await page.goto('/')
+  await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Touch Target Persona')
   await page.getByRole('radio', { name: 'male', exact: true }).check()
   await page.getByPlaceholder('years').fill('28')
@@ -72,8 +73,15 @@ async function auditTouchTargets(page: Page, pageName: string) {
 test.describe('touch-target audit (390x844, every visible interactive element >= 44x44)', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 
+  test('sign-in (welcome) screen', async ({ page }) => {
+    await page.goto('/')
+    await expect(page).toHaveURL(/\/welcome$/)
+    await auditTouchTargets(page, 'welcome')
+  })
+
   test('onboarding form', async ({ page }) => {
     await page.goto('/')
+    await page.getByTestId('signin-skip-button').click()
     await auditTouchTargets(page, 'onboarding')
   })
 

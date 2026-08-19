@@ -9,6 +9,7 @@ import { test } from '@playwright/test'
 
 async function onboard(page: Page) {
   await page.goto('/')
+  await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Nav Persona')
   await page.getByRole('radio', { name: 'male', exact: true }).check()
   await page.getByPlaceholder('years').fill('28')

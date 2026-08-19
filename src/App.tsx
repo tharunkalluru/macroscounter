@@ -15,6 +15,7 @@ import SyncTriggers from './app/shell/SyncTriggers'
 import { ThemeProvider } from './app/shell/ThemeContext'
 import { UIStateProvider } from './app/shell/UIStateContext'
 import SettingsPage from './app/SettingsPage'
+import SignInScreen from './app/SignInScreen'
 import TemplateNewPage from './app/TemplateNewPage'
 import TemplatesPage from './app/TemplatesPage'
 import { ensureFoodDbSeeded } from './data/seed'
@@ -81,6 +82,7 @@ function App() {
               </Route>
 
               {/* Full-screen task flows: no shell chrome. */}
+              <Route path="/welcome" element={<SignInScreen />} />
               <Route path="/onboarding" element={<OnboardingFlow />} />
               <Route path="/log/add" element={<AddFoodPage />} />
               <Route path="/log/edit/:entryId" element={<AddFoodPage />} />

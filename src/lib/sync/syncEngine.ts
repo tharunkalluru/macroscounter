@@ -91,6 +91,19 @@ async function pushOutbox(db: MacroDesiDB): Promise<void> {
   }
 }
 
+/**
+ * Raw, unmerged pull used only to answer "does this account already have a
+ * profile on the server?" (see resolveAfterSignIn's pull-vs-migrate branch)
+ * — deliberately doesn't touch local tables, since a normal `runSync()`
+ * pull is what actually merges data down once that decision is made.
+ */
+export async function serverHasProfile(): Promise<boolean> {
+  const res = await fetch('/api/sync/pull?since=0', { credentials: 'include' })
+  if (!res.ok) throw new Error(`pull failed: ${res.status}`)
+  const { tables } = (await res.json()) as { tables: Record<string, SyncRow[]> }
+  return (tables.profiles?.length ?? 0) > 0
+}
+
 async function pullChanges(db: MacroDesiDB, since: number): Promise<void> {
   const res = await fetch(`/api/sync/pull?since=${since}`, { credentials: 'include' })
   if (!res.ok) throw new Error(`pull failed: ${res.status}`)

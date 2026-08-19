@@ -8,6 +8,7 @@ import { TargetRepo } from '../data/repos/TargetRepo'
 import { findApplicableTarget } from '../domain/history/targetForDate'
 import { sumMacros } from '../domain/logging/portionMath'
 import { addDaysISO, isFutureDate, todayISO } from '../lib/date'
+import { hasMadeSignInChoice } from '../lib/sync/guestMode'
 import AdaptiveTargetPrompt from './components/AdaptiveTargetPrompt'
 import CaloriesRing from './components/CaloriesRing'
 import DashboardSkeleton from './components/DashboardSkeleton'
@@ -23,7 +24,7 @@ const MACRO_DEFS = {
   f: { key: 'f' as const, label: 'Fat', colorClass: 'bg-fat-500' },
 }
 
-type LoadState = 'loading' | 'ready' | 'no-profile'
+type LoadState = 'loading' | 'ready' | 'no-profile' | 'welcome'
 
 const MEALS: { key: Meal; label: string }[] = [
   { key: 'breakfast', label: 'Breakfast' },
@@ -67,7 +68,9 @@ export default function Dashboard() {
       const p = await profileRepo.get()
       if (cancelled) return
       if (!p) {
-        setState('no-profile')
+        const decided = await hasMadeSignInChoice()
+        if (cancelled) return
+        setState(decided ? 'no-profile' : 'welcome')
         return
       }
       const [allTargets, dayEntries, historyRange] = await Promise.all([
@@ -115,6 +118,10 @@ export default function Dashboard() {
 
   if (state === 'loading') {
     return <DashboardSkeleton />
+  }
+
+  if (state === 'welcome') {
+    return <Navigate to="/welcome" replace />
   }
 
   if (state === 'no-profile') {

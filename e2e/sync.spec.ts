@@ -5,6 +5,7 @@ const TEST_USER_ID = 'sync-e2e-user-1'
 
 async function onboard(page: Page) {
   await page.goto('/')
+  await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Sync Persona')
   await page.getByRole('radio', { name: 'male', exact: true }).check()
   await page.getByPlaceholder('years').fill('28')
@@ -26,7 +27,13 @@ async function signIn(page: Page, userId: string) {
       req.onsuccess = () => {
         const db = req.result
         const tx = db.transaction('syncMeta', 'readwrite')
-        tx.objectStore('syncMeta').add({
+        const store = tx.objectStore('syncMeta')
+        // `onboard()` already went through the "Skip for now" guest flow,
+        // which wrote its own syncMeta row — clear it first so the signed-in
+        // row added below is unambiguously the one `.first()` (the app's own
+        // lookup, keyed on insertion order) picks up.
+        store.clear()
+        store.add({
           userId: uid,
           userEmail: 'sync-e2e@example.com',
           userName: 'Sync Persona',

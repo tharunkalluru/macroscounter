@@ -779,3 +779,74 @@ session will drive.
   prompt (10.3), grams-first logging (10.4), the barcode card polish (10.5), and native-feel/PWA
   manifest work + an actual `vercel --prod` deploy (10.6, blocked on the user having a real Vercel
   account).
+
+## 10.2 — Google Sign-In, Local-to-Cloud Migration, Guest Mode
+Built real Google sign-in on Better Auth, a first-launch sign-in screen, and the pull-vs-migrate-vs-
+onboard decision the spec calls for — replacing 10.1's cookie stub with real session verification
+without touching either sync route's own logic, exactly as planned.
+
+- **Server**: replaced the bespoke 10.1 `users` table with Better Auth's own `user`/`session`/
+  `account`/`verification` tables (`drizzle/schema.ts`) — `account.accountId` (Google's `sub` claim)
+  replaces what the original draft called `googleSub`. Every synced table's `userId` FK changed from
+  `uuid` to `text` to match Better Auth's own id type. `api/_authServer.ts` lazily builds a Google-only
+  `betterAuth()` instance (Drizzle adapter, same lazy-construction pattern as `getDb()` so missing env
+  vars don't break `tsc`/`build`/tests); `api/auth/[...all].ts` is the catch-all Vercel function
+  (`toNodeHandler`); `api/_auth.ts`'s `getUserId()` is now async and calls
+  `auth.api.getSession({headers})` for real — confirmed via Better Auth's own source
+  (`node_modules/better-auth/dist/api/routes/session.mjs`) that a missing session cookie returns
+  `null` before ever touching the database, so the 401-without-session path needs no live Postgres to
+  test. `npx drizzle-kit generate` re-run against the new schema (11 tables now) — clean.
+- **Cookie security**: httpOnly is always on; `secure` and `SameSite=Lax` come from Better Auth's own
+  baseURL-driven default (`secure` turns on automatically once `VITE_APP_URL`/baseURL is `https://`,
+  which it will be on every real Vercel deployment) — verified by reading `cookies/index.mjs` rather
+  than adding redundant config, since Better Auth's own default already satisfies the spec.
+- **Client**: `src/lib/auth/authClient.ts` (Better Auth React client, same-origin by default).
+  `/welcome` (`SignInScreen.tsx`) is the true first-launch screen — logo, "Continue with Google", and
+  "Skip for now" — shown only when this device has never made a choice (`hasMadeSignInChoice`: does a
+  `syncMeta` row exist at all, regardless of `userId`). If a session already exists when `/welcome`
+  mounts (cookie survived a cleared IndexedDB), it skips the buttons and resolves silently.
+  `resolveAfterSignIn()` is the actual decision function: writes `syncMeta` with the real identity,
+  asks the server (`syncEngine.serverHasProfile()`, a raw unmerged pull added for exactly this check)
+  whether the account already has a profile — if yes, a normal `runSync()` pulls it down; if no *and*
+  this device has pre-existing local (guest) data, `migrateLocalToCloud()` queues every existing local
+  row through the same `trackUpsert` each repo already calls on a fresh write and pushes them in one
+  `runSync()`; if neither, the caller sends the user to onboarding. `Dashboard`'s no-profile redirect
+  now branches between `/welcome` (undecided) and `/onboarding` (guest, already decided) via the same
+  `hasMadeSignInChoice` check. Settings gained `AccountSection` (sign in to back up / signed in as
+  {email} + sign out — sign-out clears the server session but keeps every local row, per spec).
+- **Dev-server fix (found via manual testing, not in the original spec)**: Vite's dev/preview servers
+  have no route for `/api/*.ts` at all (only `vercel dev` or a real deployment do) and were silently
+  falling back to serving `index.html` for those requests. Better Auth's client couldn't recover from
+  getting HTML back where it expected JSON, which left `useSession()` stuck pending forever —
+  hanging the sign-in screen on every `npm run dev`/`test:e2e` run, guest mode included. Fixed with a
+  small `apiNotFoundInDev` Vite plugin (`vite.config.ts`) that answers `/api/*` with a real, fast 404
+  in both dev and preview, so the client fails fast instead of hanging. Documented in `SETUP.md` that
+  Google sign-in itself only works against a real deployment (or `vercel dev`) — guest mode needs
+  none of it and now degrades correctly either way.
+- **Tests**: `api/_auth.test.ts` (2) and `api/sync/security.test.ts` (2) — the spec's "non-auth routes
+  return 401 without session" gate, run against the real handlers with only syntactically-valid env
+  vars (no live DB touched, per the no-cookie-short-circuit above). `resolveAfterSignIn.test.ts` (4) —
+  the spec's "new user → onboarding; returning user → pulled; existing-local-data user → migrated"
+  integration cases, each against a mocked `authClient.getSession()` and the same in-memory mock
+  server pattern from 10.1. `migrateLocalToCloud.test.ts` (2) — count assertions (every local row
+  reaches the mock server, per table) and a checksum assertion (summed `kcal` across migrated
+  `logEntries` matches between local and server, not just the row count). New E2E (`e2e/auth.spec.ts`,
+  3 specs): `/welcome` shows both options on first launch; **guest mode is fully functional with every
+  `/api/auth/*` route blocked** (the spec's explicit gate line) — skip, onboard, log a food entry, and
+  Settings all work with zero dependency on the auth API being reachable; skipping once doesn't show
+  `/welcome` again on reload. Every existing spec's `onboard()` helper (13 files) now clicks "Skip for
+  now" first, since `/welcome` now intercepts every fresh session; added dedicated `/welcome` coverage
+  to the existing a11y (light + dark), and touch-target audit suites rather than silently losing
+  onboarding's own coverage when the first screen changed.
+- 281 unit tests total (+10 over 10.1's 271: 2+2+4+2 above), 61 E2E specs total (+6 over 10.1's 55:
+  3 in `auth.spec.ts` + 1 new a11y spec + 1 new dark-mode a11y spec + 1 new touch-target spec), all
+  green.
+  `lint && tsc --noEmit && check:tokens && test && build && test:e2e` all pass. Bundle: 173.20 KB gz
+  initial (budget 300 KB gz; up from 161.41 KB gz in 10.1 — the Better Auth React client and
+  `SignInScreen`/`AccountSection` are the only additions to the client bundle, `drizzle-orm`/
+  `@neondatabase/serverless`/Better Auth's server-side pieces stay `/api`-only as before).
+- Not yet verified (no live Neon database or real Google OAuth credentials exist yet — see `SETUP.md`
+  for what the user still needs to provision): the migration actually running against Postgres, a
+  real end-to-end Google redirect, and the cookie's `secure`/`SameSite` attributes as Chrome would
+  actually send them over a real HTTPS connection (the logic driving them was read directly from
+  Better Auth's source, not observed on the wire).
