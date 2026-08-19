@@ -5,6 +5,9 @@ import { expect, test } from '@playwright/test'
 test('completing onboarding computes and shows the correct kcal target on the dashboard', async ({
   page,
 }) => {
+  // Dead-zone hour (00:00-4:59) so the Phase 10.3 meal prompt never fires and
+  // blocks this test's own dashboard interactions.
+  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/')
   await expect(page).toHaveURL(/\/welcome$/)
   await page.getByTestId('signin-skip-button').click()
@@ -29,6 +32,7 @@ test('completing onboarding computes and shows the correct kcal target on the da
 })
 
 test('data persists across a reload after onboarding', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/')
   await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Reload Check')

@@ -4,6 +4,10 @@ import { test } from '@playwright/test'
 const TEST_USER_ID = 'sync-e2e-user-1'
 
 async function onboard(page: Page) {
+  // Dead-zone hour (00:00-4:59) so the Phase 10.3 meal prompt never fires and
+  // blocks this test's own interactions -- these tests don't care what time
+  // it is, they just need it to not be a live meal window.
+  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/')
   await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Sync Persona')

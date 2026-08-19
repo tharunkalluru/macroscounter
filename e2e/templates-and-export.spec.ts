@@ -3,6 +3,10 @@ import { expect, type Page } from '@playwright/test'
 import { test } from '@playwright/test'
 
 async function onboard(page: Page) {
+  // Dead-zone hour (00:00-4:59) so the Phase 10.3 meal prompt never fires and
+  // blocks this test's own interactions -- these tests don't care what time
+  // it is, they just need it to not be a live meal window.
+  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/')
   await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Template Persona')
@@ -16,8 +20,7 @@ async function onboard(page: Page) {
 }
 
 test('save a meal as a template, then one-tap log it the next day with correct totals', async ({ page }) => {
-  await page.clock.setFixedTime(new Date('2026-08-18T09:00:00'))
-  await onboard(page)
+  await onboard(page) // pins the clock to 2026-08-18T02:00 (see onboard())
 
   // Log 3 idli for breakfast (120g -> 123 kcal, matches the applyTemplate fixture).
   await page.getByTestId('add-breakfast').click()
@@ -36,7 +39,7 @@ test('save a meal as a template, then one-tap log it the next day with correct t
   await expect(page.getByTestId('templates-list')).toContainText('My Breakfast')
 
   // Advance to the next day — a fresh, empty log.
-  await page.clock.setFixedTime(new Date('2026-08-19T09:00:00'))
+  await page.clock.setFixedTime(new Date('2026-08-19T02:00:00'))
   await page.goto('/')
   await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('0 kcal')
 

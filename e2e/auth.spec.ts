@@ -9,6 +9,9 @@ test('first launch shows the sign-in screen with a Google option and a guest ski
 })
 
 test('guest mode is fully functional with the auth API entirely blocked', async ({ page }) => {
+  // Dead-zone hour (00:00-4:59) so the Phase 10.3 meal prompt never fires
+  // and blocks this test's own interactions.
+  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.route('**/api/auth/**', (route) => route.abort())
 
   await page.goto('/')
@@ -38,6 +41,7 @@ test('guest mode is fully functional with the auth API entirely blocked', async 
 })
 
 test('reload after skipping does not show the sign-in screen again', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/')
   await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Repeat Visit Persona')

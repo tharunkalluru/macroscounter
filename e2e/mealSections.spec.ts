@@ -28,6 +28,10 @@ async function swipeToDelete(page: Page, row: Locator) {
 }
 
 async function onboard(page: Page) {
+  // Dead-zone hour (00:00-4:59) so the Phase 10.3 meal prompt never fires and
+  // blocks this test's own interactions -- these tests don't care what time
+  // it is, they just need it to not be a live meal window.
+  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/')
   await page.getByTestId('signin-skip-button').click()
   await page.getByPlaceholder('Your name').fill('Meal Section Persona')
@@ -120,8 +124,7 @@ test('swipe-delete shows an undo snackbar that restores the entry and totals', a
 })
 
 test('copy from yesterday clones the previous day\'s entries for that meal into today', async ({ page }) => {
-  await page.clock.setFixedTime(new Date('2026-08-18T09:00:00'))
-  await onboard(page)
+  await onboard(page) // pins the clock to 2026-08-18T02:00 (see onboard())
 
   await seedLogEntry(page, {
     date: '2026-08-17',
@@ -150,8 +153,7 @@ test('copy from yesterday clones the previous day\'s entries for that meal into 
 })
 
 test('an empty meal with a repeated history shows a one-tap "your usual" suggestion chip', async ({ page }) => {
-  await page.clock.setFixedTime(new Date('2026-08-18T09:00:00'))
-  await onboard(page)
+  await onboard(page) // pins the clock to 2026-08-18T02:00 (see onboard())
 
   for (const date of ['2026-08-12', '2026-08-14', '2026-08-16']) {
     await seedLogEntry(page, {

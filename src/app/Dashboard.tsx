@@ -15,7 +15,9 @@ import DashboardSkeleton from './components/DashboardSkeleton'
 import DateNav from './components/DateNav'
 import MacroBar from './components/MacroBar'
 import MacroBreakdownSheet from './components/MacroBreakdownSheet'
+import MealPromptSheet from './components/MealPromptSheet'
 import MealSection from './components/MealSection'
+import { useMealPrompt } from './hooks/useMealPrompt'
 import { useUIState } from './shell/UIStateContext'
 
 const MACRO_DEFS = {
@@ -37,7 +39,7 @@ const SWIPE_THRESHOLD_PX = 60
 
 export default function Dashboard() {
   const [searchParams, setSearchParams] = useSearchParams()
-  const { dataVersion } = useUIState()
+  const { dataVersion, notifyDataChanged } = useUIState()
   const prefersReducedMotion = useReducedMotion()
 
   const requestedDate = searchParams.get('date')
@@ -88,6 +90,8 @@ export default function Dashboard() {
       cancelled = true
     }
   }, [date, dataVersion])
+
+  const mealPrompt = useMealPrompt(entries, isToday && state === 'ready')
 
   async function handleDelete(id: number) {
     await logRepo.deleteEntry(id)
@@ -196,6 +200,7 @@ export default function Dashboard() {
         </div>
 
         {isToday && <AdaptiveTargetPrompt onAccepted={reloadTargets} />}
+        {isToday && <MealPromptSheet {...mealPrompt} onLogged={notifyDataChanged} />}
 
         {MEALS.map(({ key, label }) => (
           <MealSection

@@ -850,3 +850,62 @@ without touching either sync route's own logic, exactly as planned.
   real end-to-end Google redirect, and the cookie's `secure`/`SameSite` attributes as Chrome would
   actually send them over a real HTTPS connection (the logic driving them was read directly from
   Better Auth's source, not observed on the wire).
+
+## 10.3 — Time-Aware Meal Prompt
+Built the "open the app → it already knows" prompt: a pure boundary function, a bottom sheet reusing
+Phase 9's suggestion engine, and a hook that decides when to show it based on both real time and the
+tab's visibility history — plus a suite-wide fix for a real flakiness bug this surfaced.
+
+- **`activeMealWindow(date: Date): Meal | null`** (`src/domain/mealPrompt/activeMealWindow.ts`) — pure
+  function mapping local clock time to Breakfast 5:00–10:59 / Lunch 11:00–15:29 / Snacks 15:30–18:29 /
+  Dinner 18:30–23:59 / null for 00:00–4:59, exactly per spec. 15 unit tests covering every window
+  boundary (opens/closes on both sides) plus the dead-zone.
+- **Dismissal** (`src/lib/mealPrompt/dismissal.ts`): "Not now" persists a per-day-per-meal flag in
+  `localStorage` (`macrodesi:mealPromptDismissed:{date}:{meal}`) — the same lightweight approach
+  `AdaptiveTargetPrompt` already uses for its own weekly dismissal, deliberately not a synced Dexie
+  table since it's ephemeral, single-device UI state that resets every day regardless.
+- **`useMealPrompt(todayEntries, enabled)`** (`src/app/hooks/useMealPrompt.ts`): evaluates on mount
+  ("app open") and again on the `visibilitychange` event when the tab was hidden for more than 45
+  minutes ("returning from background"), returning `{meal, dismiss, close}`. Shows a meal only when
+  its window is active, has zero of today's entries, and hasn't been dismissed today; `close()` hides
+  the sheet without persisting a dismissal (used when the user actually engages — Search, Scan, or a
+  logged chip — versus "Not now").
+- **`MealPromptSheet`** (`src/app/components/MealPromptSheet.tsx`): reuses the existing `BottomSheet`
+  (swipe-to-dismiss, backdrop-click, Escape already built in from Phase 9) with up to 3
+  `computeMealSuggestions()` chips, Search (opens the existing Add Food sheet pre-set to the prompted
+  meal), Scan (same, with `startOnScan: true`), and "Not now". Mounted in `Dashboard.tsx` next to
+  `AdaptiveTargetPrompt`, gated on `isToday` the same way.
+- **Shared chip-tap logic extracted**: `MealSection`'s "your usual?" empty-state chip and the new
+  prompt's suggestion chips both one-tap-log a `SuggestionChip` the same way — pulled the food-lookup
+  + macro-compute + `addEntry` sequence out of `MealSection.tsx` into
+  `src/lib/logging/logSuggestionChip.ts` so both call sites share one implementation instead of
+  drifting.
+- **Real flakiness bug found and fixed while testing this**: almost none of the existing 60 E2E specs'
+  `onboard()` helpers pinned `page.clock` — they ran at whatever real wall-clock time the suite
+  happened to execute at. That was harmless until this sub-phase gave the dashboard time-conditional
+  UI: running the full suite at an hour that falls inside a real meal window made ~26 unrelated tests
+  fail (the prompt's backdrop blocking their own clicks), and running it again at a *different* hour
+  changed which ones failed — a real, pre-existing flakiness landmine this feature simply exposed
+  rather than caused (a suite should never depend on the wall-clock time it happens to run at). Fixed
+  at the root: every shared `onboard()` helper across all 13 e2e files now pins the clock to a
+  dead-zone hour (`2026-08-18T02:00:00`, outside every meal window) as its first action, and the two
+  spec files with no shared helper (`onboarding.spec.ts`, `auth.spec.ts`) got the same pin added
+  per-test. The three files that already pinned a specific time for their own reasons
+  (`adaptive.spec.ts`, `mealSections.spec.ts`, `templates-and-export.spec.ts`) had their now-redundant
+  per-test pins removed in favor of the new helper-level default. `mealPrompt.spec.ts` itself is the
+  deliberate exception — its tests each set their own specific meal-window time, since testing the
+  prompt is the whole point.
+- **Tests**: 15 for `activeMealWindow` (the spec's boundary-table requirement, well past its ≥10
+  minimum). 6 integration tests for `useMealPrompt` (`useMealPrompt.test.tsx`, a `Probe` component +
+  `vi.useFakeTimers()`/`vi.setSystemTime()`, matching the existing `useCountUp` hook-testing pattern)
+  covering: prompts only when the active window is empty, an entry in a *different* meal doesn't
+  suppress it, the 00:00–4:59 dead zone never prompts, "Not now" suppresses across a remount (real
+  persistence, not just in-memory state), and `enabled=false` disables it entirely (used for past-day
+  views). New E2E (`e2e/mealPrompt.spec.ts`, 5 specs, mocked clock via `page.clock.setFixedTime`):
+  opening at 08:00 with an empty, history-backed breakfast shows the sheet with a working one-tap
+  suggestion chip; "Not now" suppresses it and survives a reload; Search hands off to the Add Food
+  sheet pre-set to the right meal; the 00:00–4:59 dead zone shows nothing; logging normally (FAB, not
+  the prompt) also means no re-prompt on the next open.
+- 302 unit tests total (+21: 15+6), 66 E2E specs total (+5), all green. `lint && tsc --noEmit &&
+  check:tokens && test && build && test:e2e` all pass. Bundle: 173.94 KB gz initial (budget 300 KB
+  gz; +0.74 KB gz over 10.2 for the prompt sheet + hook + domain/lib modules).

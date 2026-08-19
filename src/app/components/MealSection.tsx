@@ -6,11 +6,11 @@ import { FoodRepo } from '../../data/repos/FoodRepo'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { buildCopiedEntries } from '../../domain/logging/copyEntries'
 import { formatPortion } from '../../domain/logging/formatPortion'
-import { computeMacrosForGrams } from '../../domain/logging/portionMath'
 import { computeMealSuggestions, type SuggestionChip } from '../../domain/logging/suggestions'
 import { applyTemplate } from '../../domain/templates/applyTemplate'
 import { addDaysISO, todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
+import { logSuggestionChip } from '../../lib/logging/logSuggestionChip'
 import { useCountUp } from '../hooks/useCountUp'
 import { useUIState } from '../shell/UIStateContext'
 import MealOverflowSheet from './MealOverflowSheet'
@@ -130,31 +130,7 @@ export default function MealSection({
   }
 
   async function handleSuggestionTap(chip: SuggestionChip) {
-    const foods = await new FoodRepo().getByIds(chip.entries.map((e) => e.foodId))
-    const foodsById = new Map(foods.map((f) => [f.id, f]))
-    const logRepo = new LogRepo()
-    for (const entry of chip.entries) {
-      const food = foodsById.get(entry.foodId)
-      if (!food) continue
-      const macros = computeMacrosForGrams(food.per100g, entry.grams)
-      await logRepo.addEntry({
-        date: effectiveDate,
-        meal,
-        foodId: entry.foodId,
-        name: food.name,
-        portionSummary: formatPortion({
-          qty: entry.qty,
-          unit: entry.unit,
-          grams: entry.grams,
-          portionLabel: entry.portionLabel,
-        }),
-        portionLabel: entry.portionLabel,
-        qty: entry.qty,
-        unit: entry.unit,
-        grams: entry.grams,
-        ...macros,
-      })
-    }
+    await logSuggestionChip(chip, meal, effectiveDate)
     vibrateTiny()
     notifyDataChanged()
   }
