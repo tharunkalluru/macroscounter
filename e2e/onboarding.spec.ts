@@ -41,5 +41,6 @@ test('data persists across a reload after onboarding', async ({ page }) => {
   await page.reload()
 
   await expect(page.getByTestId('kcal-target')).toHaveText('2046 kcal target')
-  await expect(page.getByText(/Reload Check/)).toBeVisible()
+  // Header avatar shows the profile's initial (no more "Hi {name}" text link post-9B).
+  await expect(page.getByTestId('avatar-link')).toHaveText('R')
 })

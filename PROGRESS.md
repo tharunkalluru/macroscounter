@@ -361,3 +361,83 @@ tests → build → E2E → bundle budget) enforced green before every commit.
 - Gate (final): `npm run lint && npx tsc --noEmit && npm run test -- --run --coverage && npm run
   build && npm run test:e2e && npm run check:bundle` → **all green**. Build is deployable
   (verified static output + SPA-rewrite configs for all three named targets).
+
+---
+
+# Phase 9 — UX/UI Polish (`ux-polish-spec.md`)
+
+A second spec, handed over after the original 9-phase build shipped, asking for a full navigation
+and interaction-model redesign (bottom-tab shell, FAB + bottom sheets, animated summary card,
+swipe-to-delete, motion system, dark mode, a full a11y/touch-target pass). Executed as its own
+set of gated sub-phases (9A–9F) on top of the existing app, same protocol as Phases 0–8.
+
+## 9A — Design Tokens
+- `src/theme/tokens.ts` is the single source of truth (brand #0F9D58 50→900 scale; macro colors
+  protein/carbs/fat matching Tailwind's violet-600/amber-500/sky-500 exactly per spec; semantic
+  success/warn/danger; surface + dark-mode mirror; type scale; 4px spacing scale; 44px touch
+  target; motion timings). `tailwind.config.ts` (renamed from `.js`) imports directly from it —
+  Tailwind CSS 3.4+ loads TS configs natively, so there's no build-time duplication step.
+- `npm run check:tokens` (`scripts/check-tokens.ts`) fails the gate on any raw hex color under
+  `src/app/**/*.tsx` — the spec's literal `src/components/**` path doesn't exist in this
+  codebase's structure, so the check was pointed at the actual component tree instead. Fixed the
+  5 pre-existing raw-hex usages (`CaloriesRing`/`WeightPage`'s SVG and Recharts `stroke` props,
+  which take JS values, not Tailwind classes) to import from `tokens.ts`.
+- **Real accessibility regression caught by the existing axe suite**: the spec's literal
+  brand-600 (`#0F9D58`) is only 3.5:1 against white — fine for large/graphical elements but fails
+  WCAG AA's 4.5:1 text minimum, and `brand-600` was used via Tailwind classes as both link-text
+  color and white-button-label background on *every single page* (every "Back" link, every
+  primary button). All 9 a11y-scanned pages failed immediately after the token swap. Fixed by
+  moving every text/button usage to `brand-700` (5.13:1) app-wide, reserving `600` for non-text
+  graphical fills (ring stroke, etc.) — confirmed by re-running the full a11y suite back to zero
+  violations. This is exactly the kind of thing a literal spec value can get wrong; the axe gate
+  is what caught it, not manual review.
+- Tests: 6 new token-value regression tests. 188 unit + 26 E2E, all green.
+
+## 9B — App Shell & Navigation
+- Installed `framer-motion` for gesture/animation primitives (drag-to-dismiss sheets, swipe
+  navigation, spring transitions, built-in `useReducedMotion()`) rather than hand-rolling touch
+  math — ~40KB gz, well inside the bundle's remaining headroom (111→154KB gz of a 300KB budget).
+- New persistent shell (`src/app/shell/`): `Header.tsx` (wordmark + streak chip, tappable to
+  `/trends` + avatar-initial circle, tappable to Settings — replaces the old "Hi {name}" text
+  link), `BottomTabBar.tsx` (Today · History · **Scan FAB** (elevated, brand-filled, center) ·
+  Trends · Settings — 44px+ touch targets, `env(safe-area-inset-bottom)` padding, active state =
+  brand-700 + filled icon), `BottomSheet.tsx` (generic drag-to-dismiss bottom-drawer primitive:
+  backdrop click / Escape / drag-down-past-threshold-or-velocity all dismiss; focus-managed;
+  `role="dialog"`; respects `prefers-reduced-motion` by zeroing the spring transition), and
+  `UIStateContext.tsx` (global sheet-open state + a `dataVersion` counter that bumps whenever a
+  sheet saves an entry, so any page showing today's log — Dashboard, Header's streak count — knows
+  to re-fetch without a page reload).
+- FAB behavior matches spec exactly: tap → `AddFoodSheetContent` (search with recents/favorites/
+  recipes, defaulting to a time-of-day-guessed meal) opens as a bottom sheet; a barcode icon in
+  the sheet's search row jumps to the full-screen scanner. Extracted the food-selection glue
+  (`per100gOf`/`nameOf`/`portionsOf`) into `src/app/foodSelection.ts` so `AddFoodPage` (still used
+  for the edit-existing-entry flow via `/log/edit/:id`) and the new sheet share one implementation
+  instead of drifting.
+- **Today gained real date navigation**: `DateNav.tsx` ("Today, Aug 18" / "Yesterday, Aug 17" /
+  "Wed, Aug 12" centered, with ‹ › chevrons, next-day disabled once it would be a future date) plus
+  horizontal swipe-to-navigate on the page body (`framer-motion` `drag="x"` with `touch-pan-y` so
+  vertical scroll still passes through) and a "Return to today" pill when viewing a past day.
+  Dashboard now reads `date` from a query param (defaulting to today) and looks up the target that
+  was actually in effect that day (`findApplicableTarget`, reused from Phase 4) rather than always
+  showing today's target.
+- Footer link row and "+ New recipe" removed from Dashboard per spec. Consolidated **Trends**
+  (new tab) = `WeightSection` + `ReportSection`, extracted from the old standalone `WeightPage`/
+  `ReportPage` (kept alive at their original routes too, for backward compatibility with existing
+  tests/deep-links — they just render the same extracted sections now, no logic duplicated).
+  Templates/Export/Settings/History/past-day-detail all moved inside the shell (header + tab bar
+  now wrap them); Onboarding, the add/edit/scan/recipe-creation/template-creation flows stay
+  full-screen outside the shell (standard mobile pattern: primary destinations keep chrome, modal-
+  ish task flows don't).
+- A second real bug caught by testing, not spec-reading: `Header`'s streak chip only fetched once
+  on mount, so it silently went stale after logging via the new sheet (no full page reload to
+  trigger a re-fetch anymore). Caught by actually looking at a captured screenshot after a sheet
+  save, not by the automated suite — fixed by subscribing `Header` to the same `dataVersion` signal
+  Dashboard uses.
+- Tests: 5 new E2E tests (tab bar navigates all 4 non-FAB tabs; FAB opens the sheet and a
+  successful log closes it *and* updates the total without a reload; the sheet's own close button
+  dismisses without saving; past-day "Return to today" pill appears/returns correctly; the sheet's
+  barcode icon opens `/scan`). Updated one Phase-2-era E2E assertion that checked for the now-
+  removed "Hi {name}" text (replaced with the avatar-initial testid) — legitimate UI evolution,
+  not a regression. 188 unit + 31 E2E, all green, zero a11y violations across all 9 scanned pages.
+- Gate: `lint && tsc --noEmit && check:tokens && test && build && test:e2e` → all green. Bundle:
+  153.69 KB gz initial (budget 300 KB).

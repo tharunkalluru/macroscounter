@@ -1,17 +1,19 @@
+import { motion, useReducedMotion, type PanInfo } from 'framer-motion'
 import { useCallback, useEffect, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
-import type { LogEntry, Meal, Profile, Targets } from '../data/models'
+import { Navigate, useSearchParams } from 'react-router-dom'
+import type { LogEntry, Meal, Targets } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
-import { groupEntriesByDate } from '../domain/history/averages'
+import { findApplicableTarget } from '../domain/history/targetForDate'
 import { sumMacros } from '../domain/logging/portionMath'
-import { computeStreak } from '../domain/streaks/streak'
-import { addDaysISO, todayISO } from '../lib/date'
+import { addDaysISO, isFutureDate, todayISO } from '../lib/date'
 import AdaptiveTargetPrompt from './components/AdaptiveTargetPrompt'
 import CaloriesRing from './components/CaloriesRing'
+import DateNav from './components/DateNav'
 import MacroBar from './components/MacroBar'
 import MealSection from './components/MealSection'
+import { useUIState } from './shell/UIStateContext'
 
 type LoadState = 'loading' | 'ready' | 'no-profile'
 
@@ -22,20 +24,28 @@ const MEALS: { key: Meal; label: string }[] = [
   { key: 'dinner', label: 'Dinner' },
 ]
 
+const SWIPE_THRESHOLD_PX = 60
+
 export default function Dashboard() {
+  const [searchParams, setSearchParams] = useSearchParams()
+  const { dataVersion } = useUIState()
+  const prefersReducedMotion = useReducedMotion()
+
+  const requestedDate = searchParams.get('date')
+  const date = requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
+  const isToday = date === todayISO()
+
   const [state, setState] = useState<LoadState>('loading')
-  const [profile, setProfile] = useState<Profile | null>(null)
   const [targets, setTargets] = useState<Targets | null>(null)
   const [entries, setEntries] = useState<LogEntry[]>([])
-  const [streak, setStreak] = useState(0)
 
   const logRepo = new LogRepo()
 
   const loadEntries = useCallback(async () => {
-    const todaysEntries = await logRepo.getEntriesForDate(todayISO())
-    setEntries(todaysEntries)
+    const dayEntries = await logRepo.getEntriesForDate(date)
+    setEntries(dayEntries)
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [date])
 
   useEffect(() => {
     let cancelled = false
@@ -48,23 +58,19 @@ export default function Dashboard() {
         setState('no-profile')
         return
       }
-      const t = await targetRepo.getLatest()
-      const today = todayISO()
-      const [todaysEntries, last30Entries] = await Promise.all([
-        new LogRepo().getEntriesForDate(today),
-        new LogRepo().getEntriesForDateRange(addDaysISO(today, -29), today),
+      const [allTargets, dayEntries] = await Promise.all([
+        targetRepo.getAll(),
+        new LogRepo().getEntriesForDate(date),
       ])
       if (cancelled) return
-      setProfile(p)
-      setTargets(t ?? null)
-      setEntries(todaysEntries)
-      setStreak(computeStreak(groupEntriesByDate(last30Entries).map((d) => d.date), today))
+      setTargets(findApplicableTarget(date, allTargets) ?? null)
+      setEntries(dayEntries)
       setState('ready')
     })()
     return () => {
       cancelled = true
     }
-  }, [])
+  }, [date, dataVersion])
 
   async function handleDelete(id: number) {
     await logRepo.deleteEntry(id)
@@ -74,6 +80,23 @@ export default function Dashboard() {
   async function reloadTargets() {
     const t = await new TargetRepo().getLatest()
     setTargets(t ?? null)
+  }
+
+  function goToDate(newDate: string) {
+    if (newDate === todayISO()) {
+      setSearchParams({})
+    } else {
+      setSearchParams({ date: newDate })
+    }
+  }
+
+  function handleDragEnd(_: unknown, info: PanInfo) {
+    if (info.offset.x <= -SWIPE_THRESHOLD_PX) {
+      const next = addDaysISO(date, 1)
+      if (!isFutureDate(next)) goToDate(next)
+    } else if (info.offset.x >= SWIPE_THRESHOLD_PX) {
+      goToDate(addDaysISO(date, -1))
+    }
   }
 
   if (state === 'loading') {
@@ -88,82 +111,75 @@ export default function Dashboard() {
   const target = targets ?? { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 }
 
   return (
-    <div className="mx-auto max-w-md px-6 py-8 pb-16">
-      <div className="flex items-baseline justify-between">
-        <h1 className="text-2xl font-bold text-brand-700">MacroDesi</h1>
-        <Link to="/settings" className="text-sm text-brand-700 underline">
-          Hi {profile?.name}
-        </Link>
-      </div>
-      {streak > 0 && (
-        <p className="mt-1 text-xs text-slate-500" data-testid="dashboard-streak">
-          {streak} day{streak === 1 ? '' : 's'} streak
-        </p>
+    <div className="pb-4" data-testid="today-view">
+      <DateNav date={date} onChange={goToDate} />
+      {!isToday && (
+        <div className="mt-2 flex justify-center">
+          <button
+            type="button"
+            onClick={() => goToDate(todayISO())}
+            data-testid="return-to-today"
+            className="min-h-touch rounded-full bg-brand-50 px-3 py-1.5 text-caption font-medium text-brand-700"
+          >
+            Return to today
+          </button>
+        </div>
       )}
 
-      <div className="mt-6 flex flex-col items-center rounded-xl bg-white p-6 shadow" data-testid="targets-card">
-        <CaloriesRing consumedKcal={totals.kcal} targetKcal={target.kcal} />
-        <p className="mt-2 text-xs text-slate-500" data-testid="kcal-target">
-          {target.kcal} kcal target
-        </p>
+      <motion.div
+        className="mx-auto mt-4 max-w-md px-6 touch-pan-y"
+        drag="x"
+        dragConstraints={{ left: 0, right: 0 }}
+        dragElastic={0.5}
+        onDragEnd={prefersReducedMotion ? undefined : handleDragEnd}
+      >
+        <div
+          className="flex flex-col items-center rounded-card bg-white p-6 shadow-card"
+          data-testid="targets-card"
+        >
+          <CaloriesRing consumedKcal={totals.kcal} targetKcal={target.kcal} />
+          <p className="mt-2 text-caption text-slate-500" data-testid="kcal-target">
+            {target.kcal} kcal target
+          </p>
 
-        <div className="mt-6 grid w-full grid-cols-1 gap-3">
-          <MacroBar
-            label="Protein"
-            consumed={totals.p}
-            target={target.proteinG}
-            colorClass="bg-brand-700"
-            testId="protein-bar"
-          />
-          <MacroBar
-            label="Carbs"
-            consumed={totals.c}
-            target={target.carbsG}
-            colorClass="bg-amber-500"
-            testId="carbs-bar"
-          />
-          <MacroBar
-            label="Fat"
-            consumed={totals.f}
-            target={target.fatG}
-            colorClass="bg-sky-500"
-            testId="fat-bar"
-          />
+          <div className="mt-6 grid w-full grid-cols-1 gap-3">
+            <MacroBar
+              label="Protein"
+              consumed={totals.p}
+              target={target.proteinG}
+              colorClass="bg-protein-500"
+              testId="protein-bar"
+            />
+            <MacroBar
+              label="Carbs"
+              consumed={totals.c}
+              target={target.carbsG}
+              colorClass="bg-carbs-500"
+              testId="carbs-bar"
+            />
+            <MacroBar
+              label="Fat"
+              consumed={totals.f}
+              target={target.fatG}
+              colorClass="bg-fat-500"
+              testId="fat-bar"
+            />
+          </div>
         </div>
-      </div>
 
-      <AdaptiveTargetPrompt onAccepted={reloadTargets} />
+        {isToday && <AdaptiveTargetPrompt onAccepted={reloadTargets} />}
 
-      {MEALS.map(({ key, label }) => (
-        <MealSection
-          key={key}
-          meal={key}
-          label={label}
-          entries={entries.filter((e) => e.meal === key)}
-          onDelete={handleDelete}
-        />
-      ))}
-
-      <div className="mt-8 flex flex-wrap justify-center gap-4">
-        <Link to="/history" className="text-sm text-brand-700 underline">
-          History
-        </Link>
-        <Link to="/weight" className="text-sm text-brand-700 underline">
-          Weight
-        </Link>
-        <Link to="/templates" className="text-sm text-brand-700 underline">
-          Templates
-        </Link>
-        <Link to="/report" className="text-sm text-brand-700 underline">
-          Report
-        </Link>
-        <Link to="/export" className="text-sm text-brand-700 underline">
-          Export
-        </Link>
-        <Link to="/recipes/new" className="text-sm text-brand-700 underline">
-          + New recipe
-        </Link>
-      </div>
+        {MEALS.map(({ key, label }) => (
+          <MealSection
+            key={key}
+            meal={key}
+            label={label}
+            entries={entries.filter((e) => e.meal === key)}
+            onDelete={handleDelete}
+            date={isToday ? undefined : date}
+          />
+        ))}
+      </motion.div>
     </div>
   )
 }

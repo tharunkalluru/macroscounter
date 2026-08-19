@@ -1,13 +1,14 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
-import type { FoodRecord, Meal, Recipe } from '../data/models'
-import { FoodRepo } from '../data/repos/FoodRepo'
-import { LogRepo } from '../data/repos/LogRepo'
-import { RecipeRepo } from '../data/repos/RecipeRepo'
-import { computeMacrosForGrams, gramsForPortion } from '../domain/logging/portionMath'
-import { isFutureDate, todayISO } from '../lib/date'
-import { nameOf, per100gOf, portionsOf, type Selected } from './foodSelection'
-import { useFoodIndex } from './hooks/useFoodIndex'
+import { useNavigate } from 'react-router-dom'
+import type { FoodRecord, Meal, Recipe } from '../../data/models'
+import { FoodRepo } from '../../data/repos/FoodRepo'
+import { LogRepo } from '../../data/repos/LogRepo'
+import { RecipeRepo } from '../../data/repos/RecipeRepo'
+import { computeMacrosForGrams, gramsForPortion } from '../../domain/logging/portionMath'
+import { todayISO } from '../../lib/date'
+import { nameOf, per100gOf, portionsOf, type Selected } from '../foodSelection'
+import { useFoodIndex } from '../hooks/useFoodIndex'
+import { BarcodeIcon } from '../shell/icons'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -16,17 +17,16 @@ const MEAL_LABELS: Record<Meal, string> = {
   dinner: 'Dinner',
 }
 
-export default function AddFoodPage() {
-  const [searchParams] = useSearchParams()
-  const { entryId } = useParams()
+interface Props {
+  meal: Meal
+  onSaved: () => void
+  onRequestScan: () => void
+}
+
+export default function AddFoodSheetContent({ meal, onSaved, onRequestScan }: Props) {
   const navigate = useNavigate()
   const { foods, service, loading } = useFoodIndex()
 
-  const [meal, setMeal] = useState<Meal>((searchParams.get('meal') as Meal) || 'breakfast')
-  const requestedDate = searchParams.get('date')
-  const [entryDate, setEntryDate] = useState(
-    requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
-  )
   const [query, setQuery] = useState('')
   const [recents, setRecents] = useState<FoodRecord[]>([])
   const [favorites, setFavorites] = useState<FoodRecord[]>([])
@@ -36,7 +36,6 @@ export default function AddFoodPage() {
   const [mode, setMode] = useState<'portion' | 'grams'>('portion')
   const [qty, setQty] = useState('1')
   const [gramsValue, setGramsValue] = useState('100')
-  const [editingId, setEditingId] = useState<number | null>(null)
 
   useEffect(() => {
     ;(async () => {
@@ -53,33 +52,6 @@ export default function AddFoodPage() {
       setRecipes(allRecipes)
     })()
   }, [])
-
-  useEffect(() => {
-    if (!entryId) return
-    ;(async () => {
-      const entry = await new LogRepo().getById(Number(entryId))
-      if (!entry) return
-      setEditingId(entry.id ?? null)
-      setMeal(entry.meal)
-      setEntryDate(entry.date)
-
-      if (entry.foodId) {
-        const food = await new FoodRepo().getById(entry.foodId)
-        if (food) setSelected({ kind: 'food', food })
-      } else if (entry.recipeId) {
-        const recipe = await new RecipeRepo().getById(entry.recipeId)
-        if (recipe) setSelected({ kind: 'recipe', recipe })
-      }
-
-      if (entry.unit === 'grams') {
-        setMode('grams')
-        setGramsValue(String(entry.grams))
-      } else {
-        setMode('portion')
-        setQty(String(entry.qty))
-      }
-    })()
-  }, [entryId])
 
   const results = useMemo(() => {
     if (!service || !query.trim()) return []
@@ -104,11 +76,10 @@ export default function AddFoodPage() {
   async function handleSave() {
     if (!selected || !preview || grams <= 0) return
 
-    const portionSummary =
-      mode === 'grams' ? `${grams} g` : `${qty} x ${portions[portionIndex].label}`
+    const portionSummary = mode === 'grams' ? `${grams} g` : `${qty} x ${portions[portionIndex].label}`
 
-    const entryData = {
-      date: entryDate,
+    await new LogRepo().addEntry({
+      date: todayISO(),
       meal,
       foodId: selected.kind === 'food' ? selected.food.id : undefined,
       recipeId: selected.kind === 'recipe' ? selected.recipe.id : undefined,
@@ -121,77 +92,86 @@ export default function AddFoodPage() {
       p: preview.p,
       c: preview.c,
       f: preview.f,
-    }
+    })
+    onSaved()
+  }
 
-    const logRepo = new LogRepo()
-    if (editingId !== null) {
-      await logRepo.updateEntry(editingId, entryData)
-    } else {
-      await logRepo.addEntry(entryData)
-    }
-    navigate(backTo)
+  function handleScan() {
+    onRequestScan()
+    navigate(`/scan?meal=${meal}`)
   }
 
   if (loading) {
-    return <div className="flex min-h-screen items-center justify-center text-slate-500">Loading…</div>
+    return <div className="py-8 text-center text-slate-500">Loading…</div>
   }
 
-  const backTo = entryDate === todayISO() ? '/' : `/history/${entryDate}`
-
   return (
-    <div className="mx-auto max-w-md px-6 py-8">
-      <Link to={backTo} className="mb-4 inline-block text-sm text-brand-700 underline">
-        ← Back
-      </Link>
-      <h1 className="mb-1 text-xl font-bold text-brand-700">
-        {editingId !== null ? 'Edit entry' : `Add food · ${MEAL_LABELS[meal]}`}
-      </h1>
-
+    <div className="pb-2">
       {!selected && (
         <>
-          <input
-            type="text"
-            placeholder="Search foods (e.g. idli, sambar)"
-            className="mt-3 w-full rounded border border-slate-300 px-3 py-2"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            autoFocus
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              placeholder="Search foods (e.g. idli, sambar)"
+              className="min-h-touch flex-1 rounded border border-slate-300 px-3 py-2"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              autoFocus
+            />
+            <button
+              type="button"
+              onClick={handleScan}
+              aria-label="Scan a barcode"
+              data-testid="sheet-scan-button"
+              className="flex min-h-touch min-w-touch items-center justify-center rounded border border-slate-300 text-slate-600"
+            >
+              <BarcodeIcon />
+            </button>
+          </div>
 
           {query.trim() ? (
-            <ul className="mt-3 divide-y divide-slate-100 rounded-lg bg-white shadow-sm" data-testid="search-results">
+            <ul
+              className="mt-3 divide-y divide-slate-100 rounded-lg bg-white shadow-sm"
+              data-testid="search-results"
+            >
               {results.map((food) => (
                 <li key={food.id}>
                   <button
                     type="button"
-                    className="w-full px-3 py-2 text-left hover:bg-slate-50"
+                    className="min-h-touch w-full px-3 py-2 text-left hover:bg-slate-50"
                     onClick={() => setSelected({ kind: 'food', food: food as FoodRecord })}
                   >
                     {food.name}
                   </button>
                 </li>
               ))}
-              {results.length === 0 && (
-                <li className="px-3 py-2 text-sm text-slate-500">No matches.</li>
-              )}
+              {results.length === 0 && <li className="px-3 py-2 text-sm text-slate-500">No matches.</li>}
             </ul>
           ) : (
             <div className="mt-4 flex flex-col gap-4">
               {favorites.length > 0 && (
-                <FoodChipList title="Favorites" foods={favorites} onSelect={(food) => setSelected({ kind: 'food', food })} />
+                <FoodChipList
+                  title="Favorites"
+                  foods={favorites}
+                  onSelect={(food) => setSelected({ kind: 'food', food })}
+                />
               )}
               {recents.length > 0 && (
-                <FoodChipList title="Recents" foods={recents} onSelect={(food) => setSelected({ kind: 'food', food })} />
+                <FoodChipList
+                  title="Recents"
+                  foods={recents}
+                  onSelect={(food) => setSelected({ kind: 'food', food })}
+                />
               )}
               {recipes.length > 0 && (
                 <div>
-                  <p className="mb-1 text-xs font-medium uppercase text-slate-500">My Recipes</p>
+                  <p className="mb-1 text-caption font-medium uppercase text-slate-500">My Recipes</p>
                   <div className="flex flex-wrap gap-2">
                     {recipes.map((recipe) => (
                       <button
                         key={recipe.id}
                         type="button"
-                        className="rounded-full bg-white px-3 py-1 text-sm shadow-sm"
+                        className="min-h-touch rounded-full bg-white px-3 py-1 text-sm shadow-sm"
                         onClick={() => setSelected({ kind: 'recipe', recipe })}
                       >
                         {recipe.name}
@@ -209,10 +189,14 @@ export default function AddFoodPage() {
       )}
 
       {selected && (
-        <div className="mt-4 rounded-lg bg-white p-4 shadow-sm">
+        <div className="rounded-card bg-white">
           <div className="flex items-center justify-between">
-            <h2 className="font-semibold">{nameOf(selected)}</h2>
-            <button type="button" className="text-sm text-slate-500 underline" onClick={() => setSelected(null)}>
+            <h3 className="font-semibold">{nameOf(selected)}</h3>
+            <button
+              type="button"
+              className="min-h-touch text-sm text-slate-500 underline"
+              onClick={() => setSelected(null)}
+            >
               Change
             </button>
           </div>
@@ -220,14 +204,14 @@ export default function AddFoodPage() {
           <div className="mt-3 flex gap-2">
             <button
               type="button"
-              className={`rounded px-3 py-1 text-sm ${mode === 'portion' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
+              className={`min-h-touch rounded px-3 py-1 text-sm ${mode === 'portion' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
               onClick={() => setMode('portion')}
             >
               Household unit
             </button>
             <button
               type="button"
-              className={`rounded px-3 py-1 text-sm ${mode === 'grams' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
+              className={`min-h-touch rounded px-3 py-1 text-sm ${mode === 'grams' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
               onClick={() => setMode('grams')}
             >
               Grams
@@ -237,7 +221,7 @@ export default function AddFoodPage() {
           {mode === 'portion' ? (
             <div className="mt-3 flex flex-col gap-2">
               <select
-                className="rounded border border-slate-300 px-3 py-2"
+                className="min-h-touch rounded border border-slate-300 px-3 py-2"
                 value={portionIndex}
                 onChange={(e) => setPortionIndex(Number(e.target.value))}
               >
@@ -253,7 +237,7 @@ export default function AddFoodPage() {
                   type="number"
                   min="0"
                   step="0.5"
-                  className="rounded border border-slate-300 px-3 py-2"
+                  className="min-h-touch rounded border border-slate-300 px-3 py-2"
                   value={qty}
                   onChange={(e) => setQty(e.target.value)}
                 />
@@ -265,7 +249,7 @@ export default function AddFoodPage() {
               <input
                 type="number"
                 min="0"
-                className="rounded border border-slate-300 px-3 py-2"
+                className="min-h-touch rounded border border-slate-300 px-3 py-2"
                 value={gramsValue}
                 onChange={(e) => setGramsValue(e.target.value)}
               />
@@ -273,7 +257,7 @@ export default function AddFoodPage() {
           )}
 
           {preview && (
-            <p className="mt-3 text-sm text-slate-600" data-testid="entry-preview">
+            <p className="mt-3 text-sm text-slate-600 tabular-nums" data-testid="entry-preview">
               {Math.round(preview.kcal)} kcal · {preview.p}p / {preview.c}c / {preview.f}f
             </p>
           )}
@@ -282,9 +266,9 @@ export default function AddFoodPage() {
             type="button"
             disabled={!preview || grams <= 0}
             onClick={handleSave}
-            className="mt-4 w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
+            className="mt-4 min-h-touch w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
           >
-            {editingId !== null ? 'Save changes' : `Add to ${MEAL_LABELS[meal]}`}
+            {`Add to ${MEAL_LABELS[meal]}`}
           </button>
         </div>
       )}
@@ -303,13 +287,13 @@ function FoodChipList({
 }) {
   return (
     <div>
-      <p className="mb-1 text-xs font-medium uppercase text-slate-500">{title}</p>
+      <p className="mb-1 text-caption font-medium uppercase text-slate-500">{title}</p>
       <div className="flex flex-wrap gap-2">
         {foods.map((food) => (
           <button
             key={food.id}
             type="button"
-            className="rounded-full bg-white px-3 py-1 text-sm shadow-sm"
+            className="min-h-touch rounded-full bg-white px-3 py-1 text-sm shadow-sm"
             onClick={() => onSelect(food)}
           >
             {food.name}
