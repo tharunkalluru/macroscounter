@@ -30,6 +30,7 @@ export default function AppShell() {
           onSaved={handleSaved}
           onRequestScan={closeAddFoodSheet}
           onRequestCustom={closeAddFoodSheet}
+          onRequestNewRecipe={closeAddFoodSheet}
         />
       </BottomSheet>
     </div>

@@ -206,25 +206,31 @@ export default function AddFoodPage() {
                   onSelect={(food) => setSelected({ kind: 'food', food })}
                 />
               )}
-              {recipes.length > 0 && (
-                <div>
-                  <p className="mb-1 text-xs font-medium uppercase text-slate-500 dark:text-slate-400">
-                    My Recipes
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {recipes.map((recipe) => (
-                      <button
-                        key={recipe.id}
-                        type="button"
-                        className="rounded-full bg-white dark:bg-surface-dark-card px-3 py-1 text-sm shadow-sm"
-                        onClick={() => setSelected({ kind: 'recipe', recipe })}
-                      >
-                        {recipe.name}
-                      </button>
-                    ))}
-                  </div>
+              <div>
+                <p className="mb-1 text-xs font-medium uppercase text-slate-500 dark:text-slate-400">
+                  My Recipes
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {recipes.map((recipe) => (
+                    <button
+                      key={recipe.id}
+                      type="button"
+                      className="rounded-full bg-white dark:bg-surface-dark-card px-3 py-1 text-sm shadow-sm"
+                      onClick={() => setSelected({ kind: 'recipe', recipe })}
+                    >
+                      {recipe.name}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={() => navigate('/recipes/new')}
+                    data-testid="page-new-recipe-button"
+                    className="min-h-touch rounded-full border border-dashed border-brand-700 px-3 py-1 text-sm text-brand-700 dark:border-brand-400 dark:text-brand-400"
+                  >
+                    + New recipe
+                  </button>
                 </div>
-              )}
+              </div>
               {foods && foods.length === 0 && (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   Food database still loading…
@@ -251,14 +257,14 @@ export default function AddFoodPage() {
           <div className="mt-3 flex gap-2">
             <button
               type="button"
-              className={`rounded px-3 py-1 text-sm ${mode === 'portion' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
+              className={`rounded px-3 py-1 text-sm ${mode === 'portion' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100'}`}
               onClick={() => setMode('portion')}
             >
               Household unit
             </button>
             <button
               type="button"
-              className={`rounded px-3 py-1 text-sm ${mode === 'grams' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
+              className={`rounded px-3 py-1 text-sm ${mode === 'grams' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100'}`}
               onClick={() => setMode('grams')}
             >
               Grams

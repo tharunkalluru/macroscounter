@@ -288,6 +288,22 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
+
+      <div className="mt-8 flex flex-col gap-1 border-t border-slate-200 pt-6 dark:border-slate-700">
+        <h2 className="mb-2 text-sm font-medium text-slate-500 dark:text-slate-400">More</h2>
+        <Link
+          to="/templates"
+          className="min-h-touch inline-flex items-center text-brand-700 underline dark:text-brand-400"
+        >
+          Meal templates
+        </Link>
+        <Link
+          to="/export"
+          className="min-h-touch inline-flex items-center text-brand-700 underline dark:text-brand-400"
+        >
+          Export data
+        </Link>
+      </div>
     </div>
   )
 }

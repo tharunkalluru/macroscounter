@@ -678,3 +678,36 @@ a dark-mode a11y suite), zero axe violations across every scanned page in both t
 159.38 KB gz initial bundle — all against the original 300 KB budget, unchanged since Phase 8,
 with the entire 9A–9F polish pass adding zero new runtime dependencies beyond `framer-motion`
 (added once, in 9B).
+
+## Post-Phase-9 manual UI/UX audit (pre-Phase-10)
+Before starting Phase 10, did a full manual pass through every screen/theme with real interaction
+(not just automated assertions) — screenshotting onboarding, Today (empty + logged), the Add-Food
+sheet, macro breakdown, meal overflow menu + its template sub-view, tap-to-edit, History/calendar,
+day detail, Trends (weight chart + report), Settings (all 3 theme options + persistence),
+Templates, Export, Recipe Builder, Scan (camera-unavailable fallback + real OFF barcode lookup),
+and Quick Add, in both light and dark. Found two real bugs the automated suite had missed:
+
+- **Dark-mode contrast bug**: the "Household unit"/"Grams" portion-mode toggle in `AddFoodPage.tsx`
+  and `AddFoodSheetContent.tsx` builds its class list as a JS ternary
+  (`` `...${mode === 'grams' ? 'bg-brand-700 text-white' : 'bg-slate-100'}` ``) — the 9E dark-mode
+  sweep only pattern-matched literal `className="..."` strings, so this templated one slipped
+  through untouched. In dark mode the inactive button had `bg-slate-100` with no explicit text
+  color, which resolved to the *same* color as the button's own background (both `body`'s inherited
+  `dark:text-slate-100`) — fully invisible text. Fixed by giving the inactive state an explicit
+  `text-slate-900 dark:bg-slate-700 dark:text-slate-100` pairing in both files.
+- **Navigation/discoverability bug**: Templates, Export, and the recipe builder (`/templates`,
+  `/export`, `/recipes/new`) had **zero links anywhere in the app** — `grep` confirmed no
+  `to="/templates"`, `to="/export"`, or `to="/recipes/new"` existed outside route definitions.
+  9B's shell rewrite removed the old footer nav (which had linked to these) and its commit message
+  claimed "recipes live in Add Food sheet + Settings" — but that migration was never actually done,
+  and it went undetected for the rest of Phase 9 because every E2E spec that touches those routes
+  reaches them via `page.goto()` directly, never a real click-through. Fixed: Settings gained a
+  "More" section linking to Templates and Export; the Add Food sheet's "My Recipes" chip row (now
+  always rendered, previously hidden entirely when `recipes.length === 0`, which is exactly the
+  state a first-time user is in) gained a "+ New recipe" chip, wired through
+  `AppShell`/`AddFoodSheetContent` the same way as the existing scan/custom-entry callbacks; the
+  full-screen `AddFoodPage` (used for past-day logging) got the identical chip for consistency.
+- New `e2e/navigationReachability.spec.ts` (3 specs) — deliberately click-through-only (no
+  `page.goto()` to the destination) so this exact class of gap can't recur silently. 235 unit tests
+  (unchanged — this was a UI-only pass), 54 E2E specs total (+3), all green. Bundle: 159.57 KB gz
+  (budget 300 KB).

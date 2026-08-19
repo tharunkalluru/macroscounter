@@ -23,6 +23,7 @@ interface Props {
   onSaved: () => void
   onRequestScan: () => void
   onRequestCustom: () => void
+  onRequestNewRecipe: () => void
 }
 
 export default function AddFoodSheetContent({
@@ -30,6 +31,7 @@ export default function AddFoodSheetContent({
   onSaved,
   onRequestScan,
   onRequestCustom,
+  onRequestNewRecipe,
 }: Props) {
   const navigate = useNavigate()
   const { foods, service, loading } = useFoodIndex()
@@ -116,6 +118,11 @@ export default function AddFoodSheetContent({
     navigate(`/log/quick-add?meal=${meal}`)
   }
 
+  function handleNewRecipe() {
+    onRequestNewRecipe()
+    navigate('/recipes/new')
+  }
+
   if (loading) {
     return <div className="py-8 text-center text-slate-500 dark:text-slate-400">Loading…</div>
   }
@@ -191,25 +198,31 @@ export default function AddFoodSheetContent({
                   onSelect={(food) => setSelected({ kind: 'food', food })}
                 />
               )}
-              {recipes.length > 0 && (
-                <div>
-                  <p className="mb-1 text-caption font-medium uppercase text-slate-500 dark:text-slate-400">
-                    My Recipes
-                  </p>
-                  <div className="flex flex-wrap gap-2">
-                    {recipes.map((recipe) => (
-                      <button
-                        key={recipe.id}
-                        type="button"
-                        className="min-h-touch rounded-full bg-white dark:bg-surface-dark-card px-3 py-1 text-sm shadow-sm"
-                        onClick={() => setSelected({ kind: 'recipe', recipe })}
-                      >
-                        {recipe.name}
-                      </button>
-                    ))}
-                  </div>
+              <div>
+                <p className="mb-1 text-caption font-medium uppercase text-slate-500 dark:text-slate-400">
+                  My Recipes
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  {recipes.map((recipe) => (
+                    <button
+                      key={recipe.id}
+                      type="button"
+                      className="min-h-touch rounded-full bg-white dark:bg-surface-dark-card px-3 py-1 text-sm shadow-sm"
+                      onClick={() => setSelected({ kind: 'recipe', recipe })}
+                    >
+                      {recipe.name}
+                    </button>
+                  ))}
+                  <button
+                    type="button"
+                    onClick={handleNewRecipe}
+                    data-testid="sheet-new-recipe-button"
+                    className="min-h-touch rounded-full border border-dashed border-brand-700 px-3 py-1 text-sm text-brand-700 dark:border-brand-400 dark:text-brand-400"
+                  >
+                    + New recipe
+                  </button>
                 </div>
-              )}
+              </div>
               {foods && foods.length === 0 && (
                 <p className="text-sm text-slate-500 dark:text-slate-400">
                   Food database still loading…
@@ -236,14 +249,14 @@ export default function AddFoodSheetContent({
           <div className="mt-3 flex gap-2">
             <button
               type="button"
-              className={`min-h-touch rounded px-3 py-1 text-sm ${mode === 'portion' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
+              className={`min-h-touch rounded px-3 py-1 text-sm ${mode === 'portion' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100'}`}
               onClick={() => setMode('portion')}
             >
               Household unit
             </button>
             <button
               type="button"
-              className={`min-h-touch rounded px-3 py-1 text-sm ${mode === 'grams' ? 'bg-brand-700 text-white' : 'bg-slate-100'}`}
+              className={`min-h-touch rounded px-3 py-1 text-sm ${mode === 'grams' ? 'bg-brand-700 text-white' : 'bg-slate-100 text-slate-900 dark:bg-slate-700 dark:text-slate-100'}`}
               onClick={() => setMode('grams')}
             >
               Grams
