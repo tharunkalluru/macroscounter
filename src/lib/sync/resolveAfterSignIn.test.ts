@@ -143,4 +143,118 @@ describe('resolveAfterSignIn', () => {
     expect(outcome).toBe('onboarding')
     expect(await db.syncMeta.count()).toBe(0)
   })
+
+  it('same account signs back in after signing out -> local data is kept, not wiped', async () => {
+    await new ProfileRepo(db).save({
+      name: 'Same Persona',
+      sex: 'male',
+      age: 28,
+      heightCm: 170,
+      weightKg: 70,
+      activityLevel: 'sedentary',
+      goal: 'cut',
+    })
+    // Simulate a prior sign-in-then-sign-out for this same account: userId is
+    // cleared (signed out) but linkedUserId (set by the earlier sign-in)
+    // persists, exactly as signOutLocally leaves it.
+    await db.syncMeta.add({
+      userId: null,
+      userEmail: null,
+      userName: null,
+      userAvatarUrl: null,
+      lastSyncedAt: 12345,
+      linkedUserId: 'u1',
+    })
+    mockGetSession.mockResolvedValue({
+      data: { user: { id: 'u1', email: 'a@b.com', name: 'A', image: null } },
+    })
+
+    const outcome = await resolveAfterSignIn(db)
+
+    expect(outcome).toBe('ready')
+    const localProfile = await db.profiles.toCollection().first()
+    expect(localProfile?.name).toBe('Same Persona')
+  })
+
+  it('a different account signs in on a device with another account\'s local data -> local data wiped, never migrated or mixed in', async () => {
+    // Person A's leftover local data — still sitting on this device after
+    // they signed out (signOutLocally never clears local rows).
+    await new ProfileRepo(db).save({
+      name: 'Person A',
+      sex: 'male',
+      age: 40,
+      heightCm: 180,
+      weightKg: 90,
+      activityLevel: 'active',
+      goal: 'gain',
+    })
+    await db.syncMeta.add({
+      userId: null,
+      userEmail: null,
+      userName: null,
+      userAvatarUrl: null,
+      lastSyncedAt: 99999,
+      linkedUserId: 'user-a',
+    })
+
+    // Person B signs in on the same device with a brand-new account.
+    mockGetSession.mockResolvedValue({
+      data: { user: { id: 'user-b', email: 'b@b.com', name: 'B', image: null } },
+    })
+
+    const outcome = await resolveAfterSignIn(db)
+
+    // Nothing on the server for B, and A's local data must never be migrated
+    // up under B's account -- so this is a fresh account, straight to onboarding.
+    expect(outcome).toBe('onboarding')
+    expect(await db.profiles.count()).toBe(0)
+    expect(server.rows.size).toBe(0)
+    const meta = await db.syncMeta.toCollection().first()
+    expect(meta?.linkedUserId).toBe('user-b')
+  })
+
+  it('a different account signs in and already has server data -> local wiped first, then only B\'s data is visible', async () => {
+    await new ProfileRepo(db).save({
+      name: 'Person A',
+      sex: 'male',
+      age: 40,
+      heightCm: 180,
+      weightKg: 90,
+      activityLevel: 'active',
+      goal: 'gain',
+    })
+    await db.syncMeta.add({
+      userId: null,
+      userEmail: null,
+      userName: null,
+      userAvatarUrl: null,
+      lastSyncedAt: 99999,
+      linkedUserId: 'user-a',
+    })
+
+    server.rows.set('profiles:remote-b1', {
+      id: 'remote-b1',
+      clientId: 'remote-b1',
+      userId: 'user-b',
+      name: 'Person B',
+      sex: 'female',
+      age: 22,
+      heightCm: 165,
+      weightKg: 58,
+      activityLevel: 'light',
+      goal: 'maintain',
+      updatedAt: Date.now() - 1000,
+      deletedAt: null,
+    })
+    mockGetSession.mockResolvedValue({
+      data: { user: { id: 'user-b', email: 'b@b.com', name: 'B', image: null } },
+    })
+
+    const outcome = await resolveAfterSignIn(db)
+
+    expect(outcome).toBe('ready')
+    const profiles = await db.profiles.toArray()
+    expect(profiles).toHaveLength(1)
+    expect(profiles[0].name).toBe('Person B')
+  })
 })

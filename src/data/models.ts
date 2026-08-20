@@ -152,4 +152,13 @@ export interface SyncMetaRow {
   userName: string | null
   userAvatarUrl: string | null
   lastSyncedAt: number | null
+  /**
+   * The account this device's local synced tables currently belong to.
+   * Unlike `userId` (cleared on sign-out), this persists across sign-out so
+   * a later sign-in can tell "the same person came back" from "a different
+   * account is signing in on data that isn't theirs" — see
+   * `resolveAfterSignIn`. Optional because rows written before this field
+   * existed won't have it; treat missing the same as `null` (no prior link).
+   */
+  linkedUserId?: string | null
 }

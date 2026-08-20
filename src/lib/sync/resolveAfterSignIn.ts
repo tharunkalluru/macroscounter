@@ -1,6 +1,7 @@
 import { authClient } from '../auth/authClient'
 import type { MacroDesiDB } from '../../data/db'
 import { db as defaultDb } from '../../data/db'
+import { clearLocalSyncedData } from './guestMode'
 import { migrateLocalToCloud } from './migrateLocalToCloud'
 import { runSync, serverHasProfile } from './syncEngine'
 
@@ -11,6 +12,10 @@ export type PostSignInOutcome = 'onboarding' | 'ready'
  * just completing the Google redirect or already present from an earlier
  * visit on this browser). Decides, per 10B of the phase-10 spec:
  *
+ * 0. If this device's local data is linked to a *different* account than the
+ *    one signing in now (e.g. Person A signed out and Person B signed in on
+ *    the same shared device/browser) — wipe local data first. Local data
+ *    must never be merged or migrated across accounts.
  * 1. If the server already has data for this account (a returning user, or
  *    the same account on another device) — pull it. That always wins; local
  *    data is never pushed on top of it.
@@ -23,14 +28,23 @@ export async function resolveAfterSignIn(db: MacroDesiDB = defaultDb): Promise<P
   const { data: session } = await authClient.getSession()
   if (!session) return 'onboarding'
 
+  const existingMeta = await db.syncMeta.toCollection().first()
+  const linkedToDifferentAccount =
+    !!existingMeta?.linkedUserId && existingMeta.linkedUserId !== session.user.id
+
+  if (linkedToDifferentAccount) {
+    await clearLocalSyncedData(db)
+  }
+
   const hadLocalProfile = !!(await db.profiles.toCollection().first())
 
-  const existingMeta = await db.syncMeta.toCollection().first()
   const metaFields = {
     userId: session.user.id,
     userEmail: session.user.email,
     userName: session.user.name,
     userAvatarUrl: session.user.image ?? null,
+    linkedUserId: session.user.id,
+    ...(linkedToDifferentAccount ? { lastSyncedAt: null } : {}),
   }
   if (existingMeta) {
     await db.syncMeta.update(existingMeta.id!, metaFields)

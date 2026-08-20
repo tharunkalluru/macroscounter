@@ -1,5 +1,6 @@
 import type { MacroDesiDB } from '../../data/db'
 import { db as defaultDb } from '../../data/db'
+import { SYNCED_TABLES } from '../../domain/sync/types'
 
 /**
  * True once this device has made its first-launch choice — either "Continue
@@ -21,6 +22,7 @@ export async function chooseGuestMode(db: MacroDesiDB = defaultDb): Promise<void
     userName: null,
     userAvatarUrl: null,
     lastSyncedAt: null,
+    linkedUserId: null,
   })
 }
 
@@ -32,9 +34,12 @@ export async function isGuest(db: MacroDesiDB = defaultDb): Promise<boolean> {
 /**
  * Clears the server session but keeps every local row exactly as it is —
  * signing out only detaches this device from the account going forward.
- * Settings shows "Sign in to back up" again afterward, which re-links the
- * same local data the next time they sign in (same migrate-if-server-empty
- * path `resolveAfterSignIn` already runs for a guest's first sign-in).
+ * Settings shows "Sign in to back up" again afterward. `linkedUserId` is
+ * deliberately left untouched (unlike `userId`): if the *same* account signs
+ * back in, `resolveAfterSignIn` re-links this same local data; if a
+ * *different* account signs in, it compares against `linkedUserId` to detect
+ * that and wipes local data first via `clearLocalSyncedData` instead of
+ * merging or migrating one account's data into another's.
  */
 export async function signOutLocally(db: MacroDesiDB = defaultDb): Promise<void> {
   const meta = await db.syncMeta.toCollection().first()
@@ -42,6 +47,20 @@ export async function signOutLocally(db: MacroDesiDB = defaultDb): Promise<void>
   if (meta) {
     await db.syncMeta.update(meta.id!, cleared)
   } else {
-    await db.syncMeta.add({ ...cleared, lastSyncedAt: null })
+    await db.syncMeta.add({ ...cleared, lastSyncedAt: null, linkedUserId: null })
   }
+}
+
+/**
+ * Wipes every synced table (and the pending outbox) on this device — used
+ * only when `resolveAfterSignIn` detects that a *different* account is
+ * signing in on top of local data linked to someone else. Never touches
+ * `foods` (the shared curated database, not user data) or `syncMeta` itself
+ * (the caller overwrites that with the new account's identity right after).
+ */
+export async function clearLocalSyncedData(db: MacroDesiDB = defaultDb): Promise<void> {
+  for (const tableName of SYNCED_TABLES) {
+    await db.table(tableName).clear()
+  }
+  await db.syncOutbox.clear()
 }
