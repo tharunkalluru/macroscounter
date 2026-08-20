@@ -1,8 +1,11 @@
 import { useRef, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ScannedProductRepo } from '../data/repos/ScannedProductRepo'
 import { getLabelReader } from '../domain/barcode/labelReader'
 import { todayISO } from '../lib/date'
+import PageHeader from './components/PageHeader'
+import { TEXT_INPUT_CLASS } from './components/formStyles'
+import { CameraIcon } from './shell/icons'
 
 export default function ScanNotFoundPage() {
   const { barcode } = useParams<{ barcode: string }>()
@@ -66,15 +69,7 @@ export default function ScanNotFoundPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link
-        to="/scan"
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back to scan
-      </Link>
-      <h1 className="mb-1 text-xl font-bold text-brand-700 dark:text-brand-400">
-        Product not found
-      </h1>
+      <PageHeader title="Product not found" backTo="/scan" backLabel="Back to scan" />
       <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
         Barcode <span className="font-mono">{barcode}</span> isn't in our database yet. Add it once
         and it'll be remembered for next time.
@@ -83,9 +78,10 @@ export default function ScanNotFoundPage() {
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
-        className="min-h-touch w-full rounded border border-dashed border-slate-300 dark:border-slate-600 px-4 py-3 text-sm text-slate-600 dark:text-slate-300"
+        className="flex min-h-touch w-full items-center justify-center gap-2 rounded-card border border-dashed border-slate-300 px-4 py-3 text-sm text-slate-600 transition-transform active:scale-[0.98] dark:border-slate-600 dark:text-slate-300"
       >
-        {readingLabel ? 'Reading label…' : '📷 Photo of nutrition label'}
+        <CameraIcon />
+        {readingLabel ? 'Reading label…' : 'Photo of nutrition label'}
       </button>
       <input
         ref={fileInputRef}
@@ -103,7 +99,7 @@ export default function ScanNotFoundPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Product name</span>
           <input
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={name}
             onChange={(e) => setName(e.target.value)}
           />
@@ -111,7 +107,7 @@ export default function ScanNotFoundPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Brand (optional)</span>
           <input
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={brand}
             onChange={(e) => setBrand(e.target.value)}
           />
@@ -125,7 +121,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Calories</span>
             <input
               type="number"
-              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className={TEXT_INPUT_CLASS}
               value={kcal}
               onChange={(e) => setKcal(e.target.value)}
             />
@@ -134,7 +130,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Serving size (g)</span>
             <input
               type="number"
-              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className={TEXT_INPUT_CLASS}
               value={servingSize}
               onChange={(e) => setServingSize(e.target.value)}
             />
@@ -143,7 +139,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Protein (g)</span>
             <input
               type="number"
-              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className={TEXT_INPUT_CLASS}
               value={p}
               onChange={(e) => setP(e.target.value)}
             />
@@ -152,7 +148,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Carbs (g)</span>
             <input
               type="number"
-              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className={TEXT_INPUT_CLASS}
               value={c}
               onChange={(e) => setC(e.target.value)}
             />
@@ -161,7 +157,7 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Fat (g)</span>
             <input
               type="number"
-              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className={TEXT_INPUT_CLASS}
               value={f}
               onChange={(e) => setF(e.target.value)}
             />
@@ -176,7 +172,7 @@ export default function ScanNotFoundPage() {
 
         <button
           type="submit"
-          className="mt-2 rounded bg-brand-700 px-4 py-2 font-medium text-white"
+          className="mt-2 min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
         >
           Save & continue
         </button>

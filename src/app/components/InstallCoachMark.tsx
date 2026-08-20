@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { isIOS, isStandalone } from '../../lib/pwa/standalone'
+import { InstallIcon } from '../shell/icons'
 
 const DISMISS_KEY = 'macrodesi:installCoachMarkDismissed'
 
@@ -58,8 +59,8 @@ export default function InstallCoachMark() {
       className="flex items-start gap-3 border-b border-brand-100 bg-brand-50 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] dark:border-slate-700 dark:bg-slate-800"
       data-testid="install-coach-mark"
     >
-      <span className="text-2xl" aria-hidden="true">
-        📲
+      <span className="mt-0.5 shrink-0 text-brand-700 dark:text-brand-400">
+        <InstallIcon />
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Install MacroDesi</p>

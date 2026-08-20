@@ -1,9 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { LogEntry, Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { MealTemplateRepo } from '../data/repos/MealTemplateRepo'
 import { todayISO } from '../lib/date'
+import PageHeader from './components/PageHeader'
+import { TEXT_INPUT_CLASS } from './components/formStyles'
 
 export default function TemplateNewPage() {
   const [searchParams] = useSearchParams()
@@ -54,15 +56,7 @@ export default function TemplateNewPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link
-        to="/"
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back
-      </Link>
-      <h1 className="mb-1 text-xl font-bold text-brand-700 dark:text-brand-400">
-        Save as template
-      </h1>
+      <PageHeader title="Save as template" backTo="/" />
       <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
         Saving {templatable.length} food{templatable.length === 1 ? '' : 's'} from this meal.
         {skipped > 0 && ` (${skipped} custom/recipe entr${skipped === 1 ? 'y' : 'ies'} skipped.)`}
@@ -80,7 +74,7 @@ export default function TemplateNewPage() {
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Template name</span>
           <input
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Usual Breakfast"
@@ -94,7 +88,10 @@ export default function TemplateNewPage() {
           </p>
         )}
 
-        <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
+        <button
+          type="submit"
+          className="min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
+        >
           Save template
         </button>
       </form>

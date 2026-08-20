@@ -1,6 +1,4 @@
-function Pulse({ className }: { className: string }) {
-  return <div className={`motion-safe:animate-pulse rounded bg-slate-200 dark:bg-slate-700 ${className}`} />
-}
+import { Pulse } from './Skeleton'
 
 /** Mirrors the shape/height of the loaded Today dashboard so nothing shifts once data arrives. */
 export default function DashboardSkeleton() {

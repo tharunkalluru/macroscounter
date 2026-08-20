@@ -1,8 +1,11 @@
 import { BrowserMultiFormatReader } from '@zxing/browser'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import { activeMealWindow } from '../domain/mealPrompt/activeMealWindow'
+import PageHeader from './components/PageHeader'
+import { TEXT_INPUT_CLASS } from './components/formStyles'
+import { FlashlightIcon } from './shell/icons'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -137,15 +140,7 @@ export default function ScanPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link
-        to="/"
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back
-      </Link>
-      <h1 className="mb-1 text-xl font-bold text-brand-700 dark:text-brand-400">
-        Scan barcode · {MEAL_LABELS[meal]}
-      </h1>
+      <PageHeader title={`Scan barcode · ${MEAL_LABELS[meal]}`} backTo="/" />
 
       <div className="relative mt-3 overflow-hidden rounded-xl bg-slate-900" data-testid="camera-preview">
         <video ref={videoRef} className="aspect-video w-full object-cover" muted playsInline />
@@ -163,7 +158,7 @@ export default function ScanPage() {
             data-testid="torch-toggle"
             className={`absolute bottom-2 right-2 flex min-h-touch min-w-touch items-center justify-center rounded-full ${torchOn ? 'bg-amber-400 text-slate-900' : 'bg-slate-800/80 text-white'}`}
           >
-            <span aria-hidden="true">💡</span>
+            <FlashlightIcon />
           </button>
         )}
       </div>
@@ -180,12 +175,15 @@ export default function ScanPage() {
                 type="text"
                 inputMode="numeric"
                 placeholder="Enter barcode number"
-                className="min-h-touch w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+                className={TEXT_INPUT_CLASS}
                 value={manualBarcode}
                 onChange={(e) => setManualBarcode(e.target.value)}
               />
             </label>
-            <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
+            <button
+              type="submit"
+              className="min-h-touch rounded-card bg-brand-700 px-4 font-medium text-white transition-transform active:scale-[0.98]"
+            >
               Look up
             </button>
           </form>

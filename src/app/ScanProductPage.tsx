@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import type { Meal, ScannedProduct } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { ScannedProductRepo } from '../data/repos/ScannedProductRepo'
@@ -8,19 +8,17 @@ import { lookupProduct } from '../domain/barcode/lookupProduct'
 import { activeMealWindow } from '../domain/mealPrompt/activeMealWindow'
 import { todayISO } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
+import PageHeader from './components/PageHeader'
 import PortionStep, { type PortionSaveData } from './components/PortionStep'
+import SegmentedControl from './components/SegmentedControl'
+import { Pulse } from './components/Skeleton'
 
-const MEAL_LABELS: Record<Meal, string> = {
-  breakfast: 'Breakfast',
-  lunch: 'Lunch',
-  snacks: 'Snacks',
-  dinner: 'Dinner',
-}
-const MEALS: Meal[] = ['breakfast', 'lunch', 'snacks', 'dinner']
-
-function Pulse({ className }: { className: string }) {
-  return <div className={`motion-safe:animate-pulse rounded bg-slate-200 dark:bg-slate-700 ${className}`} />
-}
+const MEAL_OPTIONS: { value: Meal; label: string }[] = [
+  { value: 'breakfast', label: 'Breakfast' },
+  { value: 'lunch', label: 'Lunch' },
+  { value: 'snacks', label: 'Snacks' },
+  { value: 'dinner', label: 'Dinner' },
+]
 
 function ProductCardSkeleton() {
   return (
@@ -83,12 +81,7 @@ export default function ScanProductPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link
-        to="/scan"
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back to scan
-      </Link>
+      <PageHeader title="Scan result" backTo="/scan" backLabel="Back to scan" />
 
       {product === undefined && <ProductCardSkeleton />}
 
@@ -109,9 +102,9 @@ export default function ScanProductPage() {
             )}
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
-                <h1 className="font-semibold" data-testid="scanned-product-name">
+                <h2 className="font-semibold" data-testid="scanned-product-name">
                   {product.name}
-                </h1>
+                </h2>
                 <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 text-caption text-slate-500 dark:bg-slate-700 dark:text-slate-400">
                   {product.source}
                 </span>
@@ -126,21 +119,15 @@ export default function ScanProductPage() {
             </div>
           </div>
 
-          <label className="mt-4 flex flex-col gap-1">
-            <span className="text-sm font-medium">Meal</span>
-            <select
-              className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-              data-testid="scanned-product-meal-select"
+          <div className="mt-4">
+            <SegmentedControl
+              label="Meal"
+              options={MEAL_OPTIONS}
               value={meal}
-              onChange={(e) => setMeal(e.target.value as Meal)}
-            >
-              {MEALS.map((m) => (
-                <option key={m} value={m}>
-                  {MEAL_LABELS[m]}
-                </option>
-              ))}
-            </select>
-          </label>
+              onChange={setMeal}
+              testIdPrefix="scanned-product-meal"
+            />
+          </div>
 
           <div className="mt-3">
             <PortionStep

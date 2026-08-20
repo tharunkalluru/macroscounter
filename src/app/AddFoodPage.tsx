@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
+import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import type { FoodRecord, Meal, Recipe } from '../data/models'
 import { FoodRepo } from '../data/repos/FoodRepo'
 import { LogRepo } from '../data/repos/LogRepo'
@@ -8,7 +8,9 @@ import { isFutureDate, todayISO } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
 import { nameOf, per100gOf, portionsOf, type Selected } from './foodSelection'
 import { useFoodIndex } from './hooks/useFoodIndex'
+import PageHeader from './components/PageHeader'
 import PortionStep, { type PortionSaveData } from './components/PortionStep'
+import { TEXT_INPUT_CLASS } from './components/formStyles'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -110,22 +112,17 @@ export default function AddFoodPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link
-        to={backTo}
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back
-      </Link>
-      <h1 className="mb-1 text-xl font-bold text-brand-700 dark:text-brand-400">
-        {editingId !== null ? 'Edit entry' : `Add food · ${MEAL_LABELS[meal]}`}
-      </h1>
+      <PageHeader
+        title={editingId !== null ? 'Edit entry' : `Add food · ${MEAL_LABELS[meal]}`}
+        backTo={backTo}
+      />
 
       {!selected && (
         <>
           <input
             type="text"
             placeholder="Search foods (e.g. idli, sambar)"
-            className="mt-3 min-h-touch w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={`mt-3 w-full ${TEXT_INPUT_CLASS}`}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus

@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import type { Meal, MealTemplate } from '../data/models'
 import { FoodRepo } from '../data/repos/FoodRepo'
 import { LogRepo } from '../data/repos/LogRepo'
 import { MealTemplateRepo } from '../data/repos/MealTemplateRepo'
 import { applyTemplate } from '../domain/templates/applyTemplate'
 import { todayISO } from '../lib/date'
+import PageHeader from './components/PageHeader'
+import SegmentedControl from './components/SegmentedControl'
 
 const MEAL_OPTIONS: { value: Meal; label: string }[] = [
   { value: 'breakfast', label: 'Breakfast' },
@@ -68,55 +70,50 @@ export default function TemplatesPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link
-        to="/"
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back
-      </Link>
-      <h1 className="mb-4 text-xl font-bold text-brand-700 dark:text-brand-400">Templates</h1>
+      <PageHeader title="Templates" backTo="/" />
 
-      <ul className="flex flex-col gap-3" data-testid="templates-list">
+      <ul className="flex flex-col gap-4" data-testid="templates-list">
         {templates.map((template) => (
           <li
             key={template.id}
-            className="rounded-lg bg-white dark:bg-surface-dark-card p-4 shadow-sm"
+            className="rounded-card bg-white p-4 shadow-card dark:bg-surface-dark-card"
           >
-            <p className="font-medium">{template.name}</p>
-            <p className="text-xs text-slate-500 dark:text-slate-400">
-              {template.entries.length} items
-            </p>
-
-            <div className="mt-3 flex items-center gap-2">
-              <select
-                className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-2 py-1 text-sm"
-                value={mealByTemplate[template.id!] ?? 'breakfast'}
-                onChange={(e) =>
-                  setMealByTemplate((prev) => ({ ...prev, [template.id!]: e.target.value as Meal }))
-                }
-              >
-                {MEAL_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
-              </select>
-              <button
-                type="button"
-                disabled={logging === template.id}
-                onClick={() => handleLogNow(template)}
-                className="rounded bg-brand-700 px-3 py-1 text-sm font-medium text-white disabled:opacity-50"
-              >
-                {logging === template.id ? 'Logging…' : 'Log now'}
-              </button>
+            <div className="flex items-start justify-between gap-2">
+              <div>
+                <p className="font-medium">{template.name}</p>
+                <p className="text-caption text-slate-500 dark:text-slate-400">
+                  {template.entries.length} items
+                </p>
+              </div>
               <button
                 type="button"
                 onClick={() => handleDelete(template.id)}
-                className="ml-auto text-sm text-red-600 dark:text-red-400 underline"
+                aria-label={`Delete ${template.name}`}
+                className="text-caption text-red-600 underline dark:text-red-400"
               >
                 Delete
               </button>
             </div>
+
+            <div className="mt-3">
+              <SegmentedControl
+                label="Meal"
+                options={MEAL_OPTIONS}
+                value={mealByTemplate[template.id!] ?? 'breakfast'}
+                onChange={(value) =>
+                  setMealByTemplate((prev) => ({ ...prev, [template.id!]: value }))
+                }
+                testIdPrefix={`template-${template.id}-meal`}
+              />
+            </div>
+            <button
+              type="button"
+              disabled={logging === template.id}
+              onClick={() => handleLogNow(template)}
+              className="mt-3 min-h-touch w-full rounded-card bg-brand-700 px-3 py-2 text-sm font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50"
+            >
+              {logging === template.id ? 'Logging…' : 'Log now'}
+            </button>
           </li>
         ))}
         {templates.length === 0 && (

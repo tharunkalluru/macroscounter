@@ -1,7 +1,7 @@
-import { Link } from 'react-router-dom'
 import { LogRepo } from '../data/repos/LogRepo'
 import { WeighInRepo } from '../data/repos/WeighInRepo'
 import { buildLogsCSV, buildWeighInsCSV } from '../domain/export/csv'
+import PageHeader from './components/PageHeader'
 
 function downloadCSV(filename: string, csv: string) {
   const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' })
@@ -28,26 +28,23 @@ export default function ExportPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link
-        to="/"
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back
-      </Link>
-      <h1 className="mb-4 text-xl font-bold text-brand-700 dark:text-brand-400">Export data</h1>
+      <PageHeader title="Export data" backTo="/settings" />
+      <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
+        Downloads a CSV file to this device — everything you've logged, in full.
+      </p>
 
       <div className="flex flex-col gap-3">
         <button
           type="button"
           onClick={handleExportLogs}
-          className="rounded bg-brand-700 px-4 py-2 font-medium text-white"
+          className="min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
         >
           Export food logs (CSV)
         </button>
         <button
           type="button"
           onClick={handleExportWeighIns}
-          className="rounded bg-brand-700 px-4 py-2 font-medium text-white"
+          className="min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
         >
           Export weigh-ins (CSV)
         </button>

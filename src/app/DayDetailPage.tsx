@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Link, useParams } from 'react-router-dom'
+import { useParams } from 'react-router-dom'
 import type { LogEntry, Meal, Targets } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
@@ -8,6 +8,7 @@ import { sumMacros } from '../domain/logging/portionMath'
 import { addDaysISO, isFutureDate } from '../lib/date'
 import MacroBar from './components/MacroBar'
 import MealSection from './components/MealSection'
+import PageHeader from './components/PageHeader'
 import { useUIState } from './shell/UIStateContext'
 
 const MEALS: { key: Meal; label: string }[] = [
@@ -55,12 +56,7 @@ export default function DayDetailPage() {
   if (isFutureDate(date)) {
     return (
       <div className="mx-auto max-w-md px-6 py-8">
-        <Link
-          to="/history"
-          className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-        >
-          ← Back
-        </Link>
+        <PageHeader title={date} backTo="/history" backLabel="Back to calendar" />
         <p className="text-slate-500 dark:text-slate-400">You can't log or view future days.</p>
       </div>
     )
@@ -79,14 +75,8 @@ export default function DayDetailPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8 pb-16">
-      <Link
-        to="/history"
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back to calendar
-      </Link>
-      <h1 className="text-xl font-bold text-brand-700 dark:text-brand-400">{date}</h1>
-      <p className="mt-1 text-sm text-slate-500 dark:text-slate-400" data-testid="day-total-kcal">
+      <PageHeader title={date} backTo="/history" backLabel="Back to calendar" />
+      <p className="text-sm text-slate-500 dark:text-slate-400" data-testid="day-total-kcal">
         {Math.round(totals.kcal)} / {dayTarget.kcal} kcal
       </p>
 

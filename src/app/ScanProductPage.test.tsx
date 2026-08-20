@@ -98,14 +98,14 @@ describe('ScanProductPage (Phase 10.5 integration: scan -> card -> one-tap add)'
     renderAt(`/scan/product/${BARCODE}`)
     await screen.findByTestId('scanned-product-name')
 
-    expect(screen.getByTestId('scanned-product-meal-select')).toHaveValue('snacks')
+    expect(screen.getByTestId('scanned-product-meal-snacks')).toHaveAttribute('aria-checked', 'true')
   })
 
   it('the meal selector is changeable, and the logged entry uses whatever is currently selected', async () => {
     renderAt(`/scan/product/${BARCODE}?meal=breakfast`)
     await screen.findByTestId('scanned-product-name')
 
-    fireEvent.change(screen.getByTestId('scanned-product-meal-select'), { target: { value: 'dinner' } })
+    fireEvent.click(screen.getByTestId('scanned-product-meal-dinner'))
     fireEvent.click(screen.getByTestId('log-entry-button'))
 
     await waitFor(async () => {

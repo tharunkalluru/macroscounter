@@ -14,6 +14,8 @@ import { computeEMA } from '../../domain/history/ema'
 import { isFutureDate, todayISO } from '../../lib/date'
 import { neutral, semantic } from '../../theme/tokens'
 import { useTheme } from '../shell/ThemeContext'
+import { TEXT_INPUT_CLASS } from './formStyles'
+import { WeightSectionSkeleton } from './Skeleton'
 
 export default function WeightSection() {
   const { resolvedTheme } = useTheme()
@@ -70,7 +72,7 @@ export default function WeightSection() {
   }
 
   if (loading) {
-    return <div className="py-8 text-center text-slate-500 dark:text-slate-400">Loading…</div>
+    return <WeightSectionSkeleton />
   }
 
   return (
@@ -84,7 +86,7 @@ export default function WeightSection() {
           <input
             type="date"
             max={todayISO()}
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={date}
             onChange={(e) => setDate(e.target.value)}
           />
@@ -94,14 +96,14 @@ export default function WeightSection() {
           <input
             type="number"
             step="0.1"
-            className="min-h-touch w-24 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={`w-24 ${TEXT_INPUT_CLASS}`}
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
           />
         </label>
         <button
           type="submit"
-          className="min-h-touch rounded bg-brand-700 px-4 py-2 font-medium text-white"
+          className="min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
         >
           Log
         </button>

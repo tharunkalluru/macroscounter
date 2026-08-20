@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { useNavigate } from 'react-router-dom'
 import type { FoodRecord } from '../data/models'
 import { RecipeRepo } from '../data/repos/RecipeRepo'
 import { computeRecipe, type RecipeIngredientInput } from '../domain/logging/recipeMath'
+import PageHeader from './components/PageHeader'
+import { TEXT_INPUT_CLASS } from './components/formStyles'
 import { useFoodIndex } from './hooks/useFoodIndex'
 
 interface DraftIngredient {
@@ -86,21 +88,11 @@ export default function RecipeBuilderPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link
-        to="/"
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back
-      </Link>
-      <h1 className="mb-4 text-xl font-bold text-brand-700 dark:text-brand-400">New recipe</h1>
+      <PageHeader title="New recipe" backTo="/" />
 
       <label className="flex flex-col gap-1">
         <span className="text-sm font-medium">Recipe name</span>
-        <input
-          className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-        />
+        <input className={TEXT_INPUT_CLASS} value={name} onChange={(e) => setName(e.target.value)} />
       </label>
 
       <label className="mt-3 flex flex-col gap-1">
@@ -108,7 +100,7 @@ export default function RecipeBuilderPage() {
         <input
           type="number"
           min="1"
-          className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+          className={TEXT_INPUT_CLASS}
           value={servings}
           onChange={(e) => setServings(e.target.value)}
         />
@@ -123,7 +115,7 @@ export default function RecipeBuilderPage() {
               <input
                 type="number"
                 min="0"
-                className="min-h-touch w-20 rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-2 py-1 text-sm"
+                className={`w-20 ${TEXT_INPUT_CLASS}`}
                 value={ing.grams}
                 onChange={(e) => updateGrams(i, Number(e.target.value))}
               />
@@ -147,7 +139,7 @@ export default function RecipeBuilderPage() {
         <input
           type="text"
           placeholder="Search foods to add…"
-          className="mt-2 min-h-touch w-full rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+          className={`mt-2 w-full ${TEXT_INPUT_CLASS}`}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
         />
@@ -187,7 +179,7 @@ export default function RecipeBuilderPage() {
       <button
         type="button"
         onClick={handleSave}
-        className="mt-4 w-full rounded bg-brand-700 px-4 py-2 font-medium text-white"
+        className="mt-4 min-h-touch w-full rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
       >
         Save recipe
       </button>

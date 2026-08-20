@@ -1,9 +1,11 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { isFutureDate, todayISO } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
+import PageHeader from './components/PageHeader'
+import { TEXT_INPUT_CLASS } from './components/formStyles'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -86,21 +88,16 @@ export default function QuickAddPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <Link
-        to={backTo}
-        className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline"
-      >
-        ← Back
-      </Link>
-      <h1 className="mb-4 text-xl font-bold text-brand-700 dark:text-brand-400">
-        {editingId !== null ? 'Edit custom entry' : `Custom add · ${MEAL_LABELS[meal]}`}
-      </h1>
+      <PageHeader
+        title={editingId !== null ? 'Edit custom entry' : `Custom add · ${MEAL_LABELS[meal]}`}
+        backTo={backTo}
+      />
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Name</span>
           <input
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="e.g. Restaurant meal"
@@ -111,7 +108,7 @@ export default function QuickAddPage() {
           <span className="text-sm font-medium">Calories (kcal)</span>
           <input
             type="number"
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={kcal}
             onChange={(e) => setKcal(e.target.value)}
           />
@@ -122,7 +119,7 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Protein (g)</span>
             <input
               type="number"
-              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className={TEXT_INPUT_CLASS}
               value={p}
               onChange={(e) => setP(e.target.value)}
             />
@@ -131,7 +128,7 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Carbs (g)</span>
             <input
               type="number"
-              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className={TEXT_INPUT_CLASS}
               value={c}
               onChange={(e) => setC(e.target.value)}
             />
@@ -140,7 +137,7 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Fat (g)</span>
             <input
               type="number"
-              className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+              className={TEXT_INPUT_CLASS}
               value={f}
               onChange={(e) => setF(e.target.value)}
             />
@@ -153,7 +150,10 @@ export default function QuickAddPage() {
           </p>
         )}
 
-        <button type="submit" className="rounded bg-brand-700 px-4 py-2 font-medium text-white">
+        <button
+          type="submit"
+          className="min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
+        >
           {editingId !== null ? 'Save changes' : `Add to ${MEAL_LABELS[meal]}`}
         </button>
       </form>

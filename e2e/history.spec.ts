@@ -69,7 +69,7 @@ test('navigate to a past day, edit an entry, verify the calendar color updates',
   await expect(page).toHaveURL('/history/2026-08-10')
   await expect(page.getByTestId('day-total-kcal')).toHaveText('2050 / 1628 kcal')
 
-  await page.getByRole('link', { name: '← Back to calendar' }).click()
+  await page.getByRole('link', { name: 'Back to calendar' }).click()
   await expect(page).toHaveURL('/history')
   await expect(page.getByTestId('day-2026-08-10')).toHaveAttribute('data-band', 'red')
 })
