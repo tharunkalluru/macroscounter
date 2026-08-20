@@ -8,11 +8,14 @@ import { TargetRepo } from '../data/repos/TargetRepo'
 import { findApplicableTarget } from '../domain/history/targetForDate'
 import { sumMacros } from '../domain/logging/portionMath'
 import { addDaysISO, isFutureDate, todayISO } from '../lib/date'
+import { vibrateSuccess } from '../lib/haptics'
+import { hasCelebratedProteinGoal, markProteinGoalCelebrated } from '../lib/logging/proteinGoalCelebration'
 import { hasMadeSignInChoice } from '../lib/sync/guestMode'
 import AdaptiveTargetPrompt from './components/AdaptiveTargetPrompt'
 import CaloriesRing from './components/CaloriesRing'
 import DashboardSkeleton from './components/DashboardSkeleton'
 import DateNav from './components/DateNav'
+import GoalCelebration from './components/GoalCelebration'
 import MacroBar from './components/MacroBar'
 import MacroBreakdownSheet from './components/MacroBreakdownSheet'
 import MealPromptSheet from './components/MealPromptSheet'
@@ -92,6 +95,18 @@ export default function Dashboard() {
   }, [date, dataVersion])
 
   const mealPrompt = useMealPrompt(entries, isToday && state === 'ready')
+
+  const [showCelebration, setShowCelebration] = useState(false)
+
+  useEffect(() => {
+    if (state !== 'ready' || !isToday || !targets || targets.proteinG <= 0) return
+    const proteinEaten = sumMacros(entries).p
+    if (proteinEaten < targets.proteinG) return
+    if (hasCelebratedProteinGoal(date)) return
+    markProteinGoalCelebrated(date)
+    vibrateSuccess()
+    setShowCelebration(true)
+  }, [state, isToday, targets, entries, date])
 
   async function handleDelete(id: number) {
     await logRepo.deleteEntry(id)
@@ -221,6 +236,8 @@ export default function Dashboard() {
         macro={breakdownMacro}
         entries={entries}
       />
+
+      <GoalCelebration show={showCelebration} onDismiss={() => setShowCelebration(false)} />
     </div>
   )
 }

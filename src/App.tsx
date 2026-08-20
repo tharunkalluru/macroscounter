@@ -10,6 +10,7 @@ import OnboardingFlow from './app/OnboardingFlow'
 import QuickAddPage from './app/QuickAddPage'
 import RecipeBuilderPage from './app/RecipeBuilderPage'
 import ReportPage from './app/ReportPage'
+import AppBootScreen from './app/shell/AppBootScreen'
 import AppShell from './app/shell/AppShell'
 import SyncTriggers from './app/shell/SyncTriggers'
 import { ThemeProvider } from './app/shell/ThemeContext'
@@ -54,11 +55,7 @@ function App() {
   }
 
   if (!seeded) {
-    return (
-      <div className="flex min-h-screen items-center justify-center text-slate-500">
-        Loading MacroDesi…
-      </div>
-    )
+    return <AppBootScreen />
   }
 
   return (

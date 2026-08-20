@@ -3,21 +3,16 @@ import { useNavigate } from 'react-router-dom'
 import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
 import { computeGoalTargets } from '../domain/goals/goalEngine'
+import { ACTIVITY_OPTIONS, GOAL_OPTIONS } from '../domain/goals/options'
 import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
 import { todayISO } from '../lib/date'
+import SegmentedControl from './components/SegmentedControl'
+import SelectableCardGroup from './components/SelectableCardGroup'
+import { TEXT_INPUT_CLASS } from './components/formStyles'
 
-const ACTIVITY_OPTIONS: { value: ActivityLevel; label: string }[] = [
-  { value: 'sedentary', label: 'Sedentary (little to no exercise)' },
-  { value: 'light', label: 'Light (exercise 1-3 days/week)' },
-  { value: 'moderate', label: 'Moderate (exercise 3-5 days/week)' },
-  { value: 'active', label: 'Active (exercise 6-7 days/week)' },
-  { value: 'very_active', label: 'Very active (hard exercise daily)' },
-]
-
-const GOAL_OPTIONS: { value: Goal; label: string }[] = [
-  { value: 'cut', label: 'Lose fat' },
-  { value: 'maintain', label: 'Maintain weight' },
-  { value: 'gain', label: 'Gain weight' },
+const SEX_OPTIONS: { value: Sex; label: string }[] = [
+  { value: 'male', label: 'male' },
+  { value: 'female', label: 'female' },
 ]
 
 interface Props {
@@ -107,38 +102,22 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
 
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Name</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Name</span>
           <input
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={name}
             onChange={(e) => setName(e.target.value)}
             placeholder="Your name"
           />
         </label>
 
-        <fieldset className="flex flex-col gap-1">
-          <legend className="text-sm font-medium">Sex</legend>
-          <div className="flex gap-4">
-            {(['male', 'female'] as const).map((value) => (
-              <label key={value} className="flex min-h-touch items-center gap-2">
-                <input
-                  type="radio"
-                  name="sex"
-                  value={value}
-                  checked={sex === value}
-                  onChange={() => setSex(value)}
-                />
-                <span className="capitalize">{value}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <SegmentedControl label="Sex" options={SEX_OPTIONS} value={sex} onChange={setSex} testIdPrefix="sex" />
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Age</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Age</span>
           <input
             type="number"
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={age}
             onChange={(e) => setAge(e.target.value)}
             placeholder="years"
@@ -146,10 +125,10 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Height (cm)</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Height (cm)</span>
           <input
             type="number"
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={heightCm}
             onChange={(e) => setHeightCm(e.target.value)}
             placeholder="cm"
@@ -157,10 +136,10 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Weight (kg)</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Weight (kg)</span>
           <input
             type="number"
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
             placeholder="kg"
@@ -168,37 +147,21 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Activity level</span>
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Activity level</span>
           <select
-            className="min-h-touch rounded border border-slate-300 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100 px-3 py-2"
+            className={TEXT_INPUT_CLASS}
             value={activityLevel}
             onChange={(e) => setActivityLevel(e.target.value as ActivityLevel)}
           >
             {ACTIVITY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label}
+                {opt.label} — {opt.description}
               </option>
             ))}
           </select>
         </label>
 
-        <fieldset className="flex flex-col gap-1">
-          <legend className="text-sm font-medium">Goal</legend>
-          <div className="flex flex-col gap-2">
-            {GOAL_OPTIONS.map((opt) => (
-              <label key={opt.value} className="flex min-h-touch items-center gap-2">
-                <input
-                  type="radio"
-                  name="goal"
-                  value={opt.value}
-                  checked={goal === opt.value}
-                  onChange={() => setGoal(opt.value)}
-                />
-                <span>{opt.label}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <SelectableCardGroup label="Goal" options={GOAL_OPTIONS} value={goal} onChange={setGoal} testIdPrefix="goal" />
 
         {error && (
           <p role="alert" className="text-sm text-red-600 dark:text-red-400">
@@ -209,7 +172,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         <button
           type="submit"
           disabled={submitting}
-          className="mt-2 rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
+          className="mt-2 min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50"
         >
           {submitting ? 'Setting up…' : 'Get started'}
         </button>

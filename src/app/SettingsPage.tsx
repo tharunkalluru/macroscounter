@@ -3,25 +3,20 @@ import { Link, useNavigate } from 'react-router-dom'
 import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
 import { computeGoalTargets } from '../domain/goals/goalEngine'
+import { ACTIVITY_OPTIONS, GOAL_OPTIONS } from '../domain/goals/options'
 import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
 import type { ThemePreference } from '../domain/theme/resolveTheme'
 import { todayISO } from '../lib/date'
 import AccountSection from './components/AccountSection'
+import SegmentedControl from './components/SegmentedControl'
+import SelectableCardGroup from './components/SelectableCardGroup'
 import SyncStatusDot from './components/SyncStatusDot'
+import { TEXT_INPUT_CLASS } from './components/formStyles'
 import { useTheme } from './shell/ThemeContext'
 
-const ACTIVITY_OPTIONS: { value: ActivityLevel; label: string }[] = [
-  { value: 'sedentary', label: 'Sedentary' },
-  { value: 'light', label: 'Light' },
-  { value: 'moderate', label: 'Moderate' },
-  { value: 'active', label: 'Active' },
-  { value: 'very_active', label: 'Very active' },
-]
-
-const GOAL_OPTIONS: { value: Goal; label: string }[] = [
-  { value: 'cut', label: 'Lose fat' },
-  { value: 'maintain', label: 'Maintain weight' },
-  { value: 'gain', label: 'Gain weight' },
+const SEX_OPTIONS: { value: Sex; label: string }[] = [
+  { value: 'male', label: 'male' },
+  { value: 'female', label: 'female' },
 ]
 
 const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
@@ -33,32 +28,13 @@ const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
 function ThemeToggle() {
   const { preference, setPreference } = useTheme()
   return (
-    <fieldset className="flex flex-col gap-1">
-      <legend className="text-sm font-medium text-slate-900 dark:text-slate-100">Appearance</legend>
-      <div
-        className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800"
-        role="radiogroup"
-        aria-label="Appearance"
-      >
-        {THEME_OPTIONS.map((opt) => (
-          <button
-            key={opt.value}
-            type="button"
-            role="radio"
-            aria-checked={preference === opt.value}
-            data-testid={`theme-option-${opt.value}`}
-            onClick={() => setPreference(opt.value)}
-            className={`min-h-touch flex-1 rounded-md px-2 text-sm font-medium transition-colors ${
-              preference === opt.value
-                ? 'bg-white text-brand-700 shadow-sm dark:bg-slate-700 dark:text-brand-400'
-                : 'text-slate-600 dark:text-slate-300'
-            }`}
-          >
-            {opt.label}
-          </button>
-        ))}
-      </div>
-    </fieldset>
+    <SegmentedControl
+      label="Appearance"
+      options={THEME_OPTIONS}
+      value={preference}
+      onChange={setPreference}
+      testIdPrefix="theme-option"
+    />
   )
 }
 
@@ -170,39 +146,16 @@ export default function SettingsPage() {
       <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Name</span>
-          <input
-            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-          />
+          <input className={TEXT_INPUT_CLASS} value={name} onChange={(e) => setName(e.target.value)} />
         </label>
 
-        <fieldset className="flex flex-col gap-1">
-          <legend className="text-sm font-medium text-slate-900 dark:text-slate-100">Sex</legend>
-          <div className="flex gap-4">
-            {(['male', 'female'] as const).map((value) => (
-              <label
-                key={value}
-                className="flex min-h-touch items-center gap-2 text-slate-900 dark:text-slate-100"
-              >
-                <input
-                  type="radio"
-                  name="sex"
-                  value={value}
-                  checked={sex === value}
-                  onChange={() => setSex(value)}
-                />
-                <span className="capitalize">{value}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <SegmentedControl label="Sex" options={SEX_OPTIONS} value={sex} onChange={setSex} testIdPrefix="sex" />
 
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Age</span>
           <input
             type="number"
-            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className={TEXT_INPUT_CLASS}
             value={age}
             onChange={(e) => setAge(e.target.value)}
           />
@@ -214,7 +167,7 @@ export default function SettingsPage() {
           </span>
           <input
             type="number"
-            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className={TEXT_INPUT_CLASS}
             value={heightCm}
             onChange={(e) => setHeightCm(e.target.value)}
           />
@@ -226,7 +179,7 @@ export default function SettingsPage() {
           </span>
           <input
             type="number"
-            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className={TEXT_INPUT_CLASS}
             value={weightKg}
             onChange={(e) => setWeightKg(e.target.value)}
           />
@@ -237,38 +190,19 @@ export default function SettingsPage() {
             Activity level
           </span>
           <select
-            className="min-h-touch rounded border border-slate-300 px-3 py-2 dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className={TEXT_INPUT_CLASS}
             value={activityLevel}
             onChange={(e) => setActivityLevel(e.target.value as ActivityLevel)}
           >
             {ACTIVITY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label}
+                {opt.label} — {opt.description}
               </option>
             ))}
           </select>
         </label>
 
-        <fieldset className="flex flex-col gap-1">
-          <legend className="text-sm font-medium text-slate-900 dark:text-slate-100">Goal</legend>
-          <div className="flex flex-col gap-2">
-            {GOAL_OPTIONS.map((opt) => (
-              <label
-                key={opt.value}
-                className="flex min-h-touch items-center gap-2 text-slate-900 dark:text-slate-100"
-              >
-                <input
-                  type="radio"
-                  name="goal"
-                  value={opt.value}
-                  checked={goal === opt.value}
-                  onChange={() => setGoal(opt.value)}
-                />
-                <span>{opt.label}</span>
-              </label>
-            ))}
-          </div>
-        </fieldset>
+        <SelectableCardGroup label="Goal" options={GOAL_OPTIONS} value={goal} onChange={setGoal} testIdPrefix="goal" />
 
         {error && (
           <p role="alert" className="text-sm text-red-600 dark:text-red-400">
@@ -284,14 +218,14 @@ export default function SettingsPage() {
         <div className="mt-2 flex gap-3">
           <button
             type="submit"
-            className="min-h-touch rounded bg-brand-700 px-4 py-2 font-medium text-white"
+            className="min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
           >
             Save & recalculate
           </button>
           <button
             type="button"
             onClick={() => navigate('/')}
-            className="min-h-touch rounded px-4 py-2 text-slate-600 dark:text-slate-300"
+            className="min-h-touch rounded-card px-4 py-2.5 text-slate-600 transition-transform active:scale-[0.98] dark:text-slate-300"
           >
             Done
           </button>

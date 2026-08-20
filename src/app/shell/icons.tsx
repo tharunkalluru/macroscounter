@@ -114,6 +114,32 @@ export function BarcodeIcon({ className }: IconProps) {
   )
 }
 
+export function FlameIcon({ className }: IconProps) {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M12 2.5c.6 2.4-.4 3.9-1.8 5.4C8.6 9.5 7 11.3 7 14a5 5 0 0 0 10 0c0-1.6-.6-2.7-1.4-3.7.2 1.5-.3 2.5-1 3-.1-2-1-3-2-4.3-.7-.9-1-1.8-.6-3z"
+        stroke="currentColor"
+        strokeWidth={STROKE}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="currentColor"
+        fillOpacity={0.15}
+      />
+    </svg>
+  )
+}
+
+export function TargetIcon({ className }: IconProps) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <circle cx="12" cy="12" r="8.5" stroke="currentColor" strokeWidth={STROKE} />
+      <circle cx="12" cy="12" r="4.8" stroke="currentColor" strokeWidth={STROKE} />
+      <circle cx="12" cy="12" r="1.2" fill="currentColor" />
+    </svg>
+  )
+}
+
 export function ChevronLeftIcon({ className }: IconProps) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
