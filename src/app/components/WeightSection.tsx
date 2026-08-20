@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import {
   CartesianGrid,
   Line,
@@ -12,10 +12,15 @@ import type { WeighIn } from '../../data/models'
 import { WeighInRepo } from '../../data/repos/WeighInRepo'
 import { computeEMA } from '../../domain/history/ema'
 import { isFutureDate, todayISO } from '../../lib/date'
+import { vibrateTiny } from '../../lib/haptics'
 import { neutral, semantic } from '../../theme/tokens'
 import { useTheme } from '../shell/ThemeContext'
 import { TEXT_INPUT_CLASS } from './formStyles'
+import Snackbar from './Snackbar'
 import { WeightSectionSkeleton } from './Skeleton'
+import SwipeToDeleteRow from './SwipeToDeleteRow'
+
+const UNDO_MS = 5000
 
 export default function WeightSection() {
   const { resolvedTheme } = useTheme()
@@ -27,8 +32,16 @@ export default function WeightSection() {
   const [weightKg, setWeightKg] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const repo = new WeighInRepo()
+
+  function showSnackbar(message: string, onUndo?: () => void) {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+    setSnackbar({ message, onUndo })
+    undoTimerRef.current = setTimeout(() => setSnackbar(null), UNDO_MS)
+  }
 
   async function load() {
     setWeighIns(await repo.getAll())
@@ -65,10 +78,16 @@ export default function WeightSection() {
     await load()
   }
 
-  async function handleDelete(id?: number) {
-    if (id === undefined) return
-    await repo.delete(id)
+  async function handleSwipeDelete(weighIn: WeighIn) {
+    if (weighIn.id === undefined) return
+    const { id: _id, ...snapshot } = weighIn
+    await repo.delete(weighIn.id)
     await load()
+    showSnackbar(`Deleted ${weighIn.date} weigh-in`, () => {
+      vibrateTiny()
+      repo.add(snapshot).then(() => load())
+      setSnackbar(null)
+    })
   }
 
   if (loading) {
@@ -159,24 +178,16 @@ export default function WeightSection() {
       )}
 
       <ul
-        className="mt-6 divide-y divide-slate-100 dark:divide-slate-700 rounded-lg bg-white dark:bg-surface-dark-card shadow-sm"
+        className="mt-6 divide-y divide-slate-100 overflow-hidden rounded-card bg-white shadow-card dark:divide-slate-700 dark:bg-surface-dark-card"
         data-testid="weighin-list"
       >
         {[...weighIns].reverse().map((w) => (
-          <li
-            key={w.id}
-            className="flex min-h-touch items-center justify-between px-3 py-2 text-sm"
-          >
-            <span>
-              {w.date} · {w.weightKg} kg
-            </span>
-            <button
-              type="button"
-              className="min-h-touch text-red-600 dark:text-red-400 underline"
-              onClick={() => handleDelete(w.id)}
-            >
-              Delete
-            </button>
+          <li key={w.id}>
+            <SwipeToDeleteRow onDelete={() => handleSwipeDelete(w)} deleteLabel="Delete">
+              <div className="flex min-h-touch items-center px-3 py-2 text-sm">
+                {w.date} · {w.weightKg} kg
+              </div>
+            </SwipeToDeleteRow>
           </li>
         ))}
         {weighIns.length === 0 && (
@@ -185,6 +196,12 @@ export default function WeightSection() {
           </li>
         )}
       </ul>
+
+      <Snackbar
+        message={snackbar?.message ?? null}
+        actionLabel={snackbar?.onUndo ? 'Undo' : undefined}
+        onAction={snackbar?.onUndo}
+      />
     </div>
   )
 }

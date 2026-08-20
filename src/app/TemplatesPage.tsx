@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { Meal, MealTemplate } from '../data/models'
 import { FoodRepo } from '../data/repos/FoodRepo'
 import { LogRepo } from '../data/repos/LogRepo'
 import { MealTemplateRepo } from '../data/repos/MealTemplateRepo'
 import { applyTemplate } from '../domain/templates/applyTemplate'
+import { vibrateTiny } from '../lib/haptics'
 import { todayISO } from '../lib/date'
 import PageHeader from './components/PageHeader'
 import SegmentedControl from './components/SegmentedControl'
+import Snackbar from './components/Snackbar'
 
 const MEAL_OPTIONS: { value: Meal; label: string }[] = [
   { value: 'breakfast', label: 'Breakfast' },
@@ -15,6 +17,7 @@ const MEAL_OPTIONS: { value: Meal; label: string }[] = [
   { value: 'snacks', label: 'Snacks' },
   { value: 'dinner', label: 'Dinner' },
 ]
+const UNDO_MS = 5000
 
 export default function TemplatesPage() {
   const navigate = useNavigate()
@@ -22,6 +25,8 @@ export default function TemplatesPage() {
   const [mealByTemplate, setMealByTemplate] = useState<Record<number, Meal>>({})
   const [loading, setLoading] = useState(true)
   const [logging, setLogging] = useState<number | null>(null)
+  const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
+  const undoTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   async function load() {
     const all = await new MealTemplateRepo().listAll()
@@ -33,10 +38,23 @@ export default function TemplatesPage() {
     load()
   }, [])
 
-  async function handleDelete(id?: number) {
-    if (id === undefined) return
-    await new MealTemplateRepo().delete(id)
+  function showSnackbar(message: string, onUndo?: () => void) {
+    if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
+    setSnackbar({ message, onUndo })
+    undoTimerRef.current = setTimeout(() => setSnackbar(null), UNDO_MS)
+  }
+
+  async function handleDelete(template: MealTemplate) {
+    if (template.id === undefined) return
+    const { id: _id, ...snapshot } = template
+    const repo = new MealTemplateRepo()
+    await repo.delete(template.id)
     await load()
+    showSnackbar(`Deleted "${template.name}"`, () => {
+      vibrateTiny()
+      repo.add(snapshot).then(() => load())
+      setSnackbar(null)
+    })
   }
 
   async function handleLogNow(template: MealTemplate) {
@@ -87,7 +105,7 @@ export default function TemplatesPage() {
               </div>
               <button
                 type="button"
-                onClick={() => handleDelete(template.id)}
+                onClick={() => handleDelete(template)}
                 aria-label={`Delete ${template.name}`}
                 className="text-caption text-red-600 underline dark:text-red-400"
               >
@@ -122,6 +140,12 @@ export default function TemplatesPage() {
           </li>
         )}
       </ul>
+
+      <Snackbar
+        message={snackbar?.message ?? null}
+        actionLabel={snackbar?.onUndo ? 'Undo' : undefined}
+        onAction={snackbar?.onUndo}
+      />
     </div>
   )
 }
