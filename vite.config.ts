@@ -58,6 +58,17 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,svg,json,png}'],
+        // Without this, workbox's NavigationRoute has no path restriction and
+        // intercepts EVERY navigation-mode request -- including the OAuth
+        // callback redirect Google sends the browser to
+        // (/api/auth/callback/google) -- serving the cached SPA shell
+        // instead of letting it reach the serverless function. React Router
+        // has no route for that path, so nothing renders: a blank screen,
+        // with the callback never actually completing sign-in. Confirmed via
+        // a live Google sign-in through a real account: the callback request
+        // never reached Vercel (no runtime log entry) even though the tab
+        // showed a 200 for it -- the service worker answered it locally.
+        navigateFallbackDenylist: [/^\/api\//],
       },
       devOptions: {
         enabled: false,
