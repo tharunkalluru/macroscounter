@@ -1,17 +1,9 @@
 import { expect, type Page } from '@playwright/test'
 import { test } from '@playwright/test'
+import { onboard as onboardHelper } from './helpers/onboard'
 
 async function onboard(page: Page) {
-  await page.goto('/')
-  await page.getByTestId('signin-skip-button').click()
-  await page.getByPlaceholder('Your name').fill('Meal Prompt Persona')
-  await page.getByRole('radio', { name: 'male', exact: true }).check()
-  await page.getByPlaceholder('years').fill('28')
-  await page.getByPlaceholder('cm').fill('170')
-  await page.getByPlaceholder('kg').fill('70')
-  await page.getByLabel('Activity level').selectOption('sedentary')
-  await page.getByRole('button', { name: 'Get started' }).click()
-  await expect(page).toHaveURL('/')
+  await onboardHelper(page, { name: 'Meal Prompt Persona', fixedTime: false })
 }
 
 async function seedBreakfastHistory(page: Page) {

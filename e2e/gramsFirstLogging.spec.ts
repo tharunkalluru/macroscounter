@@ -1,18 +1,9 @@
 import { expect, type Page } from '@playwright/test'
 import { test } from '@playwright/test'
+import { onboard as onboardHelper } from './helpers/onboard'
 
 async function onboard(page: Page) {
-  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
-  await page.goto('/')
-  await page.getByTestId('signin-skip-button').click()
-  await page.getByPlaceholder('Your name').fill('Grams First Persona')
-  await page.getByRole('radio', { name: 'male', exact: true }).check()
-  await page.getByPlaceholder('years').fill('28')
-  await page.getByPlaceholder('cm').fill('170')
-  await page.getByPlaceholder('kg').fill('70')
-  await page.getByLabel('Activity level').selectOption('sedentary')
-  await page.getByRole('button', { name: 'Get started' }).click()
-  await expect(page).toHaveURL('/')
+  await onboardHelper(page, { name: 'Grams First Persona' })
 }
 
 test('selecting a food pre-fills grams from its typical portion, auto-focused with a numeric keypad', async ({

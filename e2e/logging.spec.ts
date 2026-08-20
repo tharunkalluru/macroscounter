@@ -1,5 +1,6 @@
 import { expect, type Locator, type Page } from '@playwright/test'
 import { test } from '@playwright/test'
+import { onboard as onboardHelper } from './helpers/onboard'
 
 async function swipeToDelete(page: Page, row: Locator) {
   await row.scrollIntoViewIfNeeded()
@@ -34,20 +35,7 @@ async function swipeToDelete(page: Page, row: Locator) {
 }
 
 async function onboard(page: Page) {
-  // Dead-zone hour (00:00-4:59) so the Phase 10.3 meal prompt never fires and
-  // blocks this test's own interactions -- these tests don't care what time
-  // it is, they just need it to not be a live meal window.
-  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
-  await page.goto('/')
-  await page.getByTestId('signin-skip-button').click()
-  await page.getByPlaceholder('Your name').fill('Journey Persona')
-  await page.getByRole('radio', { name: 'male', exact: true }).check()
-  await page.getByPlaceholder('years').fill('28')
-  await page.getByPlaceholder('cm').fill('170')
-  await page.getByPlaceholder('kg').fill('70')
-  await page.getByLabel('Activity level').selectOption('sedentary')
-  await page.getByRole('button', { name: 'Get started' }).click()
-  await expect(page).toHaveURL('/')
+  await onboardHelper(page, { name: 'Journey Persona' })
 }
 
 // Fixture persona: kcal target 1628 (see goalEngine.test.ts). Logging 3 idli

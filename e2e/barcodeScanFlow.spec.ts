@@ -3,23 +3,14 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, type Page } from '@playwright/test'
 import { test } from '@playwright/test'
+import { onboard as onboardHelper } from './helpers/onboard'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const fixturesDir = resolve(__dirname, '../src/domain/barcode/fixtures')
 const multipackBiscuits = JSON.parse(readFileSync(resolve(fixturesDir, 'off-multipack-biscuits.json'), 'utf-8'))
 
 async function onboard(page: Page) {
-  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
-  await page.goto('/')
-  await page.getByTestId('signin-skip-button').click()
-  await page.getByPlaceholder('Your name').fill('Barcode Flow Persona')
-  await page.getByRole('radio', { name: 'male', exact: true }).check()
-  await page.getByPlaceholder('years').fill('28')
-  await page.getByPlaceholder('cm').fill('170')
-  await page.getByPlaceholder('kg').fill('70')
-  await page.getByLabel('Activity level').selectOption('sedentary')
-  await page.getByRole('button', { name: 'Get started' }).click()
-  await expect(page).toHaveURL('/')
+  await onboardHelper(page, { name: 'Barcode Flow Persona' })
 }
 
 // Torch-toggle rendering and the 5s-no-decode manual-entry fallback are

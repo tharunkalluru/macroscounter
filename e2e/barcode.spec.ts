@@ -3,6 +3,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { expect, type Page } from '@playwright/test'
 import { test } from '@playwright/test'
+import { onboard as onboardHelper } from './helpers/onboard'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const fixturesDir = resolve(__dirname, '../src/domain/barcode/fixtures')
@@ -10,19 +11,7 @@ const amulButter = JSON.parse(readFileSync(resolve(fixturesDir, 'off-amul-butter
 const offNotFound = JSON.parse(readFileSync(resolve(fixturesDir, 'off-not-found.json'), 'utf-8'))
 
 async function onboard(page: Page) {
-  // Dead-zone hour (00:00-4:59) so the Phase 10.3 meal prompt never fires and
-  // blocks this test's own interactions -- these tests don't care what time
-  // it is, they just need it to not be a live meal window.
-  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
-  await page.goto('/')
-  await page.getByTestId('signin-skip-button').click()
-  await page.getByPlaceholder('Your name').fill('Barcode Persona')
-  await page.getByRole('radio', { name: 'male', exact: true }).check()
-  await page.getByPlaceholder('years').fill('28')
-  await page.getByPlaceholder('cm').fill('170')
-  await page.getByPlaceholder('kg').fill('70')
-  await page.getByLabel('Activity level').selectOption('sedentary')
-  await page.getByRole('button', { name: 'Get started' }).click()
+  await onboardHelper(page, { name: 'Barcode Persona' })
   await expect(page).toHaveURL('/')
 }
 

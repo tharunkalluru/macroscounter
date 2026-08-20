@@ -12,17 +12,27 @@ test('completing onboarding computes and shows the correct kcal target on the da
   await expect(page).toHaveURL(/\/welcome$/)
   await page.getByTestId('signin-skip-button').click()
   await expect(page).toHaveURL(/\/onboarding$/)
-  await expect(page.getByRole('heading', { name: /macrodesi/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'What should we call you?' })).toBeVisible()
 
   await page.getByPlaceholder('Your name').fill('Fixture Persona')
+  await page.getByTestId('onboarding-continue').click()
+
   await page.getByRole('radio', { name: 'male', exact: true }).check()
+  await page.getByTestId('onboarding-continue').click()
+
   await page.getByPlaceholder('years').fill('28')
   await page.getByPlaceholder('cm').fill('170')
   await page.getByPlaceholder('kg').fill('70')
-  await page.getByLabel('Activity level').selectOption('sedentary')
-  await page.getByRole('radio', { name: 'Lose fat', exact: true }).check()
+  await page.getByTestId('onboarding-continue').click()
 
-  await page.getByRole('button', { name: 'Get started' }).click()
+  await page.getByTestId('activity-sedentary').click()
+  await page.getByTestId('onboarding-continue').click()
+
+  await page.getByTestId('goal-cut').click()
+  await page.getByTestId('onboarding-continue').click()
+
+  await expect(page.getByTestId('onboarding-preview-kcal')).toHaveText('1628 kcal')
+  await page.getByTestId('onboarding-finish').click()
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-target')).toHaveText('1628 kcal target')
@@ -35,13 +45,23 @@ test('data persists across a reload after onboarding', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/')
   await page.getByTestId('signin-skip-button').click()
+
   await page.getByPlaceholder('Your name').fill('Reload Check')
+  await page.getByTestId('onboarding-continue').click()
+
   await page.getByRole('radio', { name: 'female', exact: true }).check()
+  await page.getByTestId('onboarding-continue').click()
+
   await page.getByPlaceholder('years').fill('26')
   await page.getByPlaceholder('cm').fill('165')
   await page.getByPlaceholder('kg').fill('60')
-  await page.getByLabel('Activity level').selectOption('very_active')
-  await page.getByRole('button', { name: 'Get started' }).click()
+  await page.getByTestId('onboarding-continue').click()
+
+  await page.getByTestId('activity-very_active').click()
+  await page.getByTestId('onboarding-continue').click()
+
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('onboarding-finish').click()
 
   await expect(page.getByTestId('kcal-target')).toHaveText('2046 kcal target')
 

@@ -1,21 +1,15 @@
 import { expect, type Page } from '@playwright/test'
 import { test } from '@playwright/test'
+import { onboard as onboardHelper } from './helpers/onboard'
 
 async function onboard(page: Page) {
-  // Dead-zone hour (00:00-4:59) so the Phase 10.3 meal prompt never fires and
-  // blocks this test's own interactions -- these tests don't care what time
-  // it is, they just need it to not be a live meal window.
-  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
-  await page.goto('/')
-  await page.getByTestId('signin-skip-button').click()
-  await page.getByPlaceholder('Your name').fill('Adaptive Persona')
-  await page.getByRole('radio', { name: 'male', exact: true }).check()
-  await page.getByPlaceholder('years').fill('25')
-  await page.getByPlaceholder('cm').fill('180')
-  await page.getByPlaceholder('kg').fill('90')
-  await page.getByLabel('Activity level').selectOption('active')
-  await page.getByRole('button', { name: 'Get started' }).click()
-  await expect(page).toHaveURL('/')
+  await onboardHelper(page, {
+    name: 'Adaptive Persona',
+    age: '25',
+    heightCm: '180',
+    weightKg: '90',
+    activityLevel: 'active',
+  })
   // Fixture persona target: BMR 1905, TDEE 3286.125, cut -500 -> 2786 kcal.
   await expect(page.getByTestId('kcal-target')).toHaveText('2786 kcal target')
 }
