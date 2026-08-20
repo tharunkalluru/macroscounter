@@ -13,6 +13,7 @@ import { vibrateTiny } from '../../lib/haptics'
 import { logSuggestionChip } from '../../lib/logging/logSuggestionChip'
 import { useCountUp } from '../hooks/useCountUp'
 import { useUIState } from '../shell/UIStateContext'
+import FoodGlyph from './FoodGlyph'
 import MealOverflowSheet from './MealOverflowSheet'
 import Snackbar from './Snackbar'
 import SwipeToDeleteRow from './SwipeToDeleteRow'
@@ -199,9 +200,10 @@ export default function MealSection({
                   onClick={() => handleRowTap(entry)}
                   aria-label={`Edit ${entry.name}`}
                   data-testid={`entry-row-${entry.id}`}
-                  className="flex min-h-touch w-full items-center justify-between gap-2 px-3 py-2 text-left dark:bg-surface-dark-card"
+                  className="flex min-h-touch w-full items-center gap-3 px-3 py-2 text-left dark:bg-surface-dark-card"
                 >
-                  <div className="min-w-0">
+                  <FoodGlyph name={entry.name} size="small" />
+                  <div className="min-w-0 flex-1">
                     <p className="truncate text-body font-medium text-slate-800 dark:text-slate-100">
                       {entry.name}
                     </p>

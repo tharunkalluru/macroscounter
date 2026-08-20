@@ -8,6 +8,7 @@ import { todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
 import { nameOf, per100gOf, portionsOf, type Selected } from '../foodSelection'
 import { useFoodIndex } from '../hooks/useFoodIndex'
+import FoodGlyph from '../components/FoodGlyph'
 import PortionStep, { type PortionSaveData } from '../components/PortionStep'
 import { BarcodeIcon } from '../shell/icons'
 
@@ -130,9 +131,10 @@ export default function AddFoodSheetContent({
                 <li key={food.id}>
                   <button
                     type="button"
-                    className="min-h-touch w-full px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
+                    className="flex min-h-touch w-full items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
                     onClick={() => setSelected({ kind: 'food', food: food as FoodRecord })}
                   >
+                    <FoodGlyph name={food.name} />
                     {food.name}
                   </button>
                 </li>
@@ -238,9 +240,10 @@ function FoodChipList({
           <button
             key={food.id}
             type="button"
-            className="min-h-touch rounded-full bg-white dark:bg-surface-dark-card px-3 py-1 text-sm shadow-sm"
+            className="flex min-h-touch items-center gap-1.5 rounded-full bg-white py-1 pl-1 pr-3 text-sm shadow-sm dark:bg-surface-dark-card"
             onClick={() => onSelect(food)}
           >
+            <FoodGlyph name={food.name} size="small" />
             {food.name}
           </button>
         ))}
