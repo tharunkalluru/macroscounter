@@ -19,7 +19,7 @@ const TABS: TabDef[] = [
     label: 'Trends',
     to: '/trends',
     Icon: TrendsIcon,
-    isActive: (p) => p.startsWith('/trends') || p.startsWith('/weight') || p.startsWith('/report'),
+    isActive: (p) => p.startsWith('/trends') || p.startsWith('/weight'),
   },
   {
     key: 'settings',

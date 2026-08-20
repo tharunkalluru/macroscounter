@@ -65,9 +65,9 @@ test('templates page has no WCAG A/AA violations', async ({ page }) => {
   await expectNoViolations(page)
 })
 
-test('report page has no WCAG A/AA violations', async ({ page }) => {
+test('trends page has no WCAG A/AA violations', async ({ page }) => {
   await onboard(page)
-  await page.goto('/report')
+  await page.goto('/trends')
   await expectNoViolations(page)
 })
 

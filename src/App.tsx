@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { Route, Routes } from 'react-router-dom'
+import { Navigate, Route, Routes } from 'react-router-dom'
 import AddFoodPage from './app/AddFoodPage'
 import Dashboard from './app/Dashboard'
 import DayDetailPage from './app/DayDetailPage'
@@ -9,7 +9,6 @@ import HistoryPage from './app/HistoryPage'
 import OnboardingFlow from './app/OnboardingFlow'
 import QuickAddPage from './app/QuickAddPage'
 import RecipeBuilderPage from './app/RecipeBuilderPage'
-import ReportPage from './app/ReportPage'
 import AppBootScreen from './app/shell/AppBootScreen'
 import AppShell from './app/shell/AppShell'
 import SyncTriggers from './app/shell/SyncTriggers'
@@ -73,7 +72,7 @@ function App() {
                 <Route path="/trends" element={<TrendsPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/weight" element={<WeightPage />} />
-                <Route path="/report" element={<ReportPage />} />
+                <Route path="/report" element={<Navigate to="/trends" replace />} />
                 <Route path="/templates" element={<TemplatesPage />} />
                 <Route path="/export" element={<ExportPage />} />
               </Route>

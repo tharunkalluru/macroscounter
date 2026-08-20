@@ -1,15 +1,19 @@
 import { useEffect, useState } from 'react'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { TargetRepo } from '../../data/repos/TargetRepo'
+import type { DayTotal } from '../../domain/history/averages'
 import { groupEntriesByDate } from '../../domain/history/averages'
 import { computeWeeklyReport, type WeeklyReport } from '../../domain/reports/weeklyReport'
 import { computeConsistency, computeStreak } from '../../domain/streaks/streak'
 import { addDaysISO, todayISO } from '../../lib/date'
+import CalorieTrendChart from './CalorieTrendChart'
 
 export default function ReportSection() {
   const [report, setReport] = useState<WeeklyReport | null>(null)
   const [streak, setStreak] = useState(0)
   const [consistency, setConsistency] = useState(0)
+  const [last14, setLast14] = useState<DayTotal[]>([])
+  const [targetKcal, setTargetKcal] = useState<number | null>(null)
 
   useEffect(() => {
     ;(async () => {
@@ -24,7 +28,10 @@ export default function ReportSection() {
 
       if (latestTarget) {
         setReport(computeWeeklyReport(last7, latestTarget))
+        setTargetKcal(latestTarget.kcal)
       }
+
+      setLast14(dayTotals.filter((d) => d.date >= addDaysISO(today, -13)))
 
       const loggedDates = dayTotals.map((d) => d.date)
       setStreak(computeStreak(loggedDates, today))
@@ -34,6 +41,8 @@ export default function ReportSection() {
 
   return (
     <div>
+      {last14.length > 1 && <CalorieTrendChart data={last14} targetKcal={targetKcal} />}
+
       <div className="mb-4 grid grid-cols-2 gap-3">
         <div
           className="rounded-card bg-white dark:bg-surface-dark-card p-3 shadow-card"

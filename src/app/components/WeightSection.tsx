@@ -1,8 +1,9 @@
 import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
 import {
+  Area,
   CartesianGrid,
+  ComposedChart,
   Line,
-  LineChart,
   ResponsiveContainer,
   Tooltip,
   XAxis,
@@ -13,7 +14,7 @@ import { WeighInRepo } from '../../data/repos/WeighInRepo'
 import { computeEMA } from '../../domain/history/ema'
 import { isFutureDate, todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
-import { neutral, semantic } from '../../theme/tokens'
+import { neutral, semantic, surface, surfaceDark } from '../../theme/tokens'
 import { useTheme } from '../shell/ThemeContext'
 import { TEXT_INPUT_CLASS } from './formStyles'
 import Snackbar from './Snackbar'
@@ -139,28 +140,43 @@ export default function WeightSection() {
           data-testid="weight-chart"
         >
           <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={chartData}>
-              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} />
-              <XAxis dataKey="label" tick={{ fontSize: 12, fill: tickColor }} />
+            <ComposedChart data={chartData}>
+              <defs>
+                <linearGradient id="weightTrendFill" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stopColor={semantic.success[500]} stopOpacity={0.25} />
+                  <stop offset="100%" stopColor={semantic.success[500]} stopOpacity={0} />
+                </linearGradient>
+              </defs>
+              <CartesianGrid strokeDasharray="3 3" stroke={gridStroke} vertical={false} />
+              <XAxis dataKey="label" tick={{ fontSize: 12, fill: tickColor }} axisLine={{ stroke: gridStroke }} tickLine={false} />
               <YAxis
                 domain={['dataMin - 1', 'dataMax + 1']}
                 tick={{ fontSize: 12, fill: tickColor }}
+                axisLine={false}
+                tickLine={false}
+                width={36}
               />
               <Tooltip
-                contentStyle={
-                  isDark
-                    ? {
-                        backgroundColor: neutral[800],
-                        borderColor: neutral[700],
-                        color: neutral[100],
-                      }
-                    : undefined
-                }
+                contentStyle={{
+                  backgroundColor: isDark ? surfaceDark.card : surface.card,
+                  borderColor: isDark ? neutral[700] : neutral[200],
+                  borderRadius: 12,
+                  color: isDark ? neutral[100] : neutral[900],
+                }}
+                labelStyle={{ color: isDark ? neutral[300] : neutral[600] }}
+              />
+              <Area
+                type="monotone"
+                dataKey="ema"
+                stroke="none"
+                fill="url(#weightTrendFill)"
+                isAnimationActive={false}
               />
               <Line
                 type="monotone"
                 dataKey="weightKg"
                 stroke={neutral[400]}
+                strokeWidth={1.5}
                 dot={{ r: 2 }}
                 name="Weight"
               />
@@ -168,11 +184,11 @@ export default function WeightSection() {
                 type="monotone"
                 dataKey="ema"
                 stroke={semantic.success[600]}
-                strokeWidth={2}
+                strokeWidth={2.5}
                 dot={false}
                 name="7-day trend"
               />
-            </LineChart>
+            </ComposedChart>
           </ResponsiveContainer>
         </div>
       )}
