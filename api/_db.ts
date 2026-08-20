@@ -1,6 +1,6 @@
 import { neon } from '@neondatabase/serverless'
 import { drizzle } from 'drizzle-orm/neon-http'
-import * as schema from '../drizzle/schema'
+import * as schema from '../drizzle/schema.js'
 
 let cached: ReturnType<typeof drizzle<typeof schema>> | undefined
 

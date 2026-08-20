@@ -1,6 +1,6 @@
 import { betterAuth } from 'better-auth/minimal'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
-import { getDb, schema } from './_db'
+import { getDb, schema } from './_db.js'
 
 // A plain `ReturnType<typeof betterAuth>` loses the concrete option types
 // betterAuth infers from a specific call (its own signature is generic), so

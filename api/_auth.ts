@@ -1,6 +1,6 @@
 import type { VercelRequest } from '@vercel/node'
 import { fromNodeHeaders } from 'better-auth/node'
-import { getAuth } from './_authServer'
+import { getAuth } from './_authServer.js'
 
 /**
  * Resolves the current signed-in user id from Better Auth's session cookie

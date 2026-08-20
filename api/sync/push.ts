@@ -1,7 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { eq, and } from 'drizzle-orm'
-import { getUserId } from '../_auth'
-import { getDb, schema } from '../_db'
+import { getUserId } from '../_auth.js'
+import { getDb, schema } from '../_db.js'
 
 const TABLES = {
   profiles: schema.profiles,
