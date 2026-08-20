@@ -1137,3 +1137,59 @@ a Vercel URL. Phase 10's own exit criteria ("all six gates green cumulatively; a
 Vercel preview URL; PROGRESS.md updated with the URL and env-var checklist") is therefore met on the
 code/gate side and open on the deploy side — the env-var checklist is in `SETUP.md` §3; the preview
 URL line will be added here once the user deploys.
+
+## Phase 11 summary (11.1–11.5: PASS)
+
+World-class UX/UI redesign closing the gap between MacroDesi's Phase-10-era polish (which had only
+reached 3 of ~16 screens — Dashboard, Settings, Onboarding) and the rest of the app, benchmarked
+against Cal AI, MacroFactor, and Cronometer reviews/case studies. By this phase the app was already
+live in production at `macroscounter.vercel.app` with real users and a real Google OAuth account, so
+every sub-phase was gated identically to Phases 0–10 before being shipped. Five sub-phases, 5 commits.
+
+- **11.1 — Shared `PageHeader` + design-system propagation**: new `PageHeader.tsx` (icon back-button,
+  `text-title` heading) replaces "← Back" text links + bare `<h1>`s across 13 secondary screens
+  (Weight, Scan x3, Recipe Builder, Templates x2, Export, Day Detail, Add Food x2). Native meal
+  `<select>`s become `SegmentedControl`. Remaining bare inputs get `TEXT_INPUT_CLASS`. Three emoji
+  icons (flashlight, camera, install) swept into `icons.tsx` as SVGs matching the existing
+  `STROKE=1.8` style. New `Skeleton.tsx` consolidates a duplicated `Pulse` shimmer component.
+- **11.2 — Swipe-to-delete everywhere**: `WeightSection`'s weigh-in list and `TemplatesPage`'s
+  template list get the same `SwipeToDeleteRow` + undo-`Snackbar` (5s window) pattern
+  `MealSection` already had. Templates kept tap-to-delete (its cards hold multiple interactive
+  controls that would conflict with a horizontal swipe gesture) but gained the same undo
+  reversibility.
+- **11.3 — Food visual identity**: new `FoodGlyph.tsx` — a small color-hashed initial-letter avatar
+  (brand/protein/carbs/fat token palette, deterministic per name, no new off-system colors) — applied
+  to logged-entry rows, search results, and Recents/Favorites chips. Closes the most-cited
+  "spreadsheet vs. world-class" gap without a photo pipeline the curated 307-item food DB can't
+  support.
+- **11.4 — Data visualization richness**: `WeightSection`'s chart gains a gradient area fill under
+  the EMA trend line and a theme-consistent tooltip for both light and dark mode (previously only
+  dark mode had one). New `CalorieTrendChart.tsx` (14-day calorie trend + target reference line)
+  added to `TrendsPage`. Removed the redundant `/report` route (a near-duplicate of `TrendsPage`'s
+  report half, unreachable from any in-app link — confirmed via grep) in favor of a redirect to
+  `/trends`, and moved its a11y coverage there.
+- **11.5 — Onboarding restructure**: `OnboardingFlow.tsx` rebuilt from one long scrollable form into
+  a full step-by-step wizard (name → sex → age/height/weight → activity → goal → confirm), a progress
+  bar, and Back/Continue navigation — the guided first-run pattern reviews specifically praise.
+  Activity level moved from a native `<select>` to `SelectableCardGroup` for consistency with the
+  rest of the form. The confirm step previews the computed daily kcal/macro targets before
+  committing, replacing the old blind "Get started" submit. A hard constraint flagged before
+  starting — no shared onboarding e2e helper existed, so all ~19 spec files that complete onboarding
+  as setup needed updating for the new multi-step flow — was confirmed and paid down by extracting
+  `e2e/helpers/onboard.ts` (parameterized name/sex/stats/activity/goal, used by 17 files) plus
+  hand-updating the 2 files with bespoke inline onboarding flows (`auth.spec.ts`, `onboarding.spec.ts`).
+- **Explicitly rejected, not silently dropped**: AI photo-based food logging (Cal AI's headline
+  feature — needs vision-LLM infra, a different kind of project than a UI/UX redesign); a custom web
+  font (the app deliberately uses the system font stack for native-PWA feel and a tested <1.5s
+  repeat-visit load budget); changing `theme/tokens.ts`'s actual palette (already WCAG-documented —
+  this was an execution/coverage redesign, not a rebrand).
+- **Tests**: unit tests unchanged at 344 (no new domain logic, only UI restructuring). E2E: 76 specs
+  (net unchanged in count, but every onboarding-completing spec across ~19 files was rewritten for
+  the wizard's step-by-step flow). Full a11y suite (14 scans — `/report` swapped for `/trends`) and
+  9-page touch-target audit both re-run clean after every sub-phase.
+- **Bundle**: 176.96 KB gz initial (budget 300 KB gz) — `CalorieTrendChart` shares Recharts with the
+  already route-lazy-loaded `WeightSection`/`TrendsPage` chunk, so it added zero weight to the
+  initial bundle.
+- `lint && tsc --noEmit && check:tokens && test && build && test:e2e` all green after every
+  sub-phase, rebuilding `dist/` before each E2E run (Playwright's `webServer` serves the static
+  `vite preview` build, not the dev server — a stale `dist/` silently tests old code).
