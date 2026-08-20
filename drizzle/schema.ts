@@ -50,6 +50,13 @@ export const account = pgTable('account', {
   id: text('id').primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
+  // Better Auth 1.7+ requires this to disambiguate accounts across OIDC
+  // issuers under the same providerId. For our Google-only OAuth setup it's
+  // always Better Auth's synthetic `local:oauth:google` (see
+  // createOAuthAccountIssuer in @better-auth/core's account schema) — never
+  // the literal https://accounts.google.com issuer URL, since that's only
+  // used for id_token verification, not account lookup.
+  issuer: text('issuer').notNull(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   accessToken: text('access_token'),
   refreshToken: text('refresh_token'),
