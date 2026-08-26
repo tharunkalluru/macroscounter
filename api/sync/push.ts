@@ -59,41 +59,50 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!isKnownTable(mutation.table)) continue
     const table = TABLES[mutation.table]
 
-    const existing = await db
-      .select({ updatedAt: table.updatedAt })
-      .from(table)
-      .where(and(eq(table.id, mutation.clientId), eq(table.userId, userId)))
-      .limit(1)
-
-    const serverUpdatedAt = existing[0]?.updatedAt?.getTime()
-    if (serverUpdatedAt !== undefined && serverUpdatedAt > mutation.updatedAt) {
-      // Server already has something newer (a race with another device) —
-      // skip; the client will pick up the winner on its next pull.
-      continue
-    }
-
-    if (mutation.operation === 'delete') {
-      await db
-        .update(table)
-        .set({ deletedAt: new Date(mutation.updatedAt), updatedAt: new Date(mutation.updatedAt) })
+    // Each mutation is isolated: one malformed or rejected row (a bad
+    // clientId shape, an unexpected constraint) must never abort the whole
+    // batch and block every other pending mutation from syncing along with
+    // it. A skipped mutation simply stays queued in the client's outbox and
+    // is retried on the next sync — it is not added to `flushed` below.
+    try {
+      const existing = await db
+        .select({ updatedAt: table.updatedAt })
+        .from(table)
         .where(and(eq(table.id, mutation.clientId), eq(table.userId, userId)))
-    } else if (mutation.payload) {
-      const { id: _clientPayloadId, updatedAt: _clientUpdatedAt, deletedAt: _clientDeletedAt, ...rest } =
-        mutation.payload
-      const row = {
-        ...rest,
-        id: mutation.clientId,
-        userId,
-        updatedAt: new Date(mutation.updatedAt),
-        deletedAt: null,
-      }
-      await db
-        .insert(table)
-        .values(row as never)
-        .onConflictDoUpdate({ target: table.id, set: row as never })
-    }
+        .limit(1)
 
-    flushed.push({ table: mutation.table, clientId: mutation.clientId, updatedAt: mutation.updatedAt })
+      const serverUpdatedAt = existing[0]?.updatedAt?.getTime()
+      if (serverUpdatedAt !== undefined && serverUpdatedAt > mutation.updatedAt) {
+        // Server already has something newer (a race with another device) —
+        // skip; the client will pick up the winner on its next pull.
+        continue
+      }
+
+      if (mutation.operation === 'delete') {
+        await db
+          .update(table)
+          .set({ deletedAt: new Date(mutation.updatedAt), updatedAt: new Date(mutation.updatedAt) })
+          .where(and(eq(table.id, mutation.clientId), eq(table.userId, userId)))
+      } else if (mutation.payload) {
+        const { id: _clientPayloadId, updatedAt: _clientUpdatedAt, deletedAt: _clientDeletedAt, ...rest } =
+          mutation.payload
+        const row = {
+          ...rest,
+          id: mutation.clientId,
+          userId,
+          updatedAt: new Date(mutation.updatedAt),
+          deletedAt: null,
+        }
+        await db
+          .insert(table)
+          .values(row as never)
+          .onConflictDoUpdate({ target: table.id, set: row as never })
+      }
+
+      flushed.push({ table: mutation.table, clientId: mutation.clientId, updatedAt: mutation.updatedAt })
+    } catch (err) {
+      console.error(`sync push: skipping ${mutation.table}/${mutation.clientId} —`, err)
+    }
   }
 
   res.status(200).json({ flushed })

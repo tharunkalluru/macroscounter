@@ -167,7 +167,11 @@ export const mealTemplates = pgTable('meal_templates', {
 })
 
 export const scannedProducts = pgTable('scanned_products', {
-  id: uuid('id').primaryKey(),
+  // text, not uuid: the client deliberately uses the barcode itself as this
+  // row's clientId/id (see ScannedProductRepo.put) so two devices scanning
+  // the same product converge on one row instead of two -- a barcode is
+  // never a valid uuid, so this column must accept arbitrary text.
+  id: text('id').primaryKey(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   barcode: text('barcode').notNull(),
   name: text('name').notNull(),

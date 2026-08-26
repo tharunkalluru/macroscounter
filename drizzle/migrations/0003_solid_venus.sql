@@ -1,0 +1,1 @@
+ALTER TABLE "scanned_products" ALTER COLUMN "id" SET DATA TYPE text;
