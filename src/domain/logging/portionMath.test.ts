@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest'
-import { computeMacrosForGrams, gramsForPortion, sumMacros, sumMacrosByMeal } from './portionMath'
+import {
+  computeMacrosForGrams,
+  computeMacrosForServings,
+  gramsForPortion,
+  sumMacros,
+  sumMacrosByMeal,
+} from './portionMath'
 
 // Real fixture values from public/fooddb.json: Idli per100g {kcal:102.5,p:4.5,c:20,f:0.5},
 // Sambar per100g {kcal:62,p:3,c:8,f:2}.
@@ -35,6 +41,41 @@ describe('computeMacrosForGrams', () => {
   it('a gram-override entry uses the raw grams directly', () => {
     const result = computeMacrosForGrams(IDLI_PER_100G, 25)
     expect(result).toEqual({ kcal: 25.6, p: 1.1, c: 5, f: 0.1 })
+  })
+})
+
+describe('computeMacrosForServings', () => {
+  // A manufacturer's declared per-serving figures don't always equal
+  // per100g x servingGrams/100 exactly (independently rounded on the label)
+  // -- this is the whole reason to scale perServing directly instead of
+  // recomputing from per100g, e.g. a 325ml protein shake labeled 160 kcal.
+  const PROTEIN_SHAKE_PER_SERVING = { kcal: 160, p: 20, c: 12, f: 3 }
+
+  it('1 serving returns the label figures unchanged', () => {
+    expect(computeMacrosForServings(PROTEIN_SHAKE_PER_SERVING, 1)).toEqual({
+      kcal: 160,
+      p: 20,
+      c: 12,
+      f: 3,
+    })
+  })
+
+  it('2 servings doubles every macro', () => {
+    expect(computeMacrosForServings(PROTEIN_SHAKE_PER_SERVING, 2)).toEqual({
+      kcal: 320,
+      p: 40,
+      c: 24,
+      f: 6,
+    })
+  })
+
+  it('a fractional serving count scales proportionally', () => {
+    expect(computeMacrosForServings(PROTEIN_SHAKE_PER_SERVING, 0.5)).toEqual({
+      kcal: 80,
+      p: 10,
+      c: 6,
+      f: 1.5,
+    })
   })
 })
 

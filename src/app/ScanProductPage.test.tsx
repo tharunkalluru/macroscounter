@@ -34,6 +34,30 @@ const offPayload = {
   },
 }
 
+const PROTEIN_SHAKE_BARCODE = '8901491101622'
+
+const proteinShakePayload = {
+  status: 1,
+  product: {
+    product_name: 'Protein Shake',
+    brands: 'FitFuel',
+    serving_size: '325 ml',
+    nutriments: {
+      'energy-kcal_100g': 49.2,
+      proteins_100g: 6.2,
+      carbohydrates_100g: 3.7,
+      fat_100g: 0.9,
+      // The label's own declared per-serving figures -- deliberately NOT an
+      // exact per100g x 3.25 multiple, since that's the whole point:
+      // manufacturers round these independently.
+      'energy-kcal_serving': 160,
+      proteins_serving: 20,
+      carbohydrates_serving: 12,
+      fat_serving: 3,
+    },
+  },
+}
+
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -48,18 +72,22 @@ function renderAt(path: string) {
 beforeEach(() => {
   vi.stubGlobal(
     'fetch',
-    vi.fn(async () => new Response(JSON.stringify(offPayload), { status: 200 }))
+    vi.fn(async (url: string) => {
+      const payload = url.includes(PROTEIN_SHAKE_BARCODE) ? proteinShakePayload : offPayload
+      return new Response(JSON.stringify(payload), { status: 200 })
+    })
   )
 })
 
 afterEach(async () => {
   vi.unstubAllGlobals()
   await db.scannedProducts.delete(BARCODE)
+  await db.scannedProducts.delete(PROTEIN_SHAKE_BARCODE)
   await db.logEntries.clear()
 })
 
 describe('ScanProductPage (Phase 10.5 integration: scan -> card -> one-tap add)', () => {
-  it('shows a skeleton while the lookup is in flight, then the card prefilled with the serving grams', async () => {
+  it('shows a skeleton while the lookup is in flight, then the card defaulted to 1 serving', async () => {
     renderAt(`/scan/product/${BARCODE}?meal=lunch`)
 
     expect(screen.getByTestId('product-card-skeleton')).toBeInTheDocument()
@@ -72,8 +100,10 @@ describe('ScanProductPage (Phase 10.5 integration: scan -> card -> one-tap add)'
     )
     expect(screen.getByText('Per 100 g: 717 kcal · 0.5p / 0.1c / 80f')).toBeInTheDocument()
 
-    // Pre-filled from the detected serving size (10 g), not a raw 100g default.
-    expect(screen.getByTestId('portion-grams-input')).toHaveValue(10)
+    // A known serving size (10 g) defaults the entry to a servings-first
+    // step, prefilled at 1 serving, rather than a raw grams field.
+    expect(screen.getByTestId('portion-servings-input')).toHaveValue(1)
+    expect(screen.getByText('1 serving = 10 g')).toBeInTheDocument()
     expect(screen.getByTestId('entry-preview')).toHaveTextContent('72 kcal') // 71.7 -> rounds to 72
   })
 
@@ -90,6 +120,49 @@ describe('ScanProductPage (Phase 10.5 integration: scan -> card -> one-tap add)'
         name: 'Amul Butter',
         grams: 10,
         unit: 'grams',
+        portionSummary: '1 serving',
+      })
+    })
+  })
+
+  it('"Enter grams manually" and "Use standard serving" toggle between the two entry modes', async () => {
+    renderAt(`/scan/product/${BARCODE}?meal=lunch`)
+    await screen.findByTestId('scanned-product-name')
+
+    expect(screen.getByTestId('portion-servings-input')).toBeInTheDocument()
+    fireEvent.click(screen.getByTestId('switch-to-grams-link'))
+
+    expect(screen.getByTestId('portion-grams-input')).toHaveValue(10)
+    fireEvent.click(screen.getByTestId('switch-to-servings-link'))
+
+    expect(screen.getByTestId('portion-servings-input')).toBeInTheDocument()
+  })
+
+  it('a product with the source\'s own per-serving figures uses them directly, not a per100g recomputation', async () => {
+    renderAt(`/scan/product/${PROTEIN_SHAKE_BARCODE}?meal=breakfast`)
+    await screen.findByTestId('scanned-product-name')
+
+    // These are the label's own 160/20/12/3 figures. A per100g recomputation
+    // (49.2/6.2/3.7/0.9 per 100g x 325g) would instead give 20.2p / 2.9f --
+    // close enough on kcal/carbs to look right, but visibly wrong on
+    // protein/fat, which is exactly the drift this feature fixes.
+    expect(screen.getByTestId('entry-preview')).toHaveTextContent('160 kcal · 20p / 12c / 3f')
+
+    fireEvent.click(screen.getByTestId('serving-chip-2'))
+    // Exactly double the label's own per-serving figures (perServing x 2),
+    // not per100g x (325*2)/100 which would give 40.3p / 5.9f instead.
+    expect(screen.getByTestId('entry-preview')).toHaveTextContent('320 kcal · 40p / 24c / 6f')
+
+    fireEvent.click(screen.getByTestId('log-entry-button'))
+
+    await waitFor(async () => {
+      const entries = await new LogRepo(db).getEntriesForDate(todayISO())
+      expect(entries.find((e) => e.barcode === PROTEIN_SHAKE_BARCODE)).toMatchObject({
+        kcal: 320,
+        p: 40,
+        c: 24,
+        f: 6,
+        portionSummary: '2 servings',
       })
     })
   })

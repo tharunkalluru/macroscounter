@@ -37,9 +37,15 @@ test('the product card shows brand, image, and per-100g summary, prefilled with 
   await expect(page.getByTestId('scanned-product-image')).toBeVisible()
   await expect(page.getByText(/Per 100 g: 462 kcal/)).toBeVisible()
 
-  // Detected serving_size "40 g" pre-fills the field.
+  // Detected serving_size "40 g" defaults the entry to 1 serving, not a raw grams field.
+  await expect(page.getByTestId('portion-servings-input')).toHaveValue('1')
+  await expect(page.getByText('1 serving = 40 g')).toBeVisible()
+
+  // "Enter grams manually" reaches the pack-based gram shortcuts from the
+  // "2 x 40 g" quantity ("1 pack" = 80g / "½ pack" = 40g), for anyone who'd
+  // rather log by pack than by serving count.
+  await page.getByTestId('switch-to-grams-link').click()
   await expect(page.getByTestId('portion-grams-input')).toHaveValue('40')
-  // The "2 x 40 g" quantity produces "1 pack" (80g) / "½ pack" (40g) chips.
   await expect(page.getByText('1 pack ≈ 80 g')).toBeVisible()
 
   await page.getByTestId('log-entry-button').click()

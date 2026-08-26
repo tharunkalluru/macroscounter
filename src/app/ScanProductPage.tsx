@@ -11,6 +11,7 @@ import { vibrateTiny } from '../lib/haptics'
 import PageHeader from './components/PageHeader'
 import PortionStep, { type PortionSaveData } from './components/PortionStep'
 import SegmentedControl from './components/SegmentedControl'
+import ServingPortionStep from './components/ServingPortionStep'
 import { Pulse } from './components/Skeleton'
 
 const MEAL_OPTIONS: { value: Meal; label: string }[] = [
@@ -44,6 +45,7 @@ export default function ScanProductPage() {
   const [meal, setMeal] = useState<Meal>(requestedMeal || activeMealWindow(new Date()) || 'breakfast')
 
   const [product, setProduct] = useState<ScannedProduct | null | undefined>(undefined)
+  const [mode, setMode] = useState<'servings' | 'grams'>('grams')
 
   useEffect(() => {
     if (!barcode) return
@@ -56,6 +58,7 @@ export default function ScanProductPage() {
       if (cancelled) return
       if (result.product) {
         setProduct(result.product)
+        setMode(result.product.servingSize !== undefined ? 'servings' : 'grams')
       } else {
         navigate(`/scan/not-found/${barcode}?meal=${meal}`, { replace: true })
       }
@@ -130,12 +133,35 @@ export default function ScanProductPage() {
           </div>
 
           <div className="mt-3">
-            <PortionStep
-              per100g={product.per100g}
-              referencePortions={getServingOptions(product)}
-              quickGrams={[]}
-              onSave={handleSave}
-            />
+            {mode === 'servings' && product.servingSize !== undefined ? (
+              <ServingPortionStep
+                per100g={product.per100g}
+                perServing={product.perServing}
+                servingSize={product.servingSize}
+                servingSizeText={product.servingSizeText}
+                onSave={handleSave}
+                onSwitchToGrams={() => setMode('grams')}
+              />
+            ) : (
+              <>
+                <PortionStep
+                  per100g={product.per100g}
+                  referencePortions={getServingOptions(product)}
+                  quickGrams={[]}
+                  onSave={handleSave}
+                />
+                {product.servingSize !== undefined && (
+                  <button
+                    type="button"
+                    onClick={() => setMode('servings')}
+                    data-testid="switch-to-servings-link"
+                    className="mt-2 min-h-touch text-caption text-slate-500 underline dark:text-slate-400"
+                  >
+                    Use standard serving
+                  </button>
+                )}
+              </>
+            )}
           </div>
         </div>
       )}

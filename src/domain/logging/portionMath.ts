@@ -34,6 +34,22 @@ export function computeMacrosForGrams(per100g: Per100g, grams: number): MacroTot
   }
 }
 
+/**
+ * Scales a source's own declared per-serving macros by a serving count.
+ * Preferred over `computeMacrosForGrams` for a scanned product's serving
+ * portion when the source (e.g. Open Food Facts) provides per-serving
+ * values directly — those are the manufacturer's own rounded label figures,
+ * which can drift slightly from per100g x servingGrams recomputed locally.
+ */
+export function computeMacrosForServings(perServing: MacroTotals, servings: number): MacroTotals {
+  return {
+    kcal: round1(perServing.kcal * servings),
+    p: round1(perServing.p * servings),
+    c: round1(perServing.c * servings),
+    f: round1(perServing.f * servings),
+  }
+}
+
 export function sumMacros(entries: MacroTotals[]): MacroTotals {
   return entries.reduce(
     (acc, e) => ({
