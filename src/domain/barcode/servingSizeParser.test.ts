@@ -13,6 +13,16 @@ describe('parseServingSize', () => {
     ['1 x 250ml', 250],
     ['500 G', 500], // case-insensitive unit
     ['12.5 g', 12.5],
+    // Household-unit description with the gram/ml equivalent in
+    // parentheses -- the most common real-world Open Food Facts format for
+    // packaged snacks/drinks, and the reported gap: these were previously
+    // unparsable, silently falling back to a raw-grams default instead of
+    // the servings-first entry.
+    ['1 bar (40g)', 40],
+    ['2 biscuits (20 g)', 20],
+    ['1 cup (240 ml)', 240],
+    ['1 shake (33g)', 33],
+    ['30g (1 biscuit)', 30], // leading value still wins over the parenthetical
   ] as const)('parses %s -> %s g', (text, expected) => {
     expect(parseServingSize(text)).toBe(expected)
   })

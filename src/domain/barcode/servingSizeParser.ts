@@ -4,8 +4,12 @@ function round1(n: number): number {
 
 /**
  * Parses grams out of a barcode source's free-text serving-size/quantity
- * field — "75 g", "2 x 40g" (a multi-pack: count × unit weight), or "250 ml"
- * (liquids, treated as 1 ml ≈ 1 g). Returns undefined when unparsable.
+ * field — "75 g", "2 x 40g" (a multi-pack: count × unit weight), "250 ml"
+ * (liquids, treated as 1 ml ≈ 1 g), or a household-unit description with the
+ * gram/ml equivalent in parentheses, e.g. "1 bar (40g)", "2 biscuits (20 g)",
+ * "1 cup (240 ml)" — very common in real Open Food Facts data and the reason
+ * this isn't just a single leading-number regex. Returns undefined when
+ * unparsable.
  */
 export function parseServingSize(text: string | undefined): number | undefined {
   if (!text) return undefined
@@ -21,6 +25,12 @@ export function parseServingSize(text: string | undefined): number | undefined {
   const single = trimmed.match(/^(\d+(?:\.\d+)?)\s*(?:g|ml)\b/i)
   if (single) {
     const value = Number(single[1])
+    return Number.isFinite(value) ? value : undefined
+  }
+
+  const parenthetical = trimmed.match(/\(\s*(\d+(?:\.\d+)?)\s*(?:g|ml)\s*\)/i)
+  if (parenthetical) {
+    const value = Number(parenthetical[1])
     return Number.isFinite(value) ? value : undefined
   }
 

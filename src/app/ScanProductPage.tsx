@@ -5,6 +5,7 @@ import { LogRepo } from '../data/repos/LogRepo'
 import { ScannedProductRepo } from '../data/repos/ScannedProductRepo'
 import { getServingOptions } from '../domain/barcode/servingOptions'
 import { lookupProduct } from '../domain/barcode/lookupProduct'
+import { parseServingSize } from '../domain/barcode/servingSizeParser'
 import { activeMealWindow } from '../domain/mealPrompt/activeMealWindow'
 import { todayISO } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
@@ -47,6 +48,15 @@ export default function ScanProductPage() {
   const [product, setProduct] = useState<ScannedProduct | null | undefined>(undefined)
   const [mode, setMode] = useState<'servings' | 'grams'>('grams')
 
+  // Re-parses the raw serving-size text on every read rather than trusting
+  // the pre-computed `servingSize` field: that field can be cached from a
+  // scan made before a servingSizeParser improvement (e.g. household-unit
+  // formats like "1 bar (40g)" weren't handled originally), so a product
+  // scanned once and cached would otherwise stay stuck on the old, narrower
+  // parse forever. Re-deriving from the always-preserved raw text means an
+  // already-cached product benefits from parser fixes without a re-fetch.
+  const servingSize = product ? (parseServingSize(product.servingSizeText) ?? product.servingSize) : undefined
+
   useEffect(() => {
     if (!barcode) return
     let cancelled = false
@@ -58,7 +68,8 @@ export default function ScanProductPage() {
       if (cancelled) return
       if (result.product) {
         setProduct(result.product)
-        setMode(result.product.servingSize !== undefined ? 'servings' : 'grams')
+        const size = parseServingSize(result.product.servingSizeText) ?? result.product.servingSize
+        setMode(size !== undefined ? 'servings' : 'grams')
       } else {
         navigate(`/scan/not-found/${barcode}?meal=${meal}`, { replace: true })
       }
@@ -133,11 +144,11 @@ export default function ScanProductPage() {
           </div>
 
           <div className="mt-3">
-            {mode === 'servings' && product.servingSize !== undefined ? (
+            {mode === 'servings' && servingSize !== undefined ? (
               <ServingPortionStep
                 per100g={product.per100g}
                 perServing={product.perServing}
-                servingSize={product.servingSize}
+                servingSize={servingSize}
                 servingSizeText={product.servingSizeText}
                 onSave={handleSave}
                 onSwitchToGrams={() => setMode('grams')}
@@ -146,11 +157,11 @@ export default function ScanProductPage() {
               <>
                 <PortionStep
                   per100g={product.per100g}
-                  referencePortions={getServingOptions(product)}
+                  referencePortions={getServingOptions({ ...product, servingSize })}
                   quickGrams={[]}
                   onSave={handleSave}
                 />
-                {product.servingSize !== undefined && (
+                {servingSize !== undefined && (
                   <button
                     type="button"
                     onClick={() => setMode('servings')}

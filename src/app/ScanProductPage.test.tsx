@@ -58,6 +58,27 @@ const proteinShakePayload = {
   },
 }
 
+const GRANOLA_BAR_BARCODE = '8901491101639'
+
+const granolaBarPayload = {
+  status: 1,
+  product: {
+    product_name: 'Granola Bar',
+    brands: 'NutriSnack',
+    // Real-world Open Food Facts format: a household-unit description with
+    // the gram equivalent in parentheses, not a bare "35 g" -- the exact
+    // format that was reported live as "still showing grams instead of
+    // servings" (parseServingSize didn't handle this shape before).
+    serving_size: '1 bar (35g)',
+    nutriments: {
+      'energy-kcal_100g': 450,
+      proteins_100g: 8,
+      carbohydrates_100g: 60,
+      fat_100g: 18,
+    },
+  },
+}
+
 function renderAt(path: string) {
   return render(
     <MemoryRouter initialEntries={[path]}>
@@ -73,7 +94,11 @@ beforeEach(() => {
   vi.stubGlobal(
     'fetch',
     vi.fn(async (url: string) => {
-      const payload = url.includes(PROTEIN_SHAKE_BARCODE) ? proteinShakePayload : offPayload
+      const payload = url.includes(PROTEIN_SHAKE_BARCODE)
+        ? proteinShakePayload
+        : url.includes(GRANOLA_BAR_BARCODE)
+          ? granolaBarPayload
+          : offPayload
       return new Response(JSON.stringify(payload), { status: 200 })
     })
   )
@@ -83,6 +108,7 @@ afterEach(async () => {
   vi.unstubAllGlobals()
   await db.scannedProducts.delete(BARCODE)
   await db.scannedProducts.delete(PROTEIN_SHAKE_BARCODE)
+  await db.scannedProducts.delete(GRANOLA_BAR_BARCODE)
   await db.logEntries.clear()
 })
 
@@ -199,5 +225,38 @@ describe('ScanProductPage (Phase 10.5 integration: scan -> card -> one-tap add)'
     renderAt(`/scan/product/${BARCODE}?meal=dinner`)
     await screen.findByTestId('scanned-product-name')
     expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('a household-unit serving_size like "1 bar (35g)" still defaults to servings mode', async () => {
+    renderAt(`/scan/product/${GRANOLA_BAR_BARCODE}?meal=snacks`)
+    await screen.findByTestId('scanned-product-name')
+
+    expect(screen.getByTestId('portion-servings-input')).toHaveValue(1)
+    expect(screen.getByText('1 serving = 1 bar (35g)')).toBeInTheDocument()
+    // 450 kcal/100g x 35g = 157.5 -> rounds to 158.
+    expect(screen.getByTestId('entry-preview')).toHaveTextContent('158 kcal')
+  })
+
+  it('an already-cached product whose serving size was unparsable under an older parser still gets servings mode on re-read', async () => {
+    // Simulates a product scanned and cached before parseServingSize handled
+    // "1 bar (35g)" -- servingSize came back undefined at cache-write time,
+    // but the raw servingSizeText was preserved. The fix must re-derive from
+    // that raw text on read, not trust the stale precomputed field forever.
+    await db.scannedProducts.put({
+      barcode: GRANOLA_BAR_BARCODE,
+      name: 'Granola Bar',
+      brand: 'NutriSnack',
+      per100g: { kcal: 450, p: 8, c: 60, f: 18 },
+      servingSize: undefined,
+      servingSizeText: '1 bar (35g)',
+      source: 'off',
+      firstScanned: todayISO(),
+    })
+
+    renderAt(`/scan/product/${GRANOLA_BAR_BARCODE}?meal=snacks`)
+    await screen.findByTestId('scanned-product-name')
+
+    expect(screen.getByTestId('portion-servings-input')).toBeInTheDocument()
+    expect(screen.getByTestId('entry-preview')).toHaveTextContent('158 kcal')
   })
 })
