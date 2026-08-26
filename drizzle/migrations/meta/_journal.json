@@ -15,6 +15,13 @@
       "when": 1787205643503,
       "tag": "0001_third_moondragon",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1787772270240,
+      "tag": "0002_wide_living_lightning",
+      "breakpoints": true
     }
   ]
 }

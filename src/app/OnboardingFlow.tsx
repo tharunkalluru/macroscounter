@@ -6,9 +6,11 @@ import { computeGoalTargets } from '../domain/goals/goalEngine'
 import { ACTIVITY_OPTIONS, GOAL_OPTIONS } from '../domain/goals/options'
 import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
 import { todayISO } from '../lib/date'
+import HeightInput, { type HeightUnit } from './components/HeightInput'
 import SegmentedControl from './components/SegmentedControl'
 import SelectableCardGroup from './components/SelectableCardGroup'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
+import WeightInput, { type WeightUnit } from './components/WeightInput'
 import { ChevronLeftIcon } from './shell/icons'
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -33,7 +35,9 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
   const [sex, setSex] = useState<Sex>('male')
   const [age, setAge] = useState('')
   const [heightCm, setHeightCm] = useState('')
+  const [heightUnit, setHeightUnit] = useState<HeightUnit>('cm')
   const [weightKg, setWeightKg] = useState('')
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>('sedentary')
   const [goal, setGoal] = useState<Goal>('cut')
   const [error, setError] = useState<string | null>(null)
@@ -107,6 +111,8 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         weightKg: weightNum,
         activityLevel,
         goal,
+        heightUnit,
+        weightUnit,
       })
       await targets.add({
         effectiveDate: todayISO(),
@@ -185,26 +191,24 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
                   autoFocus
                 />
               </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Height (cm)</span>
-                <input
-                  type="number"
-                  className={TEXT_INPUT_CLASS}
-                  value={heightCm}
-                  onChange={(e) => setHeightCm(e.target.value)}
-                  placeholder="cm"
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Height</span>
+                <HeightInput
+                  valueCm={heightCm}
+                  onChangeCm={setHeightCm}
+                  unit={heightUnit}
+                  onUnitChange={setHeightUnit}
                 />
-              </label>
-              <label className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Weight (kg)</span>
-                <input
-                  type="number"
-                  className={TEXT_INPUT_CLASS}
-                  value={weightKg}
-                  onChange={(e) => setWeightKg(e.target.value)}
-                  placeholder="kg"
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Weight</span>
+                <WeightInput
+                  valueKg={weightKg}
+                  onChangeKg={setWeightKg}
+                  unit={weightUnit}
+                  onUnitChange={setWeightUnit}
                 />
-              </label>
+              </div>
             </div>
           </StepShell>
         )}

@@ -92,6 +92,11 @@ export const profiles = pgTable('profiles', {
   weightKg: doublePrecision('weight_kg').notNull(),
   activityLevel: text('activity_level').notNull(),
   goal: text('goal').notNull(),
+  // Display/input preference only (heightCm/weightKg above stay canonical
+  // metric) -- defaulted so this ADD COLUMN is safe against the
+  // already-populated production table; existing rows read as 'cm'/'kg'.
+  heightUnit: text('height_unit').notNull().default('cm'),
+  weightUnit: text('weight_unit').notNull().default('kg'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 })

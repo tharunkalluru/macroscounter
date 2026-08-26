@@ -29,6 +29,9 @@ export interface Profile extends Syncable {
   weightKg: number
   activityLevel: ActivityLevel
   goal: Goal
+  /** Display/input preference only — heightCm/weightKg above stay canonical metric regardless. Optional: absent on profiles written before this field existed, treated the same as 'cm'/'kg'. */
+  heightUnit?: 'cm' | 'ft_in'
+  weightUnit?: 'kg' | 'lb'
 }
 
 export interface Targets extends Syncable {

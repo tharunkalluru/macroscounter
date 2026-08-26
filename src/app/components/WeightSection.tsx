@@ -10,18 +10,23 @@ import {
   YAxis,
 } from 'recharts'
 import type { WeighIn } from '../../data/models'
+import { ProfileRepo } from '../../data/repos/ProfileRepo'
 import { WeighInRepo } from '../../data/repos/WeighInRepo'
 import { computeEMA } from '../../domain/history/ema'
+import { kgToLb, lbToKg } from '../../domain/units/weight'
 import { isFutureDate, todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
 import { neutral, semantic, surface, surfaceDark } from '../../theme/tokens'
 import { useTheme } from '../shell/ThemeContext'
+import type { WeightUnit } from './WeightInput'
 import { TEXT_INPUT_CLASS } from './formStyles'
 import Snackbar from './Snackbar'
 import { WeightSectionSkeleton } from './Skeleton'
 import SwipeToDeleteRow from './SwipeToDeleteRow'
 
 const UNDO_MS = 5000
+const MIN_KG = 30
+const MAX_KG = 300
 
 export default function WeightSection() {
   const { resolvedTheme } = useTheme()
@@ -30,7 +35,8 @@ export default function WeightSection() {
   const tickColor = isDark ? neutral[400] : neutral[500]
   const [weighIns, setWeighIns] = useState<WeighIn[]>([])
   const [date, setDate] = useState(todayISO())
-  const [weightKg, setWeightKg] = useState('')
+  const [weightInput, setWeightInput] = useState('')
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
@@ -45,7 +51,9 @@ export default function WeightSection() {
   }
 
   async function load() {
-    setWeighIns(await repo.getAll())
+    const [profile, allWeighIns] = await Promise.all([new ProfileRepo().get(), repo.getAll()])
+    setWeightUnit(profile?.weightUnit ?? 'kg')
+    setWeighIns(allWeighIns)
     setLoading(false)
   }
 
@@ -59,23 +67,35 @@ export default function WeightSection() {
       weighIns.map((w) => ({ date: w.date, weightKg: w.weightKg })),
       7
     )
-    return series.map((p) => ({ ...p, label: p.date.slice(5) }))
-  }, [weighIns])
+    return series.map((p) => ({
+      ...p,
+      label: p.date.slice(5),
+      weightKg: weightUnit === 'lb' ? kgToLb(p.weightKg) : p.weightKg,
+      ema: weightUnit === 'lb' ? kgToLb(p.ema) : p.ema,
+    }))
+  }, [weighIns, weightUnit])
+
+  function formatWeight(kg: number): string {
+    return weightUnit === 'lb' ? `${kgToLb(kg)} lb` : `${kg} kg`
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
 
-    const weightNum = Number(weightKg)
-    if (!Number.isFinite(weightNum) || weightNum < 30 || weightNum > 300) {
-      return setError('Weight must be between 30 and 300 kg.')
+    const enteredNum = Number(weightInput)
+    const weightNum = weightUnit === 'lb' ? lbToKg(enteredNum) : enteredNum
+    if (!Number.isFinite(weightNum) || weightNum < MIN_KG || weightNum > MAX_KG) {
+      const bounds =
+        weightUnit === 'lb' ? `${kgToLb(MIN_KG)} and ${kgToLb(MAX_KG)} lb` : `${MIN_KG} and ${MAX_KG} kg`
+      return setError(`Weight must be between ${bounds}.`)
     }
     if (isFutureDate(date)) {
       return setError("You can't log a future weigh-in.")
     }
 
     await repo.add({ date, weightKg: weightNum })
-    setWeightKg('')
+    setWeightInput('')
     await load()
   }
 
@@ -112,13 +132,13 @@ export default function WeightSection() {
           />
         </label>
         <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Weight (kg)</span>
+          <span className="text-sm font-medium">Weight ({weightUnit})</span>
           <input
             type="number"
             step="0.1"
             className={`w-24 ${TEXT_INPUT_CLASS}`}
-            value={weightKg}
-            onChange={(e) => setWeightKg(e.target.value)}
+            value={weightInput}
+            onChange={(e) => setWeightInput(e.target.value)}
           />
         </label>
         <button
@@ -201,7 +221,7 @@ export default function WeightSection() {
           <li key={w.id}>
             <SwipeToDeleteRow onDelete={() => handleSwipeDelete(w)} deleteLabel="Delete">
               <div className="flex min-h-touch items-center px-3 py-2 text-sm">
-                {w.date} · {w.weightKg} kg
+                {w.date} · {formatWeight(w.weightKg)}
               </div>
             </SwipeToDeleteRow>
           </li>

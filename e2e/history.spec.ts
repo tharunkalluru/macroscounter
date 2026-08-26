@@ -83,3 +83,33 @@ test('weight tracking: log a weigh-in and see it plus the trend chart', async ({
   await expect(page.getByTestId('weighin-list')).toContainText('79.5 kg')
   await expect(page.getByTestId('weight-chart')).toBeVisible()
 })
+
+test('weight tracking respects a pounds preference set at onboarding', async ({ page }) => {
+  await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
+  await page.goto('/')
+  await page.getByTestId('signin-skip-button').click()
+
+  await page.getByPlaceholder('Your name').fill('Pounds Persona')
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByRole('radio', { name: 'male', exact: true }).check()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByPlaceholder('years').fill('28')
+  await page.getByPlaceholder('cm').fill('170')
+  await page.getByTestId('weight-unit-lb').click()
+  await page.getByTestId('weight-input-lb').fill('170')
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('activity-sedentary').click()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('onboarding-finish').click()
+  await expect(page).toHaveURL('/')
+
+  await page.goto('/weight')
+  await expect(page.getByLabel('Weight (lb)')).toBeVisible()
+  await page.getByLabel('Weight (lb)').fill('168')
+  await page.getByRole('button', { name: 'Log' }).click()
+
+  await expect(page.getByTestId('weighin-list')).toContainText('168 lb')
+  await expect(page.getByTestId('weighin-list')).not.toContainText('kg')
+  await expect(page.getByTestId('weight-chart')).toBeVisible()
+})

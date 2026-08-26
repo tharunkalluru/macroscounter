@@ -8,10 +8,12 @@ import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
 import type { ThemePreference } from '../domain/theme/resolveTheme'
 import { todayISO } from '../lib/date'
 import AccountSection from './components/AccountSection'
+import HeightInput, { type HeightUnit } from './components/HeightInput'
 import SegmentedControl from './components/SegmentedControl'
 import SelectableCardGroup from './components/SelectableCardGroup'
 import SyncStatusDot from './components/SyncStatusDot'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
+import WeightInput, { type WeightUnit } from './components/WeightInput'
 import { useTheme } from './shell/ThemeContext'
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -45,7 +47,9 @@ export default function SettingsPage() {
   const [sex, setSex] = useState<Sex>('male')
   const [age, setAge] = useState('')
   const [heightCm, setHeightCm] = useState('')
+  const [heightUnit, setHeightUnit] = useState<HeightUnit>('cm')
   const [weightKg, setWeightKg] = useState('')
+  const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>('sedentary')
   const [goal, setGoal] = useState<Goal>('cut')
   const [error, setError] = useState<string | null>(null)
@@ -59,7 +63,9 @@ export default function SettingsPage() {
         setSex(profile.sex)
         setAge(String(profile.age))
         setHeightCm(String(profile.heightCm))
+        setHeightUnit(profile.heightUnit ?? 'cm')
         setWeightKg(String(profile.weightKg))
+        setWeightUnit(profile.weightUnit ?? 'kg')
         setActivityLevel(profile.activityLevel)
         setGoal(profile.goal)
       }
@@ -104,6 +110,8 @@ export default function SettingsPage() {
       weightKg: weightNum,
       activityLevel,
       goal,
+      heightUnit,
+      weightUnit,
     })
     await new TargetRepo().add({
       effectiveDate: todayISO(),
@@ -161,29 +169,25 @@ export default function SettingsPage() {
           />
         </label>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-            Height (cm)
-          </span>
-          <input
-            type="number"
-            className={TEXT_INPUT_CLASS}
-            value={heightCm}
-            onChange={(e) => setHeightCm(e.target.value)}
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Height</span>
+          <HeightInput
+            valueCm={heightCm}
+            onChangeCm={setHeightCm}
+            unit={heightUnit}
+            onUnitChange={setHeightUnit}
           />
-        </label>
+        </div>
 
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
-            Weight (kg)
-          </span>
-          <input
-            type="number"
-            className={TEXT_INPUT_CLASS}
-            value={weightKg}
-            onChange={(e) => setWeightKg(e.target.value)}
+        <div className="flex flex-col gap-1">
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Weight</span>
+          <WeightInput
+            valueKg={weightKg}
+            onChangeKg={setWeightKg}
+            unit={weightUnit}
+            onUnitChange={setWeightUnit}
           />
-        </label>
+        </div>
 
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
