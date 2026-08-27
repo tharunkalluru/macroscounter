@@ -1,3 +1,4 @@
+import InsightsSection from './components/InsightsSection'
 import ReportSection from './components/ReportSection'
 import WeightSection from './components/WeightSection'
 
@@ -13,6 +14,11 @@ export default function TrendsPage() {
       <section className="mt-8">
         <h2 className="text-title mb-3">This week</h2>
         <ReportSection />
+      </section>
+
+      <section className="mt-8">
+        <h2 className="text-title mb-3">Insights</h2>
+        <InsightsSection />
       </section>
     </div>
   )

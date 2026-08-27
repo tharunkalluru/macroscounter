@@ -177,6 +177,23 @@ export function InstallIcon({ className }: IconProps) {
   )
 }
 
+export function SparkleIcon({ className }: IconProps) {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M12 3.5c.5 3 2 4.5 5 5-3 .5-4.5 2-5 5-.5-3-2-4.5-5-5 3-.5 4.5-2 5-5Z"
+        stroke="currentColor"
+        strokeWidth={STROKE}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill="currentColor"
+        fillOpacity={0.15}
+      />
+      <path d="M18.5 15.5c.3 1.6 1 2.3 2.5 2.5-1.5.2-2.2.9-2.5 2.5-.3-1.6-1-2.3-2.5-2.5 1.5-.2 2.2-.9 2.5-2.5Z" stroke="currentColor" strokeWidth={STROKE} strokeLinecap="round" strokeLinejoin="round" fill="currentColor" fillOpacity={0.15} />
+    </svg>
+  )
+}
+
 export function ChevronLeftIcon({ className }: IconProps) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
