@@ -13,16 +13,16 @@ import type { WeighIn } from '../../data/models'
 import { ProfileRepo } from '../../data/repos/ProfileRepo'
 import { WeighInRepo } from '../../data/repos/WeighInRepo'
 import { computeEMA } from '../../domain/history/ema'
-import { kgToLb, lbToKg } from '../../domain/units/weight'
+import { kgToLb } from '../../domain/units/weight'
 import { isFutureDate, todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
 import { neutral, semantic, surface, surfaceDark } from '../../theme/tokens'
 import { useTheme } from '../shell/ThemeContext'
-import type { WeightUnit } from './WeightInput'
 import { TEXT_INPUT_CLASS } from './formStyles'
 import Snackbar from './Snackbar'
 import { WeightSectionSkeleton } from './Skeleton'
 import SwipeToDeleteRow from './SwipeToDeleteRow'
+import WeightInput, { type WeightUnit } from './WeightInput'
 
 const UNDO_MS = 5000
 const MIN_KG = 30
@@ -35,7 +35,7 @@ export default function WeightSection() {
   const tickColor = isDark ? neutral[400] : neutral[500]
   const [weighIns, setWeighIns] = useState<WeighIn[]>([])
   const [date, setDate] = useState(todayISO())
-  const [weightInput, setWeightInput] = useState('')
+  const [weightKgInput, setWeightKgInput] = useState('')
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
@@ -79,12 +79,18 @@ export default function WeightSection() {
     return weightUnit === 'lb' ? `${kgToLb(kg)} lb` : `${kg} kg`
   }
 
+  async function handleWeightUnitChange(unit: WeightUnit) {
+    setWeightUnit(unit)
+    const profileRepo = new ProfileRepo()
+    const profile = await profileRepo.get()
+    if (profile) await profileRepo.save({ ...profile, weightUnit: unit })
+  }
+
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
     setError(null)
 
-    const enteredNum = Number(weightInput)
-    const weightNum = weightUnit === 'lb' ? lbToKg(enteredNum) : enteredNum
+    const weightNum = Number(weightKgInput)
     if (!Number.isFinite(weightNum) || weightNum < MIN_KG || weightNum > MAX_KG) {
       const bounds =
         weightUnit === 'lb' ? `${kgToLb(MIN_KG)} and ${kgToLb(MAX_KG)} lb` : `${MIN_KG} and ${MAX_KG} kg`
@@ -95,7 +101,7 @@ export default function WeightSection() {
     }
 
     await repo.add({ date, weightKg: weightNum })
-    setWeightInput('')
+    setWeightKgInput('')
     await load()
   }
 
@@ -119,7 +125,7 @@ export default function WeightSection() {
     <div>
       <form
         onSubmit={handleSubmit}
-        className="flex items-end gap-3 rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card"
+        className="flex flex-col gap-4 rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card"
       >
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Date</span>
@@ -131,19 +137,15 @@ export default function WeightSection() {
             onChange={(e) => setDate(e.target.value)}
           />
         </label>
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Weight ({weightUnit})</span>
-          <input
-            type="number"
-            step="0.1"
-            className={`w-24 ${TEXT_INPUT_CLASS}`}
-            value={weightInput}
-            onChange={(e) => setWeightInput(e.target.value)}
-          />
-        </label>
+        <WeightInput
+          valueKg={weightKgInput}
+          onChangeKg={setWeightKgInput}
+          unit={weightUnit}
+          onUnitChange={handleWeightUnitChange}
+        />
         <button
           type="submit"
-          className="min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
+          className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
         >
           Log
         </button>

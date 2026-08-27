@@ -17,7 +17,9 @@ test('bottom tab bar navigates across Today, History, Trends, Settings', async (
 
   await page.getByTestId('tab-trends').click()
   await expect(page).toHaveURL('/trends')
-  await expect(page.getByTestId('weight-chart').or(page.getByText('Weight'))).toBeVisible()
+  await expect(
+    page.getByTestId('weight-chart').or(page.getByRole('heading', { name: 'Weight', exact: true }))
+  ).toBeVisible()
 
   await page.getByTestId('tab-settings').click()
   await expect(page).toHaveURL('/settings')
