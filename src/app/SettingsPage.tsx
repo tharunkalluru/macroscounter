@@ -6,6 +6,7 @@ import { computeGoalTargets } from '../domain/goals/goalEngine'
 import { ACTIVITY_OPTIONS, GOAL_OPTIONS } from '../domain/goals/options'
 import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
 import type { ThemePreference } from '../domain/theme/resolveTheme'
+import { kgToLb, lbToKg } from '../domain/units/weight'
 import { todayISO } from '../lib/date'
 import AccountSection from './components/AccountSection'
 import HeightInput, { type HeightUnit } from './components/HeightInput'
@@ -52,6 +53,8 @@ export default function SettingsPage() {
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
   const [activityLevel, setActivityLevel] = useState<ActivityLevel>('sedentary')
   const [goal, setGoal] = useState<Goal>('cut')
+  const [goalWeightKgCanonical, setGoalWeightKgCanonical] = useState<number | undefined>(undefined)
+  const [goalWeightInput, setGoalWeightInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
@@ -68,10 +71,35 @@ export default function SettingsPage() {
         setWeightUnit(profile.weightUnit ?? 'kg')
         setActivityLevel(profile.activityLevel)
         setGoal(profile.goal)
+        if (profile.goalWeightKg !== undefined) {
+          const unit = profile.weightUnit ?? 'kg'
+          setGoalWeightKgCanonical(profile.goalWeightKg)
+          setGoalWeightInput(String(unit === 'lb' ? kgToLb(profile.goalWeightKg) : profile.goalWeightKg))
+        }
       }
       setLoading(false)
     })()
   }, [])
+
+  // Re-derive the displayed goal-weight text on a unit switch only (not on
+  // every keystroke) -- same pattern WeightInput uses internally.
+  useEffect(() => {
+    if (goalWeightKgCanonical === undefined) return
+    setGoalWeightInput(String(weightUnit === 'lb' ? kgToLb(goalWeightKgCanonical) : goalWeightKgCanonical))
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [weightUnit])
+
+  function handleGoalWeightChange(text: string) {
+    setGoalWeightInput(text)
+    if (text.trim() === '') {
+      setGoalWeightKgCanonical(undefined)
+      return
+    }
+    const num = Number(text)
+    if (Number.isFinite(num)) {
+      setGoalWeightKgCanonical(weightUnit === 'lb' ? lbToKg(num) : num)
+    }
+  }
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
@@ -91,6 +119,12 @@ export default function SettingsPage() {
     }
     if (!Number.isFinite(weightNum) || weightNum < 30 || weightNum > 300) {
       return setError('Weight must be between 30 and 300 kg.')
+    }
+    if (
+      goalWeightKgCanonical !== undefined &&
+      (!Number.isFinite(goalWeightKgCanonical) || goalWeightKgCanonical < 30 || goalWeightKgCanonical > 300)
+    ) {
+      return setError('Goal weight must be between 30 and 300 kg.')
     }
 
     const result = computeGoalTargets({
@@ -112,6 +146,7 @@ export default function SettingsPage() {
       goal,
       heightUnit,
       weightUnit,
+      goalWeightKg: goalWeightKgCanonical,
     })
     await new TargetRepo().add({
       effectiveDate: todayISO(),
@@ -188,6 +223,24 @@ export default function SettingsPage() {
             onUnitChange={setWeightUnit}
           />
         </div>
+
+        <label className="flex flex-col gap-1">
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+            Goal weight <span className="font-normal text-slate-500 dark:text-slate-400">(optional)</span>
+          </span>
+          <input
+            type="number"
+            step="0.1"
+            className={TEXT_INPUT_CLASS}
+            value={goalWeightInput}
+            onChange={(e) => handleGoalWeightChange(e.target.value)}
+            placeholder={weightUnit}
+            data-testid="goal-weight-input"
+          />
+          <span className="text-xs text-slate-500 dark:text-slate-400">
+            Set this to see a projected ETA on Trends.
+          </span>
+        </label>
 
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">

@@ -32,6 +32,8 @@ export interface Profile extends Syncable {
   /** Display/input preference only — heightCm/weightKg above stay canonical metric regardless. Optional: absent on profiles written before this field existed, treated the same as 'cm'/'kg'. */
   heightUnit?: 'cm' | 'ft_in'
   weightUnit?: 'kg' | 'lb'
+  /** Optional target weight (canonical kg) powering the "goal ETA" projection on Trends. Absent = feature not opted into. */
+  goalWeightKg?: number
 }
 
 export interface Targets extends Syncable {

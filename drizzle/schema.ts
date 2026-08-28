@@ -97,6 +97,10 @@ export const profiles = pgTable('profiles', {
   // already-populated production table; existing rows read as 'cm'/'kg'.
   heightUnit: text('height_unit').notNull().default('cm'),
   weightUnit: text('weight_unit').notNull().default('kg'),
+  // Optional target weight for the "goal ETA" projection on Trends -- no
+  // default, nullable, so this ADD COLUMN is a no-op for every existing row
+  // until a user opts in via Settings.
+  goalWeightKg: doublePrecision('goal_weight_kg'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 })

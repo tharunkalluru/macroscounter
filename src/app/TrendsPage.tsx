@@ -1,3 +1,4 @@
+import GoalWeightCard from './components/GoalWeightCard'
 import InsightsSection from './components/InsightsSection'
 import ReportSection from './components/ReportSection'
 import WeightSection from './components/WeightSection'
@@ -9,6 +10,9 @@ export default function TrendsPage() {
       <section>
         <h2 className="text-title mb-3">Weight</h2>
         <WeightSection />
+        <div className="mt-4">
+          <GoalWeightCard />
+        </div>
       </section>
 
       <section className="mt-8">
