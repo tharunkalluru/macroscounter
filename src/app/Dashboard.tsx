@@ -13,6 +13,7 @@ import { hasCelebratedProteinGoal, markProteinGoalCelebrated } from '../lib/logg
 import { hasMadeSignInChoice } from '../lib/sync/guestMode'
 import AdaptiveTargetPrompt from './components/AdaptiveTargetPrompt'
 import CaloriesRing from './components/CaloriesRing'
+import CopyYesterdayPrompt from './components/CopyYesterdayPrompt'
 import DashboardSkeleton from './components/DashboardSkeleton'
 import DateNav from './components/DateNav'
 import GoalCelebration from './components/GoalCelebration'
@@ -215,6 +216,14 @@ export default function Dashboard() {
         </div>
 
         {isToday && <AdaptiveTargetPrompt onAccepted={reloadTargets} />}
+        {isToday && (
+          <CopyYesterdayPrompt
+            date={date}
+            todayEntryCount={entries.length}
+            historyEntries={historyEntries}
+            onCopied={notifyDataChanged}
+          />
+        )}
         {isToday && <MealPromptSheet {...mealPrompt} onLogged={notifyDataChanged} />}
 
         {MEALS.map(({ key, label }) => (
