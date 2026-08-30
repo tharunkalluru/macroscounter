@@ -4,16 +4,27 @@ import type { Profile } from '../../data/models'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { ProfileRepo } from '../../data/repos/ProfileRepo'
 import { groupEntriesByDate } from '../../domain/history/averages'
-import { computeStreak } from '../../domain/streaks/streak'
+import { computeStreak, computeStreakStartDate, getStreakMilestone } from '../../domain/streaks/streak'
 import { useSession } from '../../lib/auth/authClient'
 import { addDaysISO, todayISO } from '../../lib/date'
+import { vibrateSuccess } from '../../lib/haptics'
+import {
+  hasCelebratedStreakMilestone,
+  markStreakMilestoneCelebrated,
+} from '../../lib/logging/streakMilestoneCelebration'
+import GoalCelebration from '../components/GoalCelebration'
 import { FlameIcon } from './icons'
 import { useUIState } from './UIStateContext'
+
+// Wide enough to correctly measure streaks well past the highest milestone
+// (100+ days) rather than silently capping at the window size.
+const STREAK_WINDOW_DAYS = 180
 
 export default function Header() {
   const [profile, setProfile] = useState<Profile | null>(null)
   const [streak, setStreak] = useState(0)
   const [avatarFailed, setAvatarFailed] = useState(false)
+  const [milestoneMessage, setMilestoneMessage] = useState<string | null>(null)
   const { dataVersion } = useUIState()
   const { data: session } = useSession()
 
@@ -23,11 +34,24 @@ export default function Header() {
       const today = todayISO()
       const [p, entries] = await Promise.all([
         new ProfileRepo().get(),
-        new LogRepo().getEntriesForDateRange(addDaysISO(today, -29), today),
+        new LogRepo().getEntriesForDateRange(addDaysISO(today, -(STREAK_WINDOW_DAYS - 1)), today),
       ])
       if (cancelled) return
       setProfile(p ?? null)
-      setStreak(computeStreak(groupEntriesByDate(entries).map((d) => d.date), today))
+
+      const loggedDates = groupEntriesByDate(entries).map((d) => d.date)
+      const currentStreak = computeStreak(loggedDates, today)
+      setStreak(currentStreak)
+
+      const milestone = getStreakMilestone(currentStreak)
+      if (milestone) {
+        const startDate = computeStreakStartDate(loggedDates, today, currentStreak)
+        if (startDate && !hasCelebratedStreakMilestone(startDate, milestone)) {
+          markStreakMilestoneCelebrated(startDate, milestone)
+          vibrateSuccess()
+          setMilestoneMessage(`${milestone}-day streak — you're on fire.`)
+        }
+      }
     })()
     return () => {
       cancelled = true
@@ -74,6 +98,14 @@ export default function Header() {
           initial
         )}
       </Link>
+
+      <GoalCelebration
+        show={milestoneMessage !== null}
+        onDismiss={() => setMilestoneMessage(null)}
+        message={milestoneMessage ?? ''}
+        icon={FlameIcon}
+        positionClassName="bottom-40"
+      />
     </header>
   )
 }

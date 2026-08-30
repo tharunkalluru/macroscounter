@@ -18,9 +18,12 @@ export default function ReportSection() {
   useEffect(() => {
     ;(async () => {
       const today = todayISO()
-      const [targets, last30Entries] = await Promise.all([
+      // Streak needs a wider lookback than the 30-day report/consistency
+      // window so a streak longer than 30 days isn't silently undercounted.
+      const [targets, last30Entries, streakEntries] = await Promise.all([
         new TargetRepo().getAll(),
         new LogRepo().getEntriesForDateRange(addDaysISO(today, -29), today),
+        new LogRepo().getEntriesForDateRange(addDaysISO(today, -179), today),
       ])
       const latestTarget = targets[targets.length - 1]
       const dayTotals = groupEntriesByDate(last30Entries)
@@ -34,7 +37,7 @@ export default function ReportSection() {
       setLast14(dayTotals.filter((d) => d.date >= addDaysISO(today, -13)))
 
       const loggedDates = dayTotals.map((d) => d.date)
-      setStreak(computeStreak(loggedDates, today))
+      setStreak(computeStreak(groupEntriesByDate(streakEntries).map((d) => d.date), today))
       setConsistency(computeConsistency(loggedDates, today, 30))
     })()
   }, [])

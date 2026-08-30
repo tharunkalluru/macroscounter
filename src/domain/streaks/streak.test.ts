@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { computeConsistency, computeStreak } from './streak'
+import { computeConsistency, computeStreak, computeStreakStartDate, getStreakMilestone } from './streak'
 
 describe('computeStreak', () => {
   it('counts consecutive days ending today when today is logged', () => {
@@ -62,5 +62,40 @@ describe('computeConsistency', () => {
 
   it('returns 0 for an empty log', () => {
     expect(computeConsistency([], '2026-08-18', 30)).toBe(0)
+  })
+})
+
+describe('getStreakMilestone', () => {
+  it.each([3, 7, 14, 30, 50, 75, 100])('flags the fixed early milestone %i', (n) => {
+    expect(getStreakMilestone(n)).toBe(n)
+  })
+
+  it.each([150, 200, 350])('flags every 50 days past 100', (n) => {
+    expect(getStreakMilestone(n)).toBe(n)
+  })
+
+  it.each([0, 1, 2, 4, 8, 15, 29, 101, 120])('is null for a non-milestone streak', (n) => {
+    expect(getStreakMilestone(n)).toBeNull()
+  })
+})
+
+describe('computeStreakStartDate', () => {
+  it('returns null when streak is 0', () => {
+    expect(computeStreakStartDate([], '2026-08-18', 0)).toBeNull()
+  })
+
+  it('walks back from today when today is logged', () => {
+    const days = ['2026-08-16', '2026-08-17', '2026-08-18']
+    expect(computeStreakStartDate(days, '2026-08-18', 3)).toBe('2026-08-16')
+  })
+
+  it("walks back from yesterday when today isn't logged yet", () => {
+    const days = ['2026-08-16', '2026-08-17']
+    expect(computeStreakStartDate(days, '2026-08-18', 2)).toBe('2026-08-16')
+  })
+
+  it('is month-boundary safe', () => {
+    const days = ['2026-08-30', '2026-08-31', '2026-09-01']
+    expect(computeStreakStartDate(days, '2026-09-01', 3)).toBe('2026-08-30')
   })
 })

@@ -1,10 +1,14 @@
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
-import { useEffect } from 'react'
+import { useEffect, type ComponentType } from 'react'
 import { TargetIcon } from '../shell/icons'
 
 interface Props {
   show: boolean
   onDismiss: () => void
+  message?: string
+  icon?: ComponentType<{ className?: string }>
+  /** Tailwind position-from-bottom class; lets a second concurrent toast avoid overlapping this one. */
+  positionClassName?: string
 }
 
 const AUTO_DISMISS_MS = 3200
@@ -21,7 +25,13 @@ const CONFETTI = [
   { dx: 46, rotate: 10, className: 'bg-protein-500' },
 ]
 
-export default function GoalCelebration({ show, onDismiss }: Props) {
+export default function GoalCelebration({
+  show,
+  onDismiss,
+  message = 'Protein goal hit — nice work.',
+  icon: Icon = TargetIcon,
+  positionClassName = 'bottom-24',
+}: Props) {
   const prefersReducedMotion = useReducedMotion()
 
   useEffect(() => {
@@ -39,7 +49,7 @@ export default function GoalCelebration({ show, onDismiss }: Props) {
           animate={{ opacity: 1, y: 0 }}
           exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, y: 16 }}
           transition={{ duration: prefersReducedMotion ? 0 : 0.25 }}
-          className="fixed inset-x-0 bottom-24 z-40 flex justify-center px-4"
+          className={`fixed inset-x-0 ${positionClassName} z-40 flex justify-center px-4`}
           data-testid="goal-celebration"
           role="status"
         >
@@ -58,8 +68,8 @@ export default function GoalCelebration({ show, onDismiss }: Props) {
               </div>
             )}
             <div className="flex items-center gap-2.5 rounded-full bg-brand-700 px-4 py-2.5 text-white shadow-card dark:bg-brand-600">
-              <TargetIcon className="shrink-0" />
-              <span className="text-caption font-medium">Protein goal hit — nice work.</span>
+              <Icon className="shrink-0" />
+              <span className="text-caption font-medium">{message}</span>
             </div>
           </div>
         </motion.div>

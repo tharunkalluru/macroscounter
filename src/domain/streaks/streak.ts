@@ -26,3 +26,33 @@ export function computeConsistency(loggedDates: string[], referenceDate: string,
   }
   return count / windowDays
 }
+
+const STREAK_MILESTONES = [3, 7, 14, 30, 50, 75, 100]
+
+/**
+ * Returns `streak` itself if it's a celebration-worthy milestone (a fixed
+ * early progression, then every 50 days once past 100), otherwise `null`.
+ */
+export function getStreakMilestone(streak: number): number | null {
+  if (STREAK_MILESTONES.includes(streak)) return streak
+  if (streak > 100 && streak % 50 === 0) return streak
+  return null
+}
+
+/**
+ * First day of the streak currently ending at `referenceDate` (per the same
+ * "today still in progress" rule as `computeStreak`), for use as a stable
+ * per-run key — e.g. so a milestone celebration fires once per streak run
+ * rather than once ever, letting it re-fire after a broken streak rebuilds.
+ * Returns null when there's no active streak.
+ */
+export function computeStreakStartDate(
+  loggedDates: string[],
+  referenceDate: string,
+  streak: number
+): string | null {
+  if (streak <= 0) return null
+  const logged = new Set(loggedDates)
+  const end = logged.has(referenceDate) ? referenceDate : addDaysISO(referenceDate, -1)
+  return addDaysISO(end, -(streak - 1))
+}
