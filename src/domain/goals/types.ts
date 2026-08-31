@@ -13,6 +13,21 @@ export interface GoalEngineInput {
   proteinGPerKg?: number
   /** g of fat per kg bodyweight. Defaults to 0.7 (the floor); never allowed below it. */
   fatGPerKg?: number
+  /**
+   * Desired rate of weight change, lb/week — drives the cut deficit or gain
+   * surplus as `rate * 3500 / 7` kcal/day instead of the fixed 500/300
+   * constants. Omitted = old fixed-constant behavior (back-compat for every
+   * caller that predates the Phase R.2 goal-rate slider). Ignored for
+   * 'maintain'.
+   */
+  goalRateLbPerWeek?: number
+  /**
+   * Extra kcal/day added on top of the safety floor (BMR, or the
+   * sex-based absolute minimum, whichever is higher) — a user's "gentler
+   * cut" preference. Can only raise the floor, never lower it below the
+   * existing safety minimum. Defaults to 0 (today's behavior).
+   */
+  floorBufferKcal?: number
 }
 
 export interface GoalEngineResult {

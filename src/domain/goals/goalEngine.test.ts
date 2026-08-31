@@ -224,3 +224,72 @@ describe('computeGoalTargets — property: macro sum vs kcal target, floors resp
     }
   })
 })
+
+describe('computeGoalTargets — goalRateLbPerWeek (Phase R.2 goal-rate slider)', () => {
+  const base: GoalEngineInput = {
+    sex: 'female',
+    age: 29,
+    heightCm: 162,
+    weightKg: 58,
+    activityLevel: 'very_active',
+    goal: 'cut',
+  }
+
+  it('a 1 lb/week rate reproduces the legacy fixed 500 kcal/day deficit exactly', () => {
+    const legacy = computeGoalTargets(base)
+    const viaRate = computeGoalTargets({ ...base, goalRateLbPerWeek: 1 })
+    expect(viaRate.kcal).toBe(legacy.kcal)
+  })
+
+  it('a 0.6 lb/week gain rate reproduces the legacy fixed 300 kcal/day surplus exactly', () => {
+    const legacy = computeGoalTargets({ ...base, goal: 'gain' })
+    const viaRate = computeGoalTargets({ ...base, goal: 'gain', goalRateLbPerWeek: 0.6 })
+    expect(viaRate.kcal).toBe(legacy.kcal)
+  })
+
+  it('a faster cut rate produces a bigger deficit, still never below the safety floor', () => {
+    const slow = computeGoalTargets({ ...base, goalRateLbPerWeek: 0.5 })
+    const fast = computeGoalTargets({ ...base, goalRateLbPerWeek: 2 })
+    expect(fast.kcal).toBeLessThan(slow.kcal)
+    expect(fast.kcal).toBeGreaterThanOrEqual(Math.max(fast.bmr, FEMALE_FLOOR))
+  })
+
+  it('is ignored for maintain', () => {
+    const withoutRate = computeGoalTargets({ ...base, goal: 'maintain' })
+    const withRate = computeGoalTargets({ ...base, goal: 'maintain', goalRateLbPerWeek: 2 })
+    expect(withRate.kcal).toBe(withoutRate.kcal)
+  })
+})
+
+describe('computeGoalTargets — floorBufferKcal (Phase R.2 gentler-cut preference)', () => {
+  it('raises the effective cut floor by the buffer amount when the floor binds', () => {
+    const input: GoalEngineInput = {
+      sex: 'male',
+      age: 28,
+      heightCm: 170,
+      weightKg: 70,
+      activityLevel: 'sedentary',
+      goal: 'cut',
+    }
+    const standard = computeGoalTargets(input)
+    const gentler = computeGoalTargets({ ...input, floorBufferKcal: 150 })
+    expect(gentler.kcal).toBe(standard.kcal + 150)
+  })
+
+  it('never lowers kcal when a negative buffer is passed', () => {
+    const input: GoalEngineInput = {
+      sex: 'male',
+      age: 28,
+      heightCm: 170,
+      weightKg: 70,
+      activityLevel: 'sedentary',
+      goal: 'cut',
+      floorBufferKcal: -200,
+    }
+    const standard = computeGoalTargets({ ...input, floorBufferKcal: undefined })
+    const result = computeGoalTargets(input)
+    expect(result.kcal).toBe(standard.kcal)
+  })
+})
+
+const FEMALE_FLOOR = 1200

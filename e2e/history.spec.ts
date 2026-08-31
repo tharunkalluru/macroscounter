@@ -93,14 +93,24 @@ test('weight tracking respects a pounds preference set at onboarding', async ({ 
   await page.getByTestId('onboarding-continue').click()
   await page.getByRole('radio', { name: 'male', exact: true }).check()
   await page.getByTestId('onboarding-continue').click()
-  await page.getByPlaceholder('years').fill('28')
+  await page.getByTestId('dob-input').fill('1998-01-01')
+  await page.getByTestId('onboarding-continue').click()
   await page.getByPlaceholder('cm').fill('170')
   await page.getByTestId('weight-unit-lb').click()
   await page.getByTestId('weight-input-lb').fill('170')
   await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('activity-sedentary').click()
+  await page.getByTestId('onboarding-continue').click() // weight-history: default
+  await page.getByTestId('onboarding-continue').click() // body-fat: skip
+  await page.getByTestId('activity-job-desk').click()
   await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('activity-exercise-none').click()
   await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('activity-movement-low').click()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('onboarding-continue').click() // goal: default (cut)
+  await page.getByTestId('onboarding-continue').click() // goal-rate: default
+  await page.getByTestId('onboarding-continue').click() // diet-style/protein-priority/calorie-floor: defaults
+  await page.getByTestId('onboarding-continue').click() // coach-reveal
   await page.getByTestId('onboarding-finish').click()
   await expect(page).toHaveURL('/')
 

@@ -16,6 +16,7 @@ const CUT_DEFICIT_KCAL = 500
 const GAIN_SURPLUS_KCAL = 300
 const MALE_KCAL_FLOOR = 1500
 const FEMALE_KCAL_FLOOR = 1200
+const KCAL_PER_LB = 3500
 
 export function calculateBMR(sex: Sex, weightKg: number, heightCm: number, age: number): number {
   const base = 10 * weightKg + 6.25 * heightCm - 5 * age
@@ -53,13 +54,16 @@ export function computeGoalTargets(input: GoalEngineInput): GoalEngineResult {
   const tdee = calculateTDEE(bmr, activityLevel)
 
   const absoluteFloor = sex === 'male' ? MALE_KCAL_FLOOR : FEMALE_KCAL_FLOOR
-  const cutFloor = Math.max(bmr, absoluteFloor)
+  const cutFloor = Math.max(bmr, absoluteFloor) + Math.max(input.floorBufferKcal ?? 0, 0)
+
+  const rateKcalPerDay =
+    input.goalRateLbPerWeek !== undefined ? (input.goalRateLbPerWeek * KCAL_PER_LB) / 7 : undefined
 
   let rawKcal: number
   if (goal === 'cut') {
-    rawKcal = Math.max(tdee - CUT_DEFICIT_KCAL, cutFloor)
+    rawKcal = Math.max(tdee - (rateKcalPerDay ?? CUT_DEFICIT_KCAL), cutFloor)
   } else if (goal === 'gain') {
-    rawKcal = tdee + GAIN_SURPLUS_KCAL
+    rawKcal = tdee + (rateKcalPerDay ?? GAIN_SURPLUS_KCAL)
   } else {
     rawKcal = tdee
   }

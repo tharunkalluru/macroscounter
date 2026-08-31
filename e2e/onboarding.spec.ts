@@ -20,16 +20,33 @@ test('completing onboarding computes and shows the correct kcal target on the da
   await page.getByRole('radio', { name: 'male', exact: true }).check()
   await page.getByTestId('onboarding-continue').click()
 
-  await page.getByPlaceholder('years').fill('28')
+  await page.getByTestId('dob-input').fill('1998-01-01')
+  await page.getByTestId('onboarding-continue').click()
+
   await page.getByPlaceholder('cm').fill('170')
   await page.getByPlaceholder('kg').fill('70')
   await page.getByTestId('onboarding-continue').click()
 
-  await page.getByTestId('activity-sedentary').click()
+  await page.getByTestId('onboarding-continue').click() // weight-history: default
+  await page.getByTestId('onboarding-continue').click() // body-fat: skip
+
+  await page.getByTestId('activity-job-desk').click()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('activity-exercise-none').click()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('activity-movement-low').click()
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByTestId('goal-cut').click()
   await page.getByTestId('onboarding-continue').click()
+
+  await expect(page.getByTestId('goal-rate-value')).toHaveText('1.00 lb/week')
+  await page.getByTestId('onboarding-continue').click() // goal-rate: default (1 lb/week = legacy 500 kcal deficit)
+
+  await page.getByTestId('onboarding-continue').click() // diet-style/protein-priority/calorie-floor: defaults
+
+  await expect(page.getByTestId('coach-reveal-target')).toHaveText('1628 kcal')
+  await page.getByTestId('onboarding-continue').click() // coach-reveal
 
   await expect(page.getByTestId('onboarding-preview-kcal')).toHaveText('1628 kcal')
   await page.getByTestId('onboarding-finish').click()
@@ -58,7 +75,9 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
   await page.getByRole('radio', { name: 'male', exact: true }).check()
   await page.getByTestId('onboarding-continue').click()
 
-  await page.getByPlaceholder('years').fill('28')
+  await page.getByTestId('dob-input').fill('1998-01-01')
+  await page.getByTestId('onboarding-continue').click()
+
   await page.getByTestId('height-unit-ft_in').click()
   await page.getByTestId('height-input-feet').fill('5')
   await page.getByTestId('height-input-inches').fill('9')
@@ -66,11 +85,22 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
   await page.getByTestId('weight-input-lb').fill('176')
   await page.getByTestId('onboarding-continue').click()
 
-  await page.getByTestId('activity-sedentary').click()
+  await page.getByTestId('onboarding-continue').click() // weight-history: default
+  await page.getByTestId('onboarding-continue').click() // body-fat: skip
+
+  await page.getByTestId('activity-job-desk').click()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('activity-exercise-none').click()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('activity-movement-low').click()
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByTestId('goal-cut').click()
   await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('onboarding-continue').click() // goal-rate: default
+
+  await page.getByTestId('onboarding-continue').click() // diet-style/protein-priority/calorie-floor: defaults
+  await page.getByTestId('onboarding-continue').click() // coach-reveal
 
   await expect(page.getByTestId('onboarding-preview-kcal')).toHaveText('1759 kcal')
   await page.getByTestId('onboarding-finish').click()
@@ -104,15 +134,28 @@ test('data persists across a reload after onboarding', async ({ page }) => {
   await page.getByRole('radio', { name: 'female', exact: true }).check()
   await page.getByTestId('onboarding-continue').click()
 
-  await page.getByPlaceholder('years').fill('26')
+  await page.getByTestId('dob-input').fill('2000-01-01')
+  await page.getByTestId('onboarding-continue').click()
+
   await page.getByPlaceholder('cm').fill('165')
   await page.getByPlaceholder('kg').fill('60')
   await page.getByTestId('onboarding-continue').click()
 
-  await page.getByTestId('activity-very_active').click()
+  await page.getByTestId('onboarding-continue').click() // weight-history: default
+  await page.getByTestId('onboarding-continue').click() // body-fat: skip
+
+  await page.getByTestId('activity-job-physical').click()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('activity-exercise-frequent').click()
+  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('activity-movement-high').click()
   await page.getByTestId('onboarding-continue').click()
 
-  await page.getByTestId('onboarding-continue').click()
+  await page.getByTestId('onboarding-continue').click() // goal: default (cut)
+  await page.getByTestId('onboarding-continue').click() // goal-rate: default
+
+  await page.getByTestId('onboarding-continue').click() // diet-style/protein-priority/calorie-floor: defaults
+  await page.getByTestId('onboarding-continue').click() // coach-reveal
   await page.getByTestId('onboarding-finish').click()
 
   await expect(page.getByTestId('kcal-target')).toHaveText('2046 kcal target')

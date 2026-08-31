@@ -101,6 +101,16 @@ export const profiles = pgTable('profiles', {
   // default, nullable, so this ADD COLUMN is a no-op for every existing row
   // until a user opts in via Settings.
   goalWeightKg: doublePrecision('goal_weight_kg'),
+  // Phase R.2 onboarding-rebuild fields -- all nullable, no default, so
+  // these ADD COLUMNs are a no-op for every pre-R.2 row. `age` above stays
+  // the authoritative engine input regardless of whether dateOfBirth is set.
+  dateOfBirth: text('date_of_birth'),
+  bodyFatPercent: doublePrecision('body_fat_percent'),
+  weightHistoryClass: text('weight_history_class'),
+  dietStyle: text('diet_style'),
+  proteinPriority: text('protein_priority'),
+  calorieFloorChoice: text('calorie_floor_choice'),
+  goalRateLbPerWeek: doublePrecision('goal_rate_lb_per_week'),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 })

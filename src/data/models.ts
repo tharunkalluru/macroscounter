@@ -34,6 +34,20 @@ export interface Profile extends Syncable {
   weightUnit?: 'kg' | 'lb'
   /** Optional target weight (canonical kg) powering the "goal ETA" projection on Trends. Absent = feature not opted into. */
   goalWeightKg?: number
+  /** ISO yyyy-mm-dd, collected at onboarding for a nicer input than a bare age field. `age` above stays the authoritative engine input either way. */
+  dateOfBirth?: string
+  /** Self-reported body-fat %, from a skippable onboarding picker. Stored only — does not feed calculateBMR (Mifflin-St Jeor, not Katch-McArdle). */
+  bodyFatPercent?: number
+  /** Informational only — collected at onboarding, not read by any engine or UI logic yet. */
+  weightHistoryClass?: 'first_time' | 'some_success' | 'yo_yo' | 'long_term_maintainer'
+  /** Onboarding diet-style preference. 'balanced' (default) matches pre-R.2 behavior (fatGPerKg omitted). */
+  dietStyle?: 'balanced' | 'higher_fat' | 'lower_carb'
+  /** Onboarding protein-priority preference. 'standard' (default) matches pre-R.2 behavior (proteinGPerKg omitted). */
+  proteinPriority?: 'standard' | 'high' | 'very_high'
+  /** Onboarding calorie-floor preference. 'standard' (default) matches pre-R.2 behavior (no floor buffer). */
+  calorieFloorChoice?: 'standard' | 'gentler'
+  /** Desired rate of weight change (lb/week) chosen at onboarding, feeding goalEngine's goalRateLbPerWeek. Absent for profiles created before Phase R.2. */
+  goalRateLbPerWeek?: number
 }
 
 export interface Targets extends Syncable {
