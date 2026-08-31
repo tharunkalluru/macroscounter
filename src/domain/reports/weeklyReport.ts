@@ -12,11 +12,11 @@ export interface WeeklyReport {
   daysCounted: number
 }
 
-function round1(n: number): number {
+export function round1(n: number): number {
   return Math.round(n * 10) / 10
 }
 
-function round2(n: number): number {
+export function round2(n: number): number {
   return Math.round(n * 100) / 100
 }
 
@@ -51,5 +51,44 @@ export function computeWeeklyReport(
     bestDay: { date: best.date, kcal: best.kcal },
     worstDay: { date: worst.date, kcal: worst.kcal },
     daysCounted: days.length,
+  }
+}
+
+export interface WeekComparison {
+  /** false when the prior week has no logged days at all — nothing to compare against yet. */
+  hasPreviousData: boolean
+  avgKcalDelta: number
+  /** null when hasPreviousData is false. Whether this week's avg kcal sits nearer the target than last week's did. */
+  kcalCloserToTarget: boolean | null
+  proteinHitRateDelta: number
+}
+
+/**
+ * "Closer to target" (not just up/down) is what actually matters for calories,
+ * since up or down alone doesn't say whether the user is over- or under-eating
+ * relative to their goal.
+ */
+export function compareWeeklyReports(
+  current: WeeklyReport,
+  previous: WeeklyReport,
+  targetKcal: number
+): WeekComparison {
+  if (previous.daysCounted === 0) {
+    return {
+      hasPreviousData: false,
+      avgKcalDelta: 0,
+      kcalCloserToTarget: null,
+      proteinHitRateDelta: 0,
+    }
+  }
+
+  const currentDeviation = Math.abs(current.avgKcal - targetKcal)
+  const previousDeviation = Math.abs(previous.avgKcal - targetKcal)
+
+  return {
+    hasPreviousData: true,
+    avgKcalDelta: round1(current.avgKcal - previous.avgKcal),
+    kcalCloserToTarget: currentDeviation < previousDeviation,
+    proteinHitRateDelta: round2(current.proteinHitRate - previous.proteinHitRate),
   }
 }
