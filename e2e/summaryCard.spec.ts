@@ -22,7 +22,7 @@ test('over-budget: logging past the target turns the ring amber and shows "+n ov
   await expect(page.getByTestId('calories-ring')).toHaveAccessibleName(/372 over/)
 
   const ringFillCircle = page.getByTestId('calories-ring').locator('circle').nth(1)
-  await expect(ringFillCircle).toHaveAttribute('stroke', '#d97706') // semantic.warn[600]
+  await expect(ringFillCircle).toHaveAttribute('stroke', '#bf9c40') // semantic.warn[600]
 })
 
 test('under target: the ring stays brand-colored and shows plain remaining kcal', async ({ page }) => {
@@ -39,7 +39,7 @@ test('under target: the ring stays brand-colored and shows plain remaining kcal'
   await expect(page.getByTestId('calories-ring')).toHaveAccessibleName('200 of 1628 calories remaining')
 
   const ringFillCircle = page.getByTestId('calories-ring').locator('circle').nth(1)
-  await expect(ringFillCircle).toHaveAttribute('stroke', '#0F9D58') // semantic.success[600]
+  await expect(ringFillCircle).toHaveAttribute('stroke', '#5340bf') // semantic.success[600]
 })
 
 test('tapping a macro bar opens the per-meal breakdown sheet with correct totals', async ({ page }) => {

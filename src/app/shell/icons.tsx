@@ -194,6 +194,22 @@ export function SparkleIcon({ className }: IconProps) {
   )
 }
 
+export function HeartIcon({ active, className }: IconProps) {
+  return (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
+      <path
+        d="M12 20s-7-4.35-9.5-8.5C.8 8.2 2.3 5 5.5 5c1.8 0 3.2.9 4 2.3.8-1.4 2.2-2.3 4-2.3 3.2 0 4.7 3.2 3 6.5C19 15.65 12 20 12 20Z"
+        stroke="currentColor"
+        strokeWidth={STROKE}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        fill={active ? 'currentColor' : 'none'}
+        fillOpacity={active ? 1 : 0}
+      />
+    </svg>
+  )
+}
+
 export function ChevronLeftIcon({ className }: IconProps) {
   return (
     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
