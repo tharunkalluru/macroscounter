@@ -139,7 +139,7 @@ test('log offline, go online, entries appear from a fresh (cleared-IndexedDB) se
   // attempt — it should see the browser is offline and back off cleanly.
   expect(await logEntryCount(page)).toBe(1)
   expect(server.rowCount('logEntries')).toBe(0)
-  await page.getByTestId('tab-settings').click()
+  await page.getByTestId('avatar-link').click()
   await expect(page.getByTestId('sync-status')).toContainText('Offline', { timeout: 5_000 })
 
   await context.setOffline(false)

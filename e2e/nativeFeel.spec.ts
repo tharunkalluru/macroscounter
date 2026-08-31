@@ -30,10 +30,10 @@ test('repeat visits load Today in under 1.5s (precached shell)', async ({ page }
   expect(elapsedMs, `repeat-visit load took ${elapsedMs}ms`).toBeLessThan(1500)
 })
 
-test('no horizontal overscroll on the dashboard, history, or settings', async ({ page }) => {
+test('no horizontal overscroll on the dashboard, log, coach, or settings', async ({ page }) => {
   await onboard(page)
 
-  for (const path of ['/', '/history', '/settings']) {
+  for (const path of ['/', '/history', '/coach', '/settings']) {
     await page.goto(path)
     const overflowsX = await page.evaluate(
       () => document.documentElement.scrollWidth > document.documentElement.clientWidth

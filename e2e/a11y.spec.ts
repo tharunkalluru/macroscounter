@@ -72,3 +72,9 @@ test('scan page has no WCAG A/AA violations', async ({ page }) => {
   await page.goto('/scan')
   await expectNoViolations(page)
 })
+
+test('coach page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/coach')
+  await expectNoViolations(page)
+})

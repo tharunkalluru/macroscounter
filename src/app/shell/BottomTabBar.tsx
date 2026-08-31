@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { activeMealWindow } from '../../domain/mealPrompt/activeMealWindow'
 import { useUIState } from './UIStateContext'
-import { HistoryIcon, ScanIcon, SettingsIcon, TodayIcon, TrendsIcon } from './icons'
+import { CoachIcon, LogIcon, ScanIcon, TodayIcon, TrendsIcon } from './icons'
 
 interface TabDef {
   key: string
@@ -13,7 +13,13 @@ interface TabDef {
 
 const TABS: TabDef[] = [
   { key: 'today', label: 'Today', to: '/', Icon: TodayIcon, isActive: (p) => p === '/' },
-  { key: 'history', label: 'History', to: '/history', Icon: HistoryIcon, isActive: (p) => p.startsWith('/history') },
+  {
+    key: 'log',
+    label: 'Log',
+    to: '/log',
+    Icon: LogIcon,
+    isActive: (p) => p.startsWith('/log') || p.startsWith('/history'),
+  },
   {
     key: 'trends',
     label: 'Trends',
@@ -22,11 +28,11 @@ const TABS: TabDef[] = [
     isActive: (p) => p.startsWith('/trends') || p.startsWith('/weight'),
   },
   {
-    key: 'settings',
-    label: 'Settings',
-    to: '/settings',
-    Icon: SettingsIcon,
-    isActive: (p) => p.startsWith('/settings'),
+    key: 'coach',
+    label: 'Coach',
+    to: '/coach',
+    Icon: CoachIcon,
+    isActive: (p) => p.startsWith('/coach'),
   },
 ]
 

@@ -40,7 +40,7 @@ test('guest mode is fully functional with the auth API entirely blocked', async 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('meal-subtotal-breakfast')).toContainText('kcal')
 
-  await page.getByTestId('tab-settings').click()
+  await page.getByTestId('avatar-link').click()
   await expect(page.getByTestId('account-sign-in-button')).toBeVisible()
   await expect(page.getByTestId('sync-status')).toContainText('Not signed in')
 })

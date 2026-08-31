@@ -29,22 +29,15 @@ export function TodayIcon({ active, className }: IconProps) {
   )
 }
 
-export function HistoryIcon({ active, className }: IconProps) {
+export function LogIcon({ active, className }: IconProps) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <rect
-        x="4"
-        y="5.5"
-        width="16"
-        height="14.5"
-        rx="2"
-        stroke="currentColor"
-        strokeWidth={STROKE}
-        fill={active ? 'currentColor' : 'none'}
-        fillOpacity={active ? 0.15 : 0}
-      />
-      <path d="M4 10h16" stroke="currentColor" strokeWidth={STROKE} />
-      <path d="M8 3.5v4M16 3.5v4" stroke="currentColor" strokeWidth={STROKE} strokeLinecap="round" />
+      <circle cx="5" cy="7" r="1.4" fill="currentColor" />
+      <path d="M9 7h10" stroke="currentColor" strokeWidth={STROKE} strokeLinecap="round" />
+      <circle cx="5" cy="12" r="1.4" fill="currentColor" />
+      <path d="M9 12h10" stroke="currentColor" strokeWidth={STROKE} strokeLinecap="round" />
+      <circle cx="5" cy="17" r="1.4" fill="currentColor" opacity={active ? 1 : 0.9} />
+      <path d="M9 17h7" stroke="currentColor" strokeWidth={STROKE} strokeLinecap="round" opacity={active ? 1 : 0.9} />
     </svg>
   )
 }
@@ -79,23 +72,24 @@ export function TrendsIcon({ active, className }: IconProps) {
   )
 }
 
-export function SettingsIcon({ active, className }: IconProps) {
+export function CoachIcon({ active, className }: IconProps) {
   return (
     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" className={className} aria-hidden="true">
-      <circle
-        cx="12"
-        cy="12"
-        r="3.2"
+      <path
+        d="M12 3.5c.5 3 2 4.5 5 5-3 .5-4.5 2-5 5-.5-3-2-4.5-5-5 3-.5 4.5-2 5-5Z"
         stroke="currentColor"
         strokeWidth={STROKE}
+        strokeLinecap="round"
+        strokeLinejoin="round"
         fill={active ? 'currentColor' : 'none'}
         fillOpacity={active ? 0.15 : 0}
       />
       <path
-        d="M12 3.5v2M12 18.5v2M20.5 12h-2M5.5 12h-2M17.7 6.3l-1.4 1.4M7.7 16.3l-1.4 1.4M17.7 17.7l-1.4-1.4M7.7 7.7 6.3 6.3"
+        d="M18.5 15.5c.3 1.6 1 2.3 2.5 2.5-1.5.2-2.2.9-2.5 2.5-.3-1.6-1-2.3-2.5-2.5 1.5-.2 2.2-.9 2.5-2.5Z"
         stroke="currentColor"
         strokeWidth={STROKE}
         strokeLinecap="round"
+        strokeLinejoin="round"
       />
     </svg>
   )

@@ -94,7 +94,7 @@ export default function HistoryPage() {
       <Link to="/" className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 dark:text-brand-400 underline">
         ← Back
       </Link>
-      <h1 className="mb-4 text-xl font-bold text-brand-700">History</h1>
+      <h1 className="mb-4 text-xl font-bold text-brand-700">Log</h1>
 
       <div className="rounded-xl bg-white dark:bg-surface-dark-card px-1 py-4 shadow-sm">
         <div className="mb-3 flex items-center justify-between px-2 text-sm">

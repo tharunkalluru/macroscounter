@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AddFoodPage from './app/AddFoodPage'
+import CoachPage from './app/CoachPage'
 import Dashboard from './app/Dashboard'
 import DayDetailPage from './app/DayDetailPage'
 import ErrorBoundary from './app/components/ErrorBoundary'
@@ -67,9 +68,11 @@ function App() {
               {/* Shell routes: header + bottom tab bar + FAB add-food sheet. */}
               <Route element={<AppShell />}>
                 <Route path="/" element={<Dashboard />} />
+                <Route path="/log" element={<HistoryPage />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/history/:date" element={<DayDetailPage />} />
                 <Route path="/trends" element={<TrendsPage />} />
+                <Route path="/coach" element={<CoachPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/weight" element={<WeightPage />} />
                 <Route path="/report" element={<Navigate to="/trends" replace />} />

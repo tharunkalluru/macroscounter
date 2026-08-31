@@ -6,13 +6,13 @@ async function onboard(page: Page) {
   await onboardHelper(page, { name: 'Shell Persona' })
 }
 
-test('bottom tab bar navigates across Today, History, Trends, Settings', async ({ page }) => {
+test('bottom tab bar navigates across Today, Log, Trends, Coach; Settings is reached from the avatar', async ({ page }) => {
   await onboard(page)
 
   await expect(page.getByTestId('bottom-tab-bar')).toBeVisible()
 
-  await page.getByTestId('tab-history').click()
-  await expect(page).toHaveURL('/history')
+  await page.getByTestId('tab-log').click()
+  await expect(page).toHaveURL('/log')
   await expect(page.getByTestId('calendar-grid')).toBeVisible()
 
   await page.getByTestId('tab-trends').click()
@@ -21,7 +21,11 @@ test('bottom tab bar navigates across Today, History, Trends, Settings', async (
     page.getByTestId('weight-chart').or(page.getByRole('heading', { name: 'Weight', exact: true }))
   ).toBeVisible()
 
-  await page.getByTestId('tab-settings').click()
+  await page.getByTestId('tab-coach').click()
+  await expect(page).toHaveURL('/coach')
+  await expect(page.getByTestId('coach-placeholder')).toBeVisible()
+
+  await page.getByTestId('avatar-link').click()
   await expect(page).toHaveURL('/settings')
 
   await page.getByTestId('tab-today').click()

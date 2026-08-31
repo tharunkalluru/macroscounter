@@ -82,7 +82,7 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
   await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 56 g')
 
   // The preference persists to Settings, still showing ft+in/lb.
-  await page.getByTestId('tab-settings').click()
+  await page.getByTestId('avatar-link').click()
   await expect(page.getByTestId('height-unit-ft_in')).toHaveAttribute('aria-checked', 'true')
   await expect(page.getByTestId('height-input-feet')).toHaveValue('5')
   await expect(page.getByTestId('height-input-inches')).toHaveValue('9')
