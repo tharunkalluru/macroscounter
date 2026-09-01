@@ -19,9 +19,7 @@ test('bottom tab bar navigates across Today, Log, Trends, Coach; Settings is rea
 
   await page.getByTestId('tab-trends').click()
   await expect(page).toHaveURL('/trends')
-  await expect(
-    page.getByTestId('weight-chart').or(page.getByRole('heading', { name: 'Weight', exact: true }))
-  ).toBeVisible()
+  await expect(page.getByTestId('trends-card-weight')).toBeVisible()
 
   await page.getByTestId('tab-coach').click()
   await expect(page).toHaveURL('/coach')

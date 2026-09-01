@@ -69,6 +69,24 @@ test('trends page has no WCAG A/AA violations', async ({ page }) => {
   await expectNoViolations(page)
 })
 
+test('trends expenditure page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/trends/expenditure')
+  await expectNoViolations(page)
+})
+
+test('trends habits page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/trends/habits')
+  await expectNoViolations(page)
+})
+
+test('trends weekly report page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/trends/report')
+  await expectNoViolations(page)
+})
+
 test('settings page has no WCAG A/AA violations', async ({ page }) => {
   await onboard(page)
   await page.goto('/settings')

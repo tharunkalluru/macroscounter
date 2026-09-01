@@ -27,6 +27,9 @@ import { ensureFoodDbSeeded } from './data/seed'
 // keeps the app under the <300KB gz initial-JS budget (see scripts/check-bundle.ts).
 const WeightPage = lazy(() => import('./app/WeightPage'))
 const TrendsPage = lazy(() => import('./app/TrendsPage'))
+const TrendsExpenditurePage = lazy(() => import('./app/TrendsExpenditurePage'))
+const TrendsHabitsPage = lazy(() => import('./app/TrendsHabitsPage'))
+const TrendsReportPage = lazy(() => import('./app/TrendsReportPage'))
 const ScanPage = lazy(() => import('./app/ScanPage'))
 const ScanProductPage = lazy(() => import('./app/ScanProductPage'))
 const ScanNotFoundPage = lazy(() => import('./app/ScanNotFoundPage'))
@@ -73,10 +76,13 @@ function App() {
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/history/:date" element={<DayDetailPage />} />
                 <Route path="/trends" element={<TrendsPage />} />
+                <Route path="/trends/expenditure" element={<TrendsExpenditurePage />} />
+                <Route path="/trends/habits" element={<TrendsHabitsPage />} />
+                <Route path="/trends/report" element={<TrendsReportPage />} />
                 <Route path="/coach" element={<CoachPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
                 <Route path="/weight" element={<WeightPage />} />
-                <Route path="/report" element={<Navigate to="/trends" replace />} />
+                <Route path="/report" element={<Navigate to="/trends/report" replace />} />
                 <Route path="/templates" element={<TemplatesPage />} />
                 <Route path="/export" element={<ExportPage />} />
               </Route>

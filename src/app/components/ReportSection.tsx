@@ -113,8 +113,8 @@ export default function ReportSection() {
                   <span
                     className={
                       comparison.kcalCloserToTarget
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-amber-600 dark:text-amber-400'
+                        ? 'text-success-600 dark:text-success-400'
+                        : 'text-warn-600 dark:text-warn-400'
                     }
                   >
                     {comparison.avgKcalDelta > 0 ? '▲' : '▼'}{' '}
@@ -132,8 +132,8 @@ export default function ReportSection() {
                   <span
                     className={
                       comparison.proteinHitRateDelta > 0
-                        ? 'text-emerald-600 dark:text-emerald-400'
-                        : 'text-amber-600 dark:text-amber-400'
+                        ? 'text-success-600 dark:text-success-400'
+                        : 'text-warn-600 dark:text-warn-400'
                     }
                   >
                     {comparison.proteinHitRateDelta > 0 ? '▲' : '▼'}{' '}

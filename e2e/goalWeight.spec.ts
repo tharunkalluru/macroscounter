@@ -23,13 +23,13 @@ async function seedWeighIns(page: Page, points: { date: string; weightKg: number
   }, points)
 }
 
-test('Trends is unchanged for a user who never sets a goal weight', async ({ page }) => {
+test('Weight tracking is unchanged for a user who never sets a goal weight', async ({ page }) => {
   await onboard(page)
-  await page.goto('/trends')
+  await page.goto('/weight')
   await expect(page.getByTestId('goal-weight-card')).not.toBeVisible()
 })
 
-test('setting a goal weight in Settings surfaces a projected ETA on Trends', async ({ page }) => {
+test('setting a goal weight in Settings surfaces a projected ETA on Weight tracking', async ({ page }) => {
   await onboard(page)
 
   await seedWeighIns(page, [
@@ -43,14 +43,11 @@ test('setting a goal weight in Settings surfaces a projected ETA on Trends', asy
   await page.getByRole('button', { name: 'Save & recalculate' }).click()
   await expect(page.getByText('Saved — targets recalculated.')).toBeVisible()
 
-  await page.goto('/trends')
+  await page.goto('/weight')
   const card = page.getByTestId('goal-weight-card')
   await expect(card).toBeVisible()
   await expect(card).toHaveAttribute('data-status', 'on-track')
   await expect(card).toContainText('60 kg')
-
-  await page.goto('/weight')
-  await expect(page.getByTestId('goal-weight-card')).toBeVisible()
 })
 
 test('clearing a previously-set goal weight removes the card', async ({ page }) => {
@@ -73,6 +70,6 @@ test('clearing a previously-set goal weight removes the card', async ({ page }) 
   await page.getByRole('button', { name: 'Save & recalculate' }).click()
   await expect(page.getByText('Saved — targets recalculated.')).toBeVisible()
 
-  await page.goto('/trends')
+  await page.goto('/weight')
   await expect(page.getByTestId('goal-weight-card')).not.toBeVisible()
 })

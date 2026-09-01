@@ -14,7 +14,7 @@ import { ProfileRepo } from '../../data/repos/ProfileRepo'
 import { WeighInRepo } from '../../data/repos/WeighInRepo'
 import { computeEMA } from '../../domain/history/ema'
 import { kgToLb } from '../../domain/units/weight'
-import { isFutureDate, todayISO } from '../../lib/date'
+import { addDaysISO, isFutureDate, todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
 import { neutral, semantic, surface, surfaceDark } from '../../theme/tokens'
 import { useTheme } from '../shell/ThemeContext'
@@ -28,12 +28,23 @@ const UNDO_MS = 5000
 const MIN_KG = 30
 const MAX_KG = 300
 
+const RANGES = [
+  { key: '1W', days: 7 },
+  { key: '1M', days: 30 },
+  { key: '3M', days: 90 },
+  { key: '6M', days: 180 },
+  { key: '1Y', days: 365 },
+  { key: 'All', days: null },
+] as const
+type RangeKey = (typeof RANGES)[number]['key']
+
 export default function WeightSection() {
   const { resolvedTheme } = useTheme()
   const isDark = resolvedTheme === 'dark'
   const gridStroke = isDark ? neutral[700] : neutral[200]
   const tickColor = isDark ? neutral[400] : neutral[500]
   const [weighIns, setWeighIns] = useState<WeighIn[]>([])
+  const [range, setRange] = useState<RangeKey>('3M')
   const [date, setDate] = useState(todayISO())
   const [weightKgInput, setWeightKgInput] = useState('')
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
@@ -63,8 +74,12 @@ export default function WeightSection() {
   }, [])
 
   const chartData = useMemo(() => {
+    const rangeDays = RANGES.find((r) => r.key === range)?.days ?? null
+    const cutoff = rangeDays !== null ? addDaysISO(todayISO(), -rangeDays) : null
+    const inRange = cutoff !== null ? weighIns.filter((w) => w.date >= cutoff) : weighIns
+
     const series = computeEMA(
-      weighIns.map((w) => ({ date: w.date, weightKg: w.weightKg })),
+      inRange.map((w) => ({ date: w.date, weightKg: w.weightKg })),
       7
     )
     return series.map((p) => ({
@@ -73,7 +88,7 @@ export default function WeightSection() {
       weightKg: weightUnit === 'lb' ? kgToLb(p.weightKg) : p.weightKg,
       ema: weightUnit === 'lb' ? kgToLb(p.ema) : p.ema,
     }))
-  }, [weighIns, weightUnit])
+  }, [weighIns, weightUnit, range])
 
   function formatWeight(kg: number): string {
     return weightUnit === 'lb' ? `${kgToLb(kg)} lb` : `${kg} kg`
@@ -156,9 +171,31 @@ export default function WeightSection() {
         </p>
       )}
 
+      {weighIns.length > 0 && (
+        <div className="mt-6 flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Chart range">
+          {RANGES.map((r) => (
+            <button
+              key={r.key}
+              type="button"
+              role="tab"
+              aria-selected={range === r.key}
+              onClick={() => setRange(r.key)}
+              data-testid={`weight-range-${r.key}`}
+              className={`min-h-touch flex-1 rounded-md text-caption font-medium ${
+                range === r.key
+                  ? 'bg-white text-brand-700 shadow-sm dark:bg-surface-dark-card dark:text-brand-400'
+                  : 'text-slate-500 dark:text-slate-400'
+              }`}
+            >
+              {r.key}
+            </button>
+          ))}
+        </div>
+      )}
+
       {chartData.length > 0 && (
         <div
-          className="mt-6 h-56 rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card"
+          className="mt-3 h-56 rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card"
           data-testid="weight-chart"
         >
           <ResponsiveContainer width="100%" height="100%">

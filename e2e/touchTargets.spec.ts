@@ -101,6 +101,24 @@ test.describe('touch-target audit (390x844, every visible interactive element >=
     await auditTouchTargets(page, 'trends')
   })
 
+  test('trends expenditure page', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/trends/expenditure')
+    await auditTouchTargets(page, 'trends expenditure')
+  })
+
+  test('trends habits page', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/trends/habits')
+    await auditTouchTargets(page, 'trends habits')
+  })
+
+  test('trends weekly report page', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/trends/report')
+    await auditTouchTargets(page, 'trends weekly report')
+  })
+
   test('settings page', async ({ page }) => {
     await onboard(page)
     await page.goto('/settings')

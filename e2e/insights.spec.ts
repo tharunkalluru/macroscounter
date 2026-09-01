@@ -33,13 +33,13 @@ test('Trends surfaces a top-meal insight once one meal dominates the log', async
     await seedDinnerHeavyDay(page, date)
   }
 
-  await page.goto('/trends')
+  await page.goto('/trends/report')
   await expect(page.getByTestId('insight-top-meal')).toContainText('Dinner')
 })
 
 test('Trends shows a placeholder before enough history exists for insights', async ({ page }) => {
   await onboard(page)
 
-  await page.goto('/trends')
+  await page.goto('/trends/report')
   await expect(page.getByText('Keep logging — patterns in how you eat will show up here.')).toBeVisible()
 })
