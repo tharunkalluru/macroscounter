@@ -37,6 +37,14 @@ test('add-food page has no WCAG A/AA violations', async ({ page }) => {
   await expectNoViolations(page)
 })
 
+test('add-food search results with favorite toggles have no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/log/add?meal=breakfast')
+  await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
+  await expect(page.getByTestId('search-results')).toBeVisible()
+  await expectNoViolations(page)
+})
+
 test('history/calendar page has no WCAG A/AA violations', async ({ page }) => {
   await onboard(page)
   await page.goto('/history')

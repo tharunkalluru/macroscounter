@@ -8,9 +8,10 @@ import { todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
 import { nameOf, per100gOf, portionsOf, type Selected } from '../foodSelection'
 import { useFoodIndex } from '../hooks/useFoodIndex'
+import FoodChipList from '../components/FoodChipList'
 import FoodGlyph from '../components/FoodGlyph'
 import PortionStep, { type PortionSaveData } from '../components/PortionStep'
-import { BarcodeIcon } from '../shell/icons'
+import { BarcodeIcon, HeartIcon } from '../shell/icons'
 
 interface Props {
   meal: Meal
@@ -56,6 +57,15 @@ export default function AddFoodSheetContent({
     if (!service || !query.trim()) return []
     return service.search(query, 20)
   }, [service, query])
+
+  function isFavorite(food: FoodRecord): boolean {
+    return favorites.some((f) => f.id === food.id)
+  }
+
+  async function handleToggleFavorite(food: FoodRecord) {
+    await new FoodRepo().setFavorite(food.id, !isFavorite(food))
+    setFavorites(await new FoodRepo().listFavorites())
+  }
 
   async function handleSave(selected: Selected, data: PortionSaveData) {
     await new LogRepo().addEntry({
@@ -128,14 +138,30 @@ export default function AddFoodSheetContent({
               data-testid="search-results"
             >
               {results.map((food) => (
-                <li key={food.id}>
+                <li key={food.id} className="flex items-center">
                   <button
                     type="button"
-                    className="flex min-h-touch w-full items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
+                    className="flex min-h-touch flex-1 items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
                     onClick={() => setSelected({ kind: 'food', food: food as FoodRecord })}
                   >
                     <FoodGlyph name={food.name} />
                     {food.name}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => handleToggleFavorite(food as FoodRecord)}
+                    aria-label={
+                      isFavorite(food as FoodRecord) ? `Remove ${food.name} from favorites` : `Add ${food.name} to favorites`
+                    }
+                    data-testid={`favorite-toggle-${food.id}`}
+                    className="flex min-h-touch min-w-touch items-center justify-center px-2"
+                  >
+                    <HeartIcon
+                      active={isFavorite(food as FoodRecord)}
+                      className={
+                        isFavorite(food as FoodRecord) ? 'text-brand-600 dark:text-brand-400' : 'text-slate-300 dark:text-slate-600'
+                      }
+                    />
                   </button>
                 </li>
               ))}
@@ -152,6 +178,8 @@ export default function AddFoodSheetContent({
                   title="Favorites"
                   foods={favorites}
                   onSelect={(food) => setSelected({ kind: 'food', food })}
+                  isFavorite={isFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                 />
               )}
               {recents.length > 0 && (
@@ -159,6 +187,8 @@ export default function AddFoodSheetContent({
                   title="Recents"
                   foods={recents}
                   onSelect={(food) => setSelected({ kind: 'food', food })}
+                  isFavorite={isFavorite}
+                  onToggleFavorite={handleToggleFavorite}
                 />
               )}
               <div>
@@ -217,37 +247,6 @@ export default function AddFoodSheetContent({
           </div>
         </div>
       )}
-    </div>
-  )
-}
-
-function FoodChipList({
-  title,
-  foods,
-  onSelect,
-}: {
-  title: string
-  foods: FoodRecord[]
-  onSelect: (food: FoodRecord) => void
-}) {
-  return (
-    <div>
-      <p className="mb-1 text-caption font-medium uppercase text-slate-500 dark:text-slate-400">
-        {title}
-      </p>
-      <div className="flex flex-wrap gap-2">
-        {foods.map((food) => (
-          <button
-            key={food.id}
-            type="button"
-            className="flex min-h-touch items-center gap-1.5 rounded-full bg-white py-1 pl-1 pr-3 text-sm shadow-sm dark:bg-surface-dark-card"
-            onClick={() => onSelect(food)}
-          >
-            <FoodGlyph name={food.name} size="small" />
-            {food.name}
-          </button>
-        ))}
-      </div>
     </div>
   )
 }

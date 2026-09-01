@@ -17,6 +17,19 @@ const MEAL_LABELS: Record<Meal, string> = {
 const BARCODE_FORMATS = ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128']
 const NO_DECODE_TIMEOUT_MS = 5000
 
+/**
+ * Label (nutrition-panel OCR) and Photo (AI food-photo recognition) need a
+ * vision-capable LLM API and new cost/rate-limit design — deliberately
+ * deferred (see the Phase R.2 redesign plan's "explicitly deferred" list),
+ * not silently dropped. Shown as disabled placeholders so the entry points
+ * exist in the IA already.
+ */
+const SCAN_MODES = [
+  { key: 'barcode', label: 'Barcode', available: true },
+  { key: 'label', label: 'Label', available: false },
+  { key: 'photo', label: 'Photo', available: false },
+] as const
+
 export default function ScanPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
@@ -140,7 +153,28 @@ export default function ScanPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <PageHeader title={`Scan barcode · ${MEAL_LABELS[meal]}`} backTo="/" />
+      <PageHeader title={`Scan · ${MEAL_LABELS[meal]}`} backTo="/" />
+
+      <div className="mt-1 flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Scan mode">
+        {SCAN_MODES.map((mode) => (
+          <button
+            key={mode.key}
+            type="button"
+            role="tab"
+            aria-selected={mode.key === 'barcode'}
+            disabled={!mode.available}
+            data-testid={`scan-mode-${mode.key}`}
+            className={`flex min-h-touch flex-1 items-center justify-center gap-1 rounded-md text-sm font-medium ${
+              mode.key === 'barcode'
+                ? 'bg-white text-brand-700 shadow-sm dark:bg-surface-dark-card dark:text-brand-400'
+                : 'text-slate-400 dark:text-slate-500'
+            }`}
+          >
+            {mode.label}
+            {!mode.available && <span className="text-caption">Soon</span>}
+          </button>
+        ))}
+      </div>
 
       <div className="relative mt-3 overflow-hidden rounded-xl bg-slate-900" data-testid="camera-preview">
         <video ref={videoRef} className="aspect-video w-full object-cover" muted playsInline />
