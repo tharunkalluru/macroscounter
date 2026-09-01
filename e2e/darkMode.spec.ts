@@ -73,3 +73,33 @@ test('add-food sheet has no WCAG A/AA violations in dark mode', async ({ page })
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
 })
+
+test('log tab has no WCAG A/AA violations in dark mode', async ({ page }) => {
+  await onboard(page)
+  await page.getByTestId('avatar-link').click()
+  await page.getByTestId('theme-option-dark').click()
+  await page.goto('/log')
+
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
+})
+
+test('trends hub has no WCAG A/AA violations in dark mode', async ({ page }) => {
+  await onboard(page)
+  await page.getByTestId('avatar-link').click()
+  await page.getByTestId('theme-option-dark').click()
+  await page.goto('/trends')
+
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
+})
+
+test('coach strategy hub has no WCAG A/AA violations in dark mode', async ({ page }) => {
+  await onboard(page)
+  await page.getByTestId('avatar-link').click()
+  await page.getByTestId('theme-option-dark').click()
+  await page.goto('/coach')
+
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
+})

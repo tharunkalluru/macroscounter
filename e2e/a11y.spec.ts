@@ -45,6 +45,20 @@ test('add-food search results with favorite toggles have no WCAG A/AA violations
   await expectNoViolations(page)
 })
 
+test('log tab (Meals view) has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/log')
+  await expectNoViolations(page)
+})
+
+test('log tab (Month view) has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/log')
+  await page.getByTestId('log-tab-month').click()
+  await expect(page.getByTestId('calendar-grid')).toBeVisible()
+  await expectNoViolations(page)
+})
+
 test('history/calendar page has no WCAG A/AA violations', async ({ page }) => {
   await onboard(page)
   await page.goto('/history')
@@ -54,6 +68,30 @@ test('history/calendar page has no WCAG A/AA violations', async ({ page }) => {
 test('weight page has no WCAG A/AA violations', async ({ page }) => {
   await onboard(page)
   await page.goto('/weight')
+  await expectNoViolations(page)
+})
+
+test('quick-add page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/log/quick-add?meal=breakfast')
+  await expectNoViolations(page)
+})
+
+test('recipe builder page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/recipes/new')
+  await expectNoViolations(page)
+})
+
+test('export page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/export')
+  await expectNoViolations(page)
+})
+
+test('new template page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/templates/new?meal=breakfast')
   await expectNoViolations(page)
 })
 

@@ -89,6 +89,20 @@ test.describe('touch-target audit (390x844, every visible interactive element >=
     await auditTouchTargets(page, 'add-food sheet')
   })
 
+  test('log tab (Meals view)', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/log')
+    await auditTouchTargets(page, 'log meals')
+  })
+
+  test('log tab (Month view)', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/log')
+    await page.getByTestId('log-tab-month').click()
+    await expect(page.getByTestId('calendar-grid')).toBeVisible()
+    await auditTouchTargets(page, 'log month')
+  })
+
   test('history/calendar page', async ({ page }) => {
     await onboard(page)
     await page.goto('/history')

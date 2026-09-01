@@ -1193,3 +1193,132 @@ every sub-phase was gated identically to Phases 0–10 before being shipped. Fiv
 - `lint && tsc --noEmit && check:tokens && test && build && test:e2e` all green after every
   sub-phase, rebuilding `dist/` before each E2E run (Playwright's `webServer` serves the static
   `vite preview` build, not the dev server — a stale `dist/` silently tests old code).
+
+## Nocturne redesign summary (R.0–R.8: PASS)
+
+A second, larger redesign — the user authored a complete 37-frame mockup in Claude Design
+("Nocturne": blurple accent, dark-first, hairline-outline elevation, three fixed macro colors)
+covering a new onboarding, a restructured tab bar, five logging entry points, a Trends hub, and a
+full Coach weekly-check-in system — and asked for it implemented against the live app (already in
+production with real users) without losing or disrupting anyone's data. Read against the codebase,
+a striking amount of the "new" system turned out to already exist server/logic-side under Phase
+9–11 names, just not surfaced as its own screen yet — `computeAdaptiveAdjustment`,
+`computeWeeklyReport`, `computeStreak`/`computeConsistency`, `weightProjection.ts`, and
+`domain/logging/suggestions.ts` all predate this redesign and needed no new math, only new UI. Nine
+phases (R.0–R.8), each gated identically to every phase before it, in order:
+
+- **R.0 — Design tokens**: `theme/tokens.ts` regenerated at Nocturne's blurple hue — new
+  `brand`/`macros`/`semantic`/`neutral`/`surface`/`surfaceDark` ramps — while deliberately keeping
+  the exact same per-rung WCAG contract the old palette had (rung 400 safe on dark surfaces, 500
+  safe on white *and* pixel-matches the source design's literal hex, 700 safe on white), since
+  ~50+ components reference specific rungs without knowing which palette is active. Verified via a
+  relative-luminance script against the exact backgrounds in use, not eyeballed. Tailwind's own
+  `slate` name is remapped to the new `neutral` ramp (`tailwind.config.ts`), which is why nearly
+  every already-existing screen picked up the new palette automatically with zero component
+  changes — confirmed later, in R.4's visual audit, that this propagation was in fact complete.
+- **R.1 — Navigation shell**: bottom tab bar goes from `[Today, History, +FAB, Trends, Settings]`
+  to `[Today, Log, +FAB, Trends, Coach]`; Settings drops off the bar entirely since Header's avatar
+  button already linked there since Phase 11. New `LogIcon`/`CoachIcon`; `HistoryIcon`/`SettingsIcon`
+  deleted as genuinely dead code rather than left as orphaned exports.
+- **R.2 — Onboarding, 6 → 14 steps**: date of birth (replacing a bare age field), a
+  tracking-history question, a skippable body-fat picker, a 3-question activity quiz that resolves
+  back onto the existing 5-value `ActivityLevel` enum via a small scoring function
+  (`resolveActivityLevel`), a goal-rate slider, a combined diet-style/protein-priority/calorie-floor
+  screen, and a "here's the math" BMR/TDEE reveal before the final target + a 7-day preview (7
+  identical rows — the app doesn't vary targets by day, so a fabricated ramp would have been
+  dishonest). `goalEngine.ts` gained two optional inputs — `goalRateLbPerWeek` (replaces the fixed
+  500/300 kcal deficit/surplus with `rate * 3500 / 7`) and `floorBufferKcal` (a "gentler cut" option
+  that can only raise the safety floor, never lower it) — both defaulting to the exact pre-R.2
+  constants when omitted, so every existing caller and all three hand-computed kcal fixtures stayed
+  byte-identical. 7 new nullable Profile columns, migrated the same additive way `goalWeightKg` was
+  in Phase 10.
+- **R.3 — Today as a flat list, Log tab gets Meals/Month**: the single largest behavior change in
+  the redesign, confirmed with the user before building it. Today now shows everything logged so
+  far as one flat, chronological-by-meal list instead of four `MealSection` blocks; meal grouping
+  didn't disappear, it moved to the new Log tab's Meals view (the exact same `MealSection`
+  component, relocated). Month is the existing calendar, extracted into a shared `MonthView` so
+  `/history` and `/log` both use it — `/history` keeps working unchanged as a legacy route. A
+  shared `EntryRow` component (tap to edit, swipe to delete) now backs both the flat list and
+  `MealSection` so they stay pixel-identical. A "Your usual?" suggestion row is now always visible
+  on Today for the active meal window, not just inside an empty per-meal section. Deferred: a
+  genuine Timeline (hour-by-hour) view — `LogEntry` has a day and a meal slot, not a logged-at
+  timestamp, and faking one would show plausible-looking but wrong data.
+- **R.4 — Logging engines + a real gap closed**: search, barcode scan, quick-add, and the recipe
+  builder needed almost no reskinning (R.0's `slate` remap already carried through). Two real gaps
+  found and fixed: favorites were readable but not writable anywhere (`FoodRecord.favorite` and
+  `FoodRepo.setFavorite` existed, no UI ever called it) — extracted the duplicated `FoodChipList`
+  into a shared component and added a heart-toggle to it and to search results; and
+  `TemplatesPage`'s empty state still said "save a meal from the Today view", stale since R.3.
+  Added disabled Barcode/Label/Photo mode tabs to the scan screen (Label/Photo need vision-model
+  infra, explicitly deferred, not hidden).
+- **R.5 — Trends hub**: `TrendsPage` becomes a 4-card landing hub instead of one long scrolling
+  page. Weight trend (already existed at `/weight`) gained 1W/1M/3M/6M/1Y/All range tabs that
+  filter the weigh-in window before recomputing the existing EMA. New `/trends/expenditure`
+  presents `computeAdaptiveAdjustment`'s `impliedTDEE` against the profile's formula TDEE side by
+  side. New `/trends/habits` adds a weigh-in-completion grid and a protein-hit-rate bar chart via a
+  small `computeHabitsWeek` aggregation, alongside the already-existing streak/consistency numbers.
+  New `/trends/report` is `ReportSection` + `InsightsSection` relocated as-is, with their
+  week-over-week indicator colors switched from generic Tailwind `emerald`/`amber` to the app's own
+  `semantic.success`/`warn` tokens.
+- **R.6 — Coach**: the plan's own "best reuse case" — a 4-step guided weekly check-in wizard
+  wrapped around the exact same `computeAdaptiveAdjustment` call and accept action the Today
+  quick-accept card already performs, extracted into shared `lib/adaptive/` functions so both
+  surfaces (the one-tap Today card and the full "show your work" wizard) never disagree. `CoachPage`
+  becomes a Strategy hub showing week number/diet style/past-programs count, derived from the
+  Targets timeline's existing `source`/`effectiveDate` fields (`deriveCurrentProgram`) rather than
+  a new schema. Goal-reached detection reuses `projectGoalWeight`'s existing `'at-goal'` status,
+  wired to fire the same `GoalCelebration` toast the app already uses for streak/protein
+  milestones. **Found and fixed a real, previously-undetected bug** while building this phase's own
+  test coverage: `findApplicableTarget` broke ties between two same-day targets in favor of
+  whichever came first in `TargetRepo.getAll()`'s array order — meaning a same-day accepted Coach
+  adjustment could silently revert to the day's original target on the next reload. It now prefers
+  the later entry (more recently created) on a tie.
+- **R.7 — Settings regrouped**: reorganized into You / The App / Your Data sections matching the
+  source design's IA, deliberately kept on one route rather than fragmented into sub-pages — ~13
+  existing E2E specs depend on `/settings` showing everything on one page as an incidental waypoint
+  for unrelated flows (onboarding persistence, auth, sync status), and that blast radius wasn't
+  justified for a screen the design itself doesn't require to be multi-route. Food log defaults is
+  real, not decorative: new Open Food Facts / USDA FoodData Central toggles actually gate
+  `lookupProduct`'s fallback chain. "IFCT" from the source design has no corresponding toggleable
+  concept in this codebase (the curated Indian food database isn't source-segmented) and was left
+  out rather than wired to something that wouldn't do what its label promises; "Larger numbers" and
+  "Reduce motion" were deferred for the same reason — wiring either to actually change rendering
+  means touching every consumption point across the app, disproportionate to a Settings pass, and a
+  toggle that visibly does nothing is worse than not having it.
+  Caught and fixed a real WCAG contrast bug of its own along the way: the new "Coming soon" caption
+  used `text-slate-400` against a light-mode white surface (2.15:1, needs 4.5:1) — a rung meant only
+  for dark surfaces per R.0's own documented contract. Fixed to `text-slate-500 dark:text-slate-400`,
+  the pattern every other secondary-text usage in the app already follows.
+- **R.8 — Full-suite polish**: extended the a11y suite and touch-target audit to every screen the
+  redesign touched that wasn't yet covered — both Log tab sub-views (Meals and Month), plus
+  Quick-add/Recipe-builder/Export/New-template, which had no coverage even before this redesign —
+  and added dark-mode axe scans for the three new hub screens (Log, Trends, Coach). Zero violations
+  found across all of it. `check:bundle` (not run as part of the gate in R.0–R.7, confirmed now)
+  passes comfortably. Wrote this summary.
+- **Explicitly deferred across the whole redesign, not silently dropped**: AI photo/text food
+  logging and nutrition-label OCR (need vision-LLM infra and new cost/rate-limit design — same call
+  made in Phase 11); real OS push notifications (no service-worker push subscription exists at all;
+  the in-app-banner pattern already used for `AdaptiveTargetPrompt`/`CopyYesterdayPrompt` covers the
+  same moments for now); the full micronutrient panel (needs food-DB content work, not code); "Delete
+  account & data" (a destructive, irreversible, cross-table operation gets its own careful pass,
+  not a placeholder button — the button exists and is honestly disabled); the system font staying
+  system-ui, not the source design's Inter (native-PWA load-time guarantee); icons staying
+  self-hosted SVG, not the source design's Phosphor-via-CDN (offline-first guarantee); Timeline
+  view and plate/ounce portion units (each a real, separate feature, not a reskin).
+- **Tests**: 445 unit tests (up from 344 at the end of Phase 11), 119 E2E specs across 26 files (up
+  from 76). New unit-tested domain modules: `activityQuiz`, `dateOfBirth`, `habitsWeek`, `program`,
+  plus new coverage on `goalEngine` (rate/floor-buffer), `targetForDate` (the tie-break fix), and
+  `lookupProduct` (per-source opt-out).
+- **Bundle**: 185.96 KB gz initial (budget 300 KB gz) — up from 176.96 KB at the end of Phase 11,
+  the new Trends/Coach screens all route-lazy-loaded like their predecessors.
+- `lint && tsc --noEmit && check:tokens && check:bundle && test && build && test:e2e` all green
+  after every phase, same rebuild-`dist`-before-`test:e2e` discipline as every phase before it. A
+  handful of individual E2E runs hit a pre-existing, session-documented flake (an "element outside
+  of viewport" symptom on the Add Food sheet's log button under host machine load) — every single
+  occurrence across all nine phases was independently re-run in isolation and passed, confirming
+  none of it was a real regression.
+- **Not verified — needs a production deploy**: R.8's own exit criteria calls for "a live
+  walkthrough against the real deployed site with the real Google account." All nine phases are
+  committed locally but not yet pushed as of this writing (the user has deferred pushing after each
+  phase to review the accumulated diff first) — the live walkthrough is outstanding until that push
+  happens.
