@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useState, type FormEvent, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
@@ -8,11 +8,13 @@ import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
 import type { ThemePreference } from '../domain/theme/resolveTheme'
 import { kgToLb, lbToKg } from '../domain/units/weight'
 import { todayISO } from '../lib/date'
+import { getFoodSourcePreferences, setFoodSourcePreference } from '../lib/settings/foodSourcePreferences'
 import AccountSection from './components/AccountSection'
 import HeightInput, { type HeightUnit } from './components/HeightInput'
 import SegmentedControl from './components/SegmentedControl'
 import SelectableCardGroup from './components/SelectableCardGroup'
 import SyncStatusDot from './components/SyncStatusDot'
+import ToggleSwitch from './components/ToggleSwitch'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
 import WeightInput, { type WeightUnit } from './components/WeightInput'
 import { useTheme } from './shell/ThemeContext'
@@ -57,6 +59,12 @@ export default function SettingsPage() {
   const [goalWeightInput, setGoalWeightInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
+  const [foodSources, setFoodSources] = useState(getFoodSourcePreferences)
+
+  function handleToggleFoodSource(source: 'off' | 'fdc', enabled: boolean) {
+    setFoodSourcePreference(source, enabled)
+    setFoodSources((prev) => ({ ...prev, [source]: enabled }))
+  }
 
   useEffect(() => {
     ;(async () => {
@@ -173,20 +181,10 @@ export default function SettingsPage() {
       <Link to="/" className="mb-4 inline-flex min-h-touch items-center text-sm text-brand-700 underline dark:text-brand-400">
         ← Back
       </Link>
-      <h1 className="mb-2 text-2xl font-bold text-brand-700 dark:text-brand-400">
-        Profile & Targets
-      </h1>
-      <SyncStatusDot />
+      <h1 className="mb-6 text-2xl font-bold text-brand-700 dark:text-brand-400">Settings</h1>
 
-      <div className="mt-4">
-        <AccountSection />
-      </div>
-
-      <div className="mt-6">
-        <ThemeToggle />
-      </div>
-
-      <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+      <SettingsGroup title="You">
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Name</span>
           <input className={TEXT_INPUT_CLASS} value={name} onChange={(e) => setName(e.target.value)} />
@@ -288,22 +286,76 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
+      </SettingsGroup>
 
-      <div className="mt-8 flex flex-col gap-1 border-t border-slate-200 pt-6 dark:border-slate-700">
-        <h2 className="mb-2 text-sm font-medium text-slate-500 dark:text-slate-400">More</h2>
-        <Link
-          to="/templates"
-          className="min-h-touch inline-flex items-center text-brand-700 underline dark:text-brand-400"
-        >
-          Meal templates
-        </Link>
-        <Link
-          to="/export"
-          className="min-h-touch inline-flex items-center text-brand-700 underline dark:text-brand-400"
-        >
-          Export data
-        </Link>
-      </div>
+      <SettingsGroup title="The App">
+        <ThemeToggle />
+
+        <div className="mt-6 flex flex-col gap-1">
+          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Food log defaults</span>
+          <span className="mb-2 text-caption text-slate-500 dark:text-slate-400">
+            Which sources a barcode scan is allowed to look up.
+          </span>
+          <ToggleSwitch
+            label="Open Food Facts"
+            checked={foodSources.off}
+            onChange={(enabled) => handleToggleFoodSource('off', enabled)}
+            testId="food-source-off"
+          />
+          <ToggleSwitch
+            label="USDA FoodData Central"
+            checked={foodSources.fdc}
+            onChange={(enabled) => handleToggleFoodSource('fdc', enabled)}
+            testId="food-source-fdc"
+          />
+        </div>
+      </SettingsGroup>
+
+      <SettingsGroup title="Your Data">
+        <SyncStatusDot />
+        <div className="mt-4">
+          <AccountSection />
+        </div>
+
+        <div className="mt-6 flex flex-col gap-1">
+          <Link
+            to="/templates"
+            className="min-h-touch inline-flex items-center text-brand-700 underline dark:text-brand-400"
+          >
+            Meal templates
+          </Link>
+          <Link
+            to="/export"
+            className="min-h-touch inline-flex items-center text-brand-700 underline dark:text-brand-400"
+          >
+            Export data
+          </Link>
+        </div>
+
+        <div className="mt-6 border-t border-slate-200 pt-4 dark:border-slate-700">
+          <button
+            type="button"
+            disabled
+            data-testid="delete-account-button"
+            className="min-h-touch text-sm font-medium text-slate-500 dark:text-slate-400"
+            aria-disabled="true"
+          >
+            Delete account & data
+          </button>
+          <p className="mt-1 text-caption text-slate-500 dark:text-slate-400">Coming soon.</p>
+        </div>
+      </SettingsGroup>
     </div>
+  )
+}
+
+function SettingsGroup({ title, children }: { title: string; children: ReactNode }) {
+  return (
+    <section className="mt-8 border-t border-slate-200 pt-6 first:mt-0 first:border-t-0 first:pt-0 dark:border-slate-700">
+      <h2 className="mb-4 text-caption font-semibold uppercase tracking-wide text-slate-500 dark:text-slate-400">
+        {title}
+      </h2>
+      {children}
+    </section>
   )
 }

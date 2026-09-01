@@ -20,6 +20,8 @@ export interface LookupDeps {
   scannedProductRepo: ScannedProductRepo
   fetchImpl?: typeof fetch
   fdcApiKey?: string
+  /** Per-source opt-out (Settings > Food log defaults) — both default to enabled. */
+  sourcesEnabled?: { off?: boolean; fdc?: boolean }
 }
 
 function toScannedProduct(parsed: ParsedProduct): ScannedProduct {
@@ -49,22 +51,26 @@ export async function lookupProduct(barcode: string, deps: LookupDeps): Promise<
   if (cached) return { product: cached, source: 'cache' }
 
   const fetchImpl = deps.fetchImpl ?? fetch
+  const offEnabled = deps.sourcesEnabled?.off ?? true
+  const fdcEnabled = deps.sourcesEnabled?.fdc ?? true
 
-  try {
-    const offRes = await fetchImpl(OFF_URL(barcode))
-    if (offRes.ok) {
-      const parsed = parseOFFResponse(barcode, await offRes.json())
-      if (parsed) {
-        const product = toScannedProduct(parsed)
-        await deps.scannedProductRepo.put(product)
-        return { product, source: 'off' }
+  if (offEnabled) {
+    try {
+      const offRes = await fetchImpl(OFF_URL(barcode))
+      if (offRes.ok) {
+        const parsed = parseOFFResponse(barcode, await offRes.json())
+        if (parsed) {
+          const product = toScannedProduct(parsed)
+          await deps.scannedProductRepo.put(product)
+          return { product, source: 'off' }
+        }
       }
+    } catch {
+      // Network or OFF failure: fall through to FDC / not-found.
     }
-  } catch {
-    // Network or OFF failure: fall through to FDC / not-found.
   }
 
-  if (deps.fdcApiKey) {
+  if (fdcEnabled && deps.fdcApiKey) {
     try {
       const fdcRes = await fetchImpl(FDC_URL(barcode, deps.fdcApiKey))
       if (fdcRes.ok) {

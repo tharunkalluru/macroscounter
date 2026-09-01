@@ -9,6 +9,7 @@ import { parseServingSize } from '../domain/barcode/servingSizeParser'
 import { activeMealWindow } from '../domain/mealPrompt/activeMealWindow'
 import { todayISO } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
+import { getFoodSourcePreferences } from '../lib/settings/foodSourcePreferences'
 import PageHeader from './components/PageHeader'
 import PortionStep, { type PortionSaveData } from './components/PortionStep'
 import SegmentedControl from './components/SegmentedControl'
@@ -64,6 +65,7 @@ export default function ScanProductPage() {
       const result = await lookupProduct(barcode, {
         scannedProductRepo: new ScannedProductRepo(),
         fdcApiKey: import.meta.env.VITE_FDC_API_KEY || undefined,
+        sourcesEnabled: getFoodSourcePreferences(),
       })
       if (cancelled) return
       if (result.product) {

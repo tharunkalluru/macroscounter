@@ -130,6 +130,48 @@ describe('lookupProduct — chain order', () => {
   })
 })
 
+describe('lookupProduct — per-source opt-out (Settings > Food log defaults)', () => {
+  it('skips OFF entirely when disabled, going straight to FDC', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(fdcBranded))
+    const result = await lookupProduct('0012345678905', {
+      scannedProductRepo: repo,
+      fetchImpl,
+      fdcApiKey: 'test-key',
+      sourcesEnabled: { off: false, fdc: true },
+    })
+
+    expect(result.source).toBe('fdc')
+    expect(fetchImpl).toHaveBeenCalledTimes(1)
+    expect(fetchImpl.mock.calls[0][0]).toContain('api.nal.usda.gov')
+  })
+
+  it('skips FDC entirely when disabled, even with an API key configured', async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(offNotFound))
+    const result = await lookupProduct('0000000000000', {
+      scannedProductRepo: repo,
+      fetchImpl,
+      fdcApiKey: 'test-key',
+      sourcesEnabled: { off: true, fdc: false },
+    })
+
+    expect(result.source).toBe('not-found')
+    expect(fetchImpl).toHaveBeenCalledTimes(1) // OFF only, FDC never attempted
+  })
+
+  it('disabling both sources returns not-found without any network call', async () => {
+    const fetchImpl = vi.fn()
+    const result = await lookupProduct('0000000000000', {
+      scannedProductRepo: repo,
+      fetchImpl,
+      fdcApiKey: 'test-key',
+      sourcesEnabled: { off: false, fdc: false },
+    })
+
+    expect(result.source).toBe('not-found')
+    expect(fetchImpl).not.toHaveBeenCalled()
+  })
+})
+
 describe('lookupProduct — not-found -> manual save -> second scan hits cache offline', () => {
   it('a manually saved product is found offline on the next scan without any network call', async () => {
     const fetchImpl = vi.fn().mockResolvedValue(jsonResponse(offNotFound))
