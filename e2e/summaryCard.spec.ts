@@ -9,6 +9,7 @@ async function onboard(page: Page) {
 // Fixture persona: kcal target 1628 (see goalEngine.test.ts).
 test('over-budget: logging past the target turns the ring amber and shows "+n over"', async ({ page }) => {
   await onboard(page)
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
 
   await page.getByTestId('add-lunch').click()
   await page.getByTestId('sheet-custom-button').click()
@@ -27,6 +28,7 @@ test('over-budget: logging past the target turns the ring amber and shows "+n ov
 
 test('under target: the ring stays brand-colored and shows plain remaining kcal', async ({ page }) => {
   await onboard(page)
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
 
   await page.getByTestId('add-lunch').click()
   await page.getByTestId('sheet-custom-button').click()
@@ -45,7 +47,7 @@ test('under target: the ring stays brand-colored and shows plain remaining kcal'
 test('tapping a macro bar opens the per-meal breakdown sheet with correct totals', async ({ page }) => {
   await onboard(page)
 
-  await page.getByTestId('add-breakfast').click()
+  await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
   await page.getByTestId('log-entry-button').click()

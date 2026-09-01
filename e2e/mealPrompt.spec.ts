@@ -57,7 +57,7 @@ test('opening the app at 08:00 with an empty breakfast shows the prompt, with a 
   await chip.click()
 
   await expect(page.getByTestId('meal-prompt-sheet')).not.toBeVisible()
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('82 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('82')
 })
 
 test('"Not now" dismisses the prompt and it does not reappear for that window today', async ({ page }) => {
@@ -71,7 +71,7 @@ test('"Not now" dismisses the prompt and it does not reappear for that window to
   await page.reload()
   await expect(page.getByTestId('meal-prompt-sheet')).not.toBeVisible()
   // Breakfast is still genuinely empty — this isn't "no prompt because logged".
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('0 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('0')
 })
 
 test('the Search button opens the add-food sheet for the prompted meal and closes the prompt', async ({ page }) => {
@@ -88,7 +88,7 @@ test('the Search button opens the add-food sheet for the prompted meal and close
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
   await page.getByTestId('log-entry-button').click()
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('41 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('41')
 })
 
 test('no prompt appears during the 00:00-4:59 dead zone', async ({ page }) => {
@@ -103,11 +103,11 @@ test('logging breakfast normally means no prompt shows on the next app open', as
   await onboard(page)
 
   await page.getByTestId('meal-prompt-not-now-button').click()
-  await page.getByTestId('add-breakfast').click()
+  await page.getByTestId('fab-scan').click() // 08:00 fixed clock -> defaults to breakfast
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
   await page.getByTestId('log-entry-button').click()
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('41 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('41')
 
   await page.reload()
   await expect(page.getByTestId('meal-prompt-sheet')).not.toBeVisible()

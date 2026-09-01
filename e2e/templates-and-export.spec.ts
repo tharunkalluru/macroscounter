@@ -9,6 +9,7 @@ async function onboard(page: Page) {
 
 test('save a meal as a template, then one-tap log it the next day with correct totals', async ({ page }) => {
   await onboard(page) // pins the clock to 2026-08-18T02:00 (see onboard())
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
 
   // Log 3 idli for breakfast (120g -> 123 kcal, matches the applyTemplate fixture).
   await page.getByTestId('add-breakfast').click()
@@ -29,18 +30,19 @@ test('save a meal as a template, then one-tap log it the next day with correct t
   // Advance to the next day — a fresh, empty log.
   await page.clock.setFixedTime(new Date('2026-08-19T02:00:00'))
   await page.goto('/')
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('0 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('0')
 
   // One-tap log the template (defaults to Breakfast).
   await page.goto('/templates')
   await page.getByRole('button', { name: 'Log now' }).click()
 
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('123 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('123')
 })
 
 test('CSV export downloads parseable files with the correct row counts', async ({ page }) => {
   await onboard(page)
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
 
   await page.getByTestId('add-breakfast').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')

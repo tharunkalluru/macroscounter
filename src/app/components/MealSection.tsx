@@ -1,11 +1,10 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { AnimatePresence } from 'framer-motion'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LogEntry, Meal, MealTemplate } from '../../data/models'
 import { FoodRepo } from '../../data/repos/FoodRepo'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { buildCopiedEntries } from '../../domain/logging/copyEntries'
-import { formatPortion } from '../../domain/logging/formatPortion'
 import { computeMealSuggestions, type SuggestionChip } from '../../domain/logging/suggestions'
 import { applyTemplate } from '../../domain/templates/applyTemplate'
 import { addDaysISO, todayISO } from '../../lib/date'
@@ -13,10 +12,9 @@ import { vibrateTiny } from '../../lib/haptics'
 import { logSuggestionChip } from '../../lib/logging/logSuggestionChip'
 import { useCountUp } from '../hooks/useCountUp'
 import { useUIState } from '../shell/UIStateContext'
-import FoodGlyph from './FoodGlyph'
+import EntryRow from './EntryRow'
 import MealOverflowSheet from './MealOverflowSheet'
 import Snackbar from './Snackbar'
-import SwipeToDeleteRow from './SwipeToDeleteRow'
 
 interface Props {
   meal: Meal
@@ -47,7 +45,6 @@ export default function MealSection({
   historyEntries,
 }: Props) {
   const navigate = useNavigate()
-  const prefersReducedMotion = useReducedMotion()
   const { openAddFoodSheet, notifyDataChanged } = useUIState()
   const [overflowOpen, setOverflowOpen] = useState(false)
   const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
@@ -186,42 +183,7 @@ export default function MealSection({
 
         <AnimatePresence initial={false}>
           {entries.map((entry) => (
-            <motion.div
-              key={entry.id}
-              layout={!prefersReducedMotion}
-              initial={prefersReducedMotion ? false : { opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: 'auto' }}
-              exit={prefersReducedMotion ? { opacity: 0 } : { opacity: 0, height: 0 }}
-              transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
-            >
-              <SwipeToDeleteRow onDelete={() => handleSwipeDelete(entry)} deleteLabel="Delete">
-                <button
-                  type="button"
-                  onClick={() => handleRowTap(entry)}
-                  aria-label={`Edit ${entry.name}`}
-                  data-testid={`entry-row-${entry.id}`}
-                  className="flex min-h-touch w-full items-center gap-3 px-3 py-2 text-left dark:bg-surface-dark-card"
-                >
-                  <FoodGlyph name={entry.name} size="small" />
-                  <div className="min-w-0 flex-1">
-                    <p className="truncate text-body font-medium text-slate-800 dark:text-slate-100">
-                      {entry.name}
-                    </p>
-                    <p className="text-caption text-slate-500 dark:text-slate-400">
-                      {formatPortion({
-                        qty: entry.qty,
-                        unit: entry.unit,
-                        grams: entry.grams,
-                        portionLabel: entry.portionLabel,
-                        isCustom: !!entry.customSnapshot,
-                      })}
-                      {' · '}
-                      {Math.round(entry.kcal)} kcal
-                    </p>
-                  </div>
-                </button>
-              </SwipeToDeleteRow>
-            </motion.div>
+            <EntryRow key={entry.id} entry={entry} onTap={handleRowTap} onSwipeDelete={handleSwipeDelete} />
           ))}
         </AnimatePresence>
       </div>

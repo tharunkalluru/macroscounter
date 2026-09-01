@@ -22,7 +22,7 @@ test('manual barcode entry finds a product via Open Food Facts and logs it', asy
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(amulButter) })
   )
 
-  await page.getByTestId('add-breakfast').click()
+  await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await page.getByTestId('sheet-scan-button').click()
   await expect(page).toHaveURL(/\/scan\?meal=breakfast/)
 
@@ -35,7 +35,7 @@ test('manual barcode entry finds a product via Open Food Facts and logs it', asy
 
   await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('72 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('72')
 })
 
 test('not-found flow: manual save persists the product, then a second scan hits cache offline', async ({
@@ -43,6 +43,7 @@ test('not-found flow: manual save persists the product, then a second scan hits 
   context,
 }) => {
   await onboard(page)
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
 
   let offCallCount = 0
   await page.route('**/api/v2/product/9999999999999.json', (route) => {
@@ -74,6 +75,7 @@ test('not-found flow: manual save persists the product, then a second scan hits 
 
   // Second scan of the same barcode, fully offline: cache hit, no network needed.
   await context.setOffline(true)
+  await page.getByTestId('tab-log').click() // client-side nav, avoids a full page.goto while offline
   await page.getByTestId('add-dinner').click()
   await page.getByTestId('sheet-scan-button').click()
   await page.getByPlaceholder('Enter barcode number').fill('9999999999999')

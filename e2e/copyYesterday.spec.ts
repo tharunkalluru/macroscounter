@@ -81,8 +81,7 @@ test('an empty today with a logged yesterday offers a one-tap whole-day copy', a
   await page.getByTestId('copy-yesterday-confirm').click()
 
   await expect(prompt).not.toBeVisible()
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('123 kcal')
-  await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('82 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('205')
 })
 
 test('no prompt appears when yesterday has nothing to copy', async ({ page }) => {
@@ -113,7 +112,7 @@ test('dismiss hides the prompt without copying anything', async ({ page }) => {
   await expect(page.getByTestId('copy-yesterday-prompt')).toBeVisible()
   await page.getByTestId('copy-yesterday-dismiss').click()
   await expect(page.getByTestId('copy-yesterday-prompt')).not.toBeVisible()
-  await expect(page.getByTestId('meal-subtotal-lunch')).toHaveText('0 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('0')
 })
 
 test('the prompt does not appear once something has been logged today', async ({ page }) => {

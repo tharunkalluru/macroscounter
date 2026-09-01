@@ -1,10 +1,9 @@
-import PageHeader from './components/PageHeader'
 import { CoachIcon } from './shell/icons'
 
 export default function CoachPage() {
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <PageHeader title="Coach" backTo="/" />
+      <h1 className="sr-only">Coach</h1>
       <div
         className="flex items-start gap-3 rounded-xl bg-white p-4 shadow-sm dark:bg-surface-dark-card"
         data-testid="coach-placeholder"

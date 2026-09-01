@@ -125,14 +125,14 @@ test('log offline, go online, entries appear from a fresh (cleared-IndexedDB) se
   await signIn(page, TEST_USER_ID)
   await context.setOffline(true)
 
-  await page.getByTestId('add-breakfast').click()
+  await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await expect(page.getByTestId('bottom-sheet')).toBeVisible()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
   await page.getByTestId('portion-grams-input').fill('120')
   await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('123 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('123')
 
   // Instant local write, unaffected by the network being down. Logging
   // bumps `dataVersion`, which triggers SyncTriggers' opportunistic sync

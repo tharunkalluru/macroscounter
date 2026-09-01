@@ -27,7 +27,7 @@ test('the product card shows brand, image, and per-100g summary, prefilled with 
     route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(multipackBiscuits) })
   )
 
-  await page.getByTestId('add-lunch').click()
+  await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await page.getByTestId('sheet-scan-button').click()
   await page.getByPlaceholder('Enter barcode number').fill('8901030811234')
   await page.getByRole('button', { name: 'Look up' }).click()
@@ -50,5 +50,5 @@ test('the product card shows brand, image, and per-100g summary, prefilled with 
 
   await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('meal-subtotal-lunch')).not.toHaveText('0 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).not.toHaveText('0')
 })

@@ -16,12 +16,12 @@ test('guest mode is fully functional with the auth API entirely blocked', async 
 
   await onboard(page, { name: 'Blocked Auth Persona' })
 
-  await page.getByTestId('add-breakfast').click()
+  await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
   await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('meal-subtotal-breakfast')).toContainText('kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).not.toHaveText('0')
 
   await page.getByTestId('avatar-link').click()
   await expect(page.getByTestId('account-sign-in-button')).toBeVisible()

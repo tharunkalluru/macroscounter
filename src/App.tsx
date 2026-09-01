@@ -7,6 +7,7 @@ import DayDetailPage from './app/DayDetailPage'
 import ErrorBoundary from './app/components/ErrorBoundary'
 import ExportPage from './app/ExportPage'
 import HistoryPage from './app/HistoryPage'
+import LogPage from './app/LogPage'
 import OnboardingFlow from './app/OnboardingFlow'
 import QuickAddPage from './app/QuickAddPage'
 import RecipeBuilderPage from './app/RecipeBuilderPage'
@@ -68,7 +69,7 @@ function App() {
               {/* Shell routes: header + bottom tab bar + FAB add-food sheet. */}
               <Route element={<AppShell />}>
                 <Route path="/" element={<Dashboard />} />
-                <Route path="/log" element={<HistoryPage />} />
+                <Route path="/log" element={<LogPage />} />
                 <Route path="/history" element={<HistoryPage />} />
                 <Route path="/history/:date" element={<DayDetailPage />} />
                 <Route path="/trends" element={<TrendsPage />} />

@@ -46,7 +46,7 @@ test('full journey: onboard, search idli, log 3 idli + sambar for breakfast, rin
 }) => {
   await onboard(page)
 
-  await page.getByTestId('add-breakfast').click()
+  await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await expect(page.getByTestId('bottom-sheet')).toBeVisible()
 
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
@@ -61,7 +61,7 @@ test('full journey: onboard, search idli, log 3 idli + sambar for breakfast, rin
   await expect(page.getByTestId('kcal-remaining')).toHaveText('1505') // 1628 - 123
   await expect(page.getByTestId('protein-bar-value')).toHaveText('5 / 126 g')
 
-  await page.getByTestId('add-breakfast').click()
+  await page.getByTestId('fab-scan').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('sambhar')
   await page.getByTestId('search-results').getByRole('button', { name: 'Sambar', exact: true }).click()
   // Sambar's typical portion is already 1 katori = 150g, matching the fixture exactly.
@@ -73,11 +73,15 @@ test('full journey: onboard, search idli, log 3 idli + sambar for breakfast, rin
   await expect(page.getByTestId('protein-bar-value')).toHaveText('10 / 126 g')
   await expect(page.getByTestId('carbs-bar-value')).toHaveText('36 / 171 g')
   await expect(page.getByTestId('fat-bar-value')).toHaveText('4 / 49 g')
+
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
   await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('216 kcal')
 
   await page.reload()
-  await expect(page.getByTestId('kcal-remaining')).toHaveText('1412')
   await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('216 kcal')
+
+  await page.goto('/')
+  await expect(page.getByTestId('kcal-remaining')).toHaveText('1412')
 })
 
 test('offline logging: once seeded, adding a food entry works entirely without network', async ({
@@ -88,13 +92,13 @@ test('offline logging: once seeded, adding a food entry works entirely without n
 
   await context.setOffline(true)
 
-  await page.getByTestId('add-lunch').click()
+  await page.getByTestId('fab-scan').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('chicken curry')
   await page.getByTestId('search-results').getByRole('button', { name: 'Chicken Curry', exact: true }).click()
   await page.getByTestId('log-entry-button').click()
 
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('meal-subtotal-lunch')).not.toHaveText('0 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).not.toHaveText('0')
 
   await context.setOffline(false)
 })
@@ -102,19 +106,19 @@ test('offline logging: once seeded, adding a food entry works entirely without n
 test('editing quantity and deleting an entry update the day totals', async ({ page }) => {
   await onboard(page)
 
-  await page.getByTestId('add-dinner').click()
+  await page.getByTestId('fab-scan').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
   // Idli's typical portion (40g) is already the pre-filled default.
   await page.getByTestId('log-entry-button').click()
 
-  await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('41 kcal') // 1 idli (40g), 102.5*0.4=41
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('41') // 1 idli (40g), 102.5*0.4=41
 
   await page.getByRole('button', { name: 'Edit Idli' }).click()
   await page.getByTestId('portion-grams-input').fill('80')
   await page.getByTestId('log-entry-button').click()
-  await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('82 kcal') // 2 idli (80g), 102.5*0.8=82
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('82') // 2 idli (80g), 102.5*0.8=82
 
   await swipeToDelete(page, page.getByRole('button', { name: 'Edit Idli' }))
-  await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('0 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('0')
 })

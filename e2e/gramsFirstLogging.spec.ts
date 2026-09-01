@@ -11,7 +11,7 @@ test('selecting a food pre-fills grams from its typical portion, auto-focused wi
 }) => {
   await onboard(page)
 
-  await page.getByTestId('add-breakfast').click()
+  await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
 
@@ -28,7 +28,7 @@ test('search-to-logged in 2 taps + typing grams (select, then log) — no househ
   await onboard(page)
 
   // Tap 1: select the food.
-  await page.getByTestId('add-lunch').click()
+  await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('chicken curry')
   await page.getByTestId('search-results').getByRole('button', { name: 'Chicken Curry', exact: true }).click()
 
@@ -41,7 +41,7 @@ test('search-to-logged in 2 taps + typing grams (select, then log) — no househ
   await page.getByTestId('log-entry-button').click()
 
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('meal-subtotal-lunch')).toHaveText('322 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('322')
 })
 
 test('a household-unit reference chip fills the field as grams, and the log button previews the live result', async ({
@@ -49,7 +49,7 @@ test('a household-unit reference chip fills the field as grams, and the log butt
 }) => {
   await onboard(page)
 
-  await page.getByTestId('add-dinner').click()
+  await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
 
@@ -65,7 +65,7 @@ test('a household-unit reference chip fills the field as grams, and the log butt
 
   // Tap: log it — 3rd tap total (select, chip, log).
   await page.getByTestId('log-entry-button').click()
-  await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('103 kcal')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('103')
 
   // The logged row itself shows grams, not a household-unit label — Phase
   // 10.4's "household units become gram shortcuts, never the stored unit."

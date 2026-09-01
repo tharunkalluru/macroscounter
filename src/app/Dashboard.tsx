@@ -1,7 +1,7 @@
 import { motion, useReducedMotion, type PanInfo } from 'framer-motion'
 import { useCallback, useEffect, useState } from 'react'
 import { Navigate, useSearchParams } from 'react-router-dom'
-import type { LogEntry, Meal, Targets } from '../data/models'
+import type { LogEntry, Targets } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
@@ -20,7 +20,7 @@ import GoalCelebration from './components/GoalCelebration'
 import MacroBar from './components/MacroBar'
 import MacroBreakdownSheet from './components/MacroBreakdownSheet'
 import MealPromptSheet from './components/MealPromptSheet'
-import MealSection from './components/MealSection'
+import TodayEntryList from './components/TodayEntryList'
 import { useMealPrompt } from './hooks/useMealPrompt'
 import { useUIState } from './shell/UIStateContext'
 
@@ -31,13 +31,6 @@ const MACRO_DEFS = {
 }
 
 type LoadState = 'loading' | 'ready' | 'no-profile' | 'welcome'
-
-const MEALS: { key: Meal; label: string }[] = [
-  { key: 'breakfast', label: 'Breakfast' },
-  { key: 'lunch', label: 'Lunch' },
-  { key: 'snacks', label: 'Snacks' },
-  { key: 'dinner', label: 'Dinner' },
-]
 
 const SWIPE_THRESHOLD_PX = 60
 
@@ -226,17 +219,14 @@ export default function Dashboard() {
         )}
         {isToday && <MealPromptSheet {...mealPrompt} onLogged={notifyDataChanged} />}
 
-        {MEALS.map(({ key, label }) => (
-          <MealSection
-            key={key}
-            meal={key}
-            label={label}
-            entries={entries.filter((e) => e.meal === key)}
-            onDelete={handleDelete}
-            date={isToday ? undefined : date}
-            historyEntries={historyEntries}
-          />
-        ))}
+        <TodayEntryList
+          entries={entries}
+          historyEntries={historyEntries}
+          date={date}
+          isToday={isToday}
+          onDelete={handleDelete}
+          onLogged={notifyDataChanged}
+        />
       </motion.div>
 
       <MacroBreakdownSheet

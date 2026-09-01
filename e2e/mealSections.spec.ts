@@ -96,6 +96,7 @@ test('legacy portion-unit entries still render in household units, never a raw m
 
 test('the overflow menu is present and opens on all four meal cards', async ({ page }) => {
   await onboard(page)
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
 
   for (const meal of ['breakfast', 'lunch', 'snacks', 'dinner']) {
     await page.getByTestId(`meal-overflow-${meal}`).click()
@@ -110,6 +111,7 @@ test('the overflow menu is present and opens on all four meal cards', async ({ p
 
 test('swipe-delete shows an undo snackbar that restores the entry and totals', async ({ page }) => {
   await onboard(page)
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
 
   await page.getByTestId('add-dinner').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
@@ -146,6 +148,7 @@ test('copy from yesterday clones the previous day\'s entries for that meal into 
   })
 
   await page.reload()
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
   await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('0 kcal')
 
   await page.getByTestId('meal-overflow-dinner').click()
@@ -177,6 +180,7 @@ test('an empty meal with a repeated history shows a one-tap "your usual" suggest
   }
 
   await page.reload()
+  await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
   const chip = page.getByTestId('suggestion-chip-dinner')
   await expect(chip).toBeVisible()
   await expect(chip).toContainText('Idli')

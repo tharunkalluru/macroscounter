@@ -13,6 +13,8 @@ test('bottom tab bar navigates across Today, Log, Trends, Coach; Settings is rea
 
   await page.getByTestId('tab-log').click()
   await expect(page).toHaveURL('/log')
+  await expect(page.getByTestId('log-tab-meals')).toHaveAttribute('aria-selected', 'true')
+  await page.getByTestId('log-tab-month').click()
   await expect(page.getByTestId('calendar-grid')).toBeVisible()
 
   await page.getByTestId('tab-trends').click()
@@ -48,11 +50,7 @@ test('FAB opens the Add Food sheet, logging closes it and updates totals', async
 
   await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
   // Data refreshed without a page reload (dataVersion bump).
-  const mealKey = await page
-    .locator('[data-testid^="meal-subtotal-"]')
-    .filter({ hasText: '41 kcal' })
-    .first()
-  await expect(mealKey).toBeVisible()
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('41')
 })
 
 test('closing the Add Food sheet via the close button dismisses it without saving', async ({ page }) => {
