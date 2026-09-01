@@ -23,7 +23,7 @@ test('bottom tab bar navigates across Today, Log, Trends, Coach; Settings is rea
 
   await page.getByTestId('tab-coach').click()
   await expect(page).toHaveURL('/coach')
-  await expect(page.getByTestId('coach-placeholder')).toBeVisible()
+  await expect(page.getByTestId('start-check-in')).toBeVisible()
 
   await page.getByTestId('avatar-link').click()
   await expect(page).toHaveURL('/settings')

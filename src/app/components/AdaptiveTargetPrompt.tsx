@@ -1,14 +1,7 @@
 import { useEffect, useState } from 'react'
-import { LogRepo } from '../../data/repos/LogRepo'
-import { ProfileRepo } from '../../data/repos/ProfileRepo'
-import { TargetRepo } from '../../data/repos/TargetRepo'
-import { WeighInRepo } from '../../data/repos/WeighInRepo'
-import {
-  computeAdaptiveAdjustment,
-  type AdaptiveRecommendation,
-} from '../../domain/adaptive/adaptiveTargets'
-import { groupEntriesByDate } from '../../domain/history/averages'
-import { computeKcalFloor } from '../../domain/goals/goalEngine'
+import { acceptAdaptiveRecommendation } from '../../lib/adaptive/acceptAdaptiveRecommendation'
+import { fetchAdaptiveRecommendation } from '../../lib/adaptive/fetchAdaptiveRecommendation'
+import type { AdaptiveRecommendation } from '../../domain/adaptive/adaptiveTargets'
 import { addDaysISO, todayISO } from '../../lib/date'
 
 const DISMISSAL_KEY = 'macrodesi:adaptiveDismissedUntil'
@@ -33,61 +26,16 @@ export default function AdaptiveTargetPrompt({ onAccepted }: Props) {
 
   useEffect(() => {
     if (isDismissedThisWeek()) return
-    ;(async () => {
-      const today = todayISO()
-      const windowStart = addDaysISO(today, -6)
-
-      const [profile, targets, entries, weighIns] = await Promise.all([
-        new ProfileRepo().get(),
-        new TargetRepo().getLatest(),
-        new LogRepo().getEntriesForDateRange(windowStart, today),
-        new WeighInRepo().getInRange(windowStart, today),
-      ])
-      if (!profile || !targets) return
-
-      // Don't re-suggest the same week's adjustment again once it's already been accepted.
-      if (targets.source === 'adaptive' && targets.effectiveDate >= windowStart) return
-
-      const floorKcal = computeKcalFloor(
-        profile.sex,
-        profile.weightKg,
-        profile.heightCm,
-        profile.age
-      )
-      const result = computeAdaptiveAdjustment({
-        loggedDays: groupEntriesByDate(entries),
-        weighIns: weighIns.map((w) => ({ date: w.date, weightKg: w.weightKg })),
-        currentTargetKcal: targets.kcal,
-        floorKcal,
-        referenceDate: today,
-      })
-
-      if (result && result.adjustment !== 0) {
-        setRecommendation(result)
-      }
-    })()
+    fetchAdaptiveRecommendation().then(({ recommendation, alreadyAppliedThisWeek }) => {
+      if (recommendation && !alreadyAppliedThisWeek) setRecommendation(recommendation)
+    })
   }, [])
 
   async function handleAccept() {
     if (!recommendation) return
     setSaving(true)
     try {
-      const currentTargets = await new TargetRepo().getLatest()
-      const proteinG = currentTargets?.proteinG ?? 0
-      const fatG = currentTargets?.fatG ?? 0
-      const carbsG = Math.max(
-        0,
-        Math.round((recommendation.suggestedKcal - proteinG * 4 - fatG * 9) / 4)
-      )
-
-      await new TargetRepo().add({
-        effectiveDate: todayISO(),
-        kcal: recommendation.suggestedKcal,
-        proteinG,
-        carbsG,
-        fatG,
-        source: 'adaptive',
-      })
+      await acceptAdaptiveRecommendation(recommendation)
       setRecommendation(null)
       onAccepted?.()
     } finally {

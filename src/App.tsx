@@ -1,6 +1,7 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AddFoodPage from './app/AddFoodPage'
+import CoachCheckInPage from './app/CoachCheckInPage'
 import CoachPage from './app/CoachPage'
 import Dashboard from './app/Dashboard'
 import DayDetailPage from './app/DayDetailPage'
@@ -93,6 +94,7 @@ function App() {
               <Route path="/log/add" element={<AddFoodPage />} />
               <Route path="/log/edit/:entryId" element={<AddFoodPage />} />
               <Route path="/log/quick-add" element={<QuickAddPage />} />
+              <Route path="/coach/check-in" element={<CoachCheckInPage />} />
               <Route path="/recipes/new" element={<RecipeBuilderPage />} />
               <Route path="/scan" element={<ScanPage />} />
               <Route path="/scan/product/:barcode" element={<ScanProductPage />} />

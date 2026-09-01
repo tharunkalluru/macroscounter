@@ -137,6 +137,12 @@ test.describe('touch-target audit (390x844, every visible interactive element >=
     await auditTouchTargets(page, 'coach')
   })
 
+  test('coach weekly check-in wizard', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/coach/check-in')
+    await auditTouchTargets(page, 'coach check-in')
+  })
+
   test('scan page', async ({ page }) => {
     await onboard(page)
     await page.goto('/scan')

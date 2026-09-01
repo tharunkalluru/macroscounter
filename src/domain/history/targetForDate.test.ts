@@ -20,8 +20,19 @@ describe('findApplicableTarget', () => {
     expect(findApplicableTarget('2026-07-01', targets)).toBeUndefined()
   })
 
-  it('is order-independent', () => {
+  it('is order-independent for distinct effectiveDates', () => {
     const shuffled = [targets[2], targets[0], targets[1]]
     expect(findApplicableTarget('2026-08-15', shuffled)?.kcal).toBe(1800)
+  })
+
+  it('when two targets share an effectiveDate, the one later in the array wins', () => {
+    // Same-day Coach check-in: the freshly-accepted adaptive target (added
+    // after, so it sorts later out of TargetRepo.getAll()) supersedes the
+    // original target computed earlier that same day.
+    const sameDay = [
+      { effectiveDate: '2026-08-18', kcal: 2786 },
+      { effectiveDate: '2026-08-18', kcal: 2686 },
+    ]
+    expect(findApplicableTarget('2026-08-18', sameDay)?.kcal).toBe(2686)
   })
 })

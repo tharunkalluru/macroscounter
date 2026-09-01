@@ -13,12 +13,19 @@ import type { WeighIn } from '../../data/models'
 import { ProfileRepo } from '../../data/repos/ProfileRepo'
 import { WeighInRepo } from '../../data/repos/WeighInRepo'
 import { computeEMA } from '../../domain/history/ema'
+import { projectGoalWeight } from '../../domain/goals/weightProjection'
 import { kgToLb } from '../../domain/units/weight'
 import { addDaysISO, isFutureDate, todayISO } from '../../lib/date'
-import { vibrateTiny } from '../../lib/haptics'
+import {
+  hasCelebratedGoalWeight,
+  markGoalWeightCelebrated,
+} from '../../lib/goals/goalWeightCelebration'
+import { vibrateSuccess, vibrateTiny } from '../../lib/haptics'
 import { neutral, semantic, surface, surfaceDark } from '../../theme/tokens'
 import { useTheme } from '../shell/ThemeContext'
+import { TargetIcon } from '../shell/icons'
 import { TEXT_INPUT_CLASS } from './formStyles'
+import GoalCelebration from './GoalCelebration'
 import Snackbar from './Snackbar'
 import { WeightSectionSkeleton } from './Skeleton'
 import SwipeToDeleteRow from './SwipeToDeleteRow'
@@ -51,6 +58,7 @@ export default function WeightSection() {
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
+  const [showGoalCelebration, setShowGoalCelebration] = useState(false)
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
   const repo = new WeighInRepo()
@@ -118,6 +126,25 @@ export default function WeightSection() {
     await repo.add({ date, weightKg: weightNum })
     setWeightKgInput('')
     await load()
+    await checkGoalReached()
+  }
+
+  async function checkGoalReached() {
+    const profile = await new ProfileRepo().get()
+    if (!profile?.goalWeightKg) return
+    if (hasCelebratedGoalWeight(profile.goalWeightKg)) return
+
+    const allWeighIns = await repo.getAll()
+    const projection = projectGoalWeight(
+      allWeighIns.map((w) => ({ date: w.date, weightKg: w.weightKg })),
+      profile.goalWeightKg,
+      todayISO()
+    )
+    if (projection.status !== 'at-goal') return
+
+    markGoalWeightCelebrated(profile.goalWeightKg)
+    vibrateSuccess()
+    setShowGoalCelebration(true)
   }
 
   async function handleSwipeDelete(weighIn: WeighIn) {
@@ -276,6 +303,13 @@ export default function WeightSection() {
         message={snackbar?.message ?? null}
         actionLabel={snackbar?.onUndo ? 'Undo' : undefined}
         onAction={snackbar?.onUndo}
+      />
+
+      <GoalCelebration
+        show={showGoalCelebration}
+        onDismiss={() => setShowGoalCelebration(false)}
+        message="You've reached your goal weight 🎉"
+        icon={TargetIcon}
       />
     </div>
   )

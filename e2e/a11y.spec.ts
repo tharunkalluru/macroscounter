@@ -104,3 +104,9 @@ test('coach page has no WCAG A/AA violations', async ({ page }) => {
   await page.goto('/coach')
   await expectNoViolations(page)
 })
+
+test('coach weekly check-in wizard has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/coach/check-in')
+  await expectNoViolations(page)
+})
