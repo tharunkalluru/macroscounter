@@ -1,4 +1,4 @@
-import { addDaysISO } from '../../lib/date'
+import { addDaysISO } from '../../lib/date.js'
 
 export interface DayKcal {
   date: string

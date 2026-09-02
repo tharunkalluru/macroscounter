@@ -5,6 +5,7 @@ import type { LogEntry, Targets } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
+import { computeFiberTarget } from '../domain/goals/goalEngine'
 import { findApplicableTarget } from '../domain/history/targetForDate'
 import { sumMacros } from '../domain/logging/portionMath'
 import { daysBetween, deriveCurrentProgram } from '../domain/programs/program'
@@ -50,6 +51,12 @@ export default function Dashboard() {
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
   const [dayOfProgram, setDayOfProgram] = useState<number | null>(null)
+  // Fiber-target fallback for accounts whose current target row predates
+  // fiber tracking (fiberG is a nullable, non-backfilled column) -- computed
+  // live from the profile rather than left at 0, so switching to fiber
+  // tracking doesn't leave existing users looking like they have no target
+  // until their next recalculation (Settings save, weekly check-in, etc).
+  const [fiberFallbackG, setFiberFallbackG] = useState(0)
   const [breakdownMacro, setBreakdownMacro] = useState<
     (typeof MACRO_DEFS)[keyof typeof MACRO_DEFS] | null
   >(null)
@@ -75,6 +82,7 @@ export default function Dashboard() {
         setState(decided ? 'no-profile' : 'welcome')
         return
       }
+      setFiberFallbackG(computeFiberTarget(p.sex, p.age))
       const [allTargets, dayEntries, historyRange] = await Promise.all([
         targetRepo.getAll(),
         new LogRepo().getEntriesForDate(date),
@@ -226,7 +234,7 @@ export default function Dashboard() {
             <MacroBar
               label="Fiber"
               consumed={totals.fiber ?? 0}
-              target={target.fiberG ?? 0}
+              target={target.fiberG ?? fiberFallbackG}
               colorClass="bg-fiber-500"
               testId="fiber-bar"
               onTap={() => setBreakdownMacro(MACRO_DEFS.fiber)}

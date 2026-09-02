@@ -197,7 +197,11 @@ export async function chat(
 
   const response = await client.messages.create({
     model: 'claude-sonnet-5',
-    max_tokens: 1024,
+    // Matches analyze.ts's own budget for the same `thinking: adaptive`
+    // config -- adaptive thinking's own token usage counts against this
+    // same budget, so a tighter cap risks leaving no room for the actual
+    // reply (an empty content array, not an error).
+    max_tokens: 4096,
     thinking: { type: 'adaptive' },
     system: systemPrompt,
     messages,
@@ -254,6 +258,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       res.status(502).json({ error: "Couldn't get a response - try again.", code: 'upstream_error' })
       return
     }
+    // Anything else (a DB connection issue, a bug in buildUserContext, etc.)
+    // -- logged so a real cause shows up in Vercel's runtime logs instead of
+    // only ever surfacing as this same generic message.
+    console.error('coach-chat: unexpected error', err)
     res.status(500).json({ error: "Couldn't get a response - try again.", code: 'upstream_error' })
   }
 }

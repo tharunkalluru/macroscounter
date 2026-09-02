@@ -87,4 +87,64 @@ describe('useSpeechRecognition', () => {
     expect(instance?.stop).toHaveBeenCalled()
     expect(screen.getByTestId('listening')).toHaveTextContent('false')
   })
+
+  it('does not repeat earlier words when the engine restates the whole utterance in each new result (an observed Android Chrome quirk)', () => {
+    const onText = vi.fn()
+    render(<Probe onText={onText} />)
+    act(() => screen.getByText('start').click())
+
+    // Each emit represents one onresult event whose single entry restates
+    // the entire utterance recognized so far, rather than just the newest
+    // word — naively summing every entry ever seen (the previous
+    // implementation) turned this into "how how can how can i ...".
+    act(() => lastInstance?.emit({ text: 'how', isFinal: false }))
+    act(() => lastInstance?.emit({ text: 'how can', isFinal: false }))
+    act(() => lastInstance?.emit({ text: 'how can i', isFinal: false }))
+    act(() => lastInstance?.emit({ text: 'how can i reduce', isFinal: false }))
+    act(() => lastInstance?.emit({ text: 'how can i reduce my', isFinal: false }))
+    act(() => lastInstance?.emit({ text: 'how can i reduce my belly fat', isFinal: true }))
+
+    expect(onText).toHaveBeenLastCalledWith('how can i reduce my belly fat')
+  })
+
+  it('appends a genuinely new utterance after a pause instead of losing the earlier one', () => {
+    const onText = vi.fn()
+    render(<Probe onText={onText} />)
+    act(() => screen.getByText('start').click())
+
+    act(() => lastInstance?.emit({ text: 'log a bowl of idli', isFinal: true }))
+    expect(onText).toHaveBeenLastCalledWith('log a bowl of idli')
+
+    // A new, unrelated phrase after the first one closed -- doesn't extend
+    // (and isn't extended by) the prior text, so it's preserved alongside
+    // it rather than replacing it.
+    act(() => lastInstance?.emit({ text: 'also', isFinal: false }))
+    expect(onText).toHaveBeenLastCalledWith('log a bowl of idli also')
+
+    act(() => lastInstance?.emit({ text: 'also two boiled eggs', isFinal: true }))
+    expect(onText).toHaveBeenLastCalledWith('log a bowl of idli also two boiled eggs')
+  })
+
+  it('restarts on its own when the engine ends the session without an explicit stop() (continuous: true not fully honored past a silence timeout)', () => {
+    const onText = vi.fn()
+    render(<Probe onText={onText} />)
+    act(() => screen.getByText('start').click())
+    const firstInstance = lastInstance
+
+    act(() => firstInstance?.emit({ text: 'how can i', isFinal: true }))
+
+    // The engine itself ends the session (e.g. a mid-sentence silence
+    // timeout) -- the caller never clicked "stop".
+    act(() => firstInstance?.onend?.())
+
+    // Still listening from the caller's perspective, and a brand new
+    // recognition instance has taken over transparently.
+    expect(screen.getByTestId('listening')).toHaveTextContent('true')
+    expect(lastInstance).not.toBe(firstInstance)
+    expect(lastInstance?.start).toHaveBeenCalled()
+
+    // The new instance's results build on the text from before the restart.
+    act(() => lastInstance?.emit({ text: 'reduce belly fat', isFinal: true }))
+    expect(onText).toHaveBeenLastCalledWith('how can i reduce belly fat')
+  })
 })

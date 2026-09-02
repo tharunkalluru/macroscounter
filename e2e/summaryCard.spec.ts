@@ -70,3 +70,35 @@ test('tapping a macro bar opens the per-meal breakdown sheet with correct totals
   await page.keyboard.press('Escape')
   await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
 })
+
+test('an existing target created before fiber tracking still shows a real fiber goal, computed from the profile', async ({
+  page,
+}) => {
+  await onboard(page)
+
+  // Simulate an account whose current target row predates fiber tracking
+  // (fiberG is a nullable, non-backfilled column) -- reinsert the same
+  // target without it, matching what a pre-existing row actually looks like.
+  await page.evaluate(() => {
+    return new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open('macrodesi')
+      req.onsuccess = () => {
+        const db = req.result
+        const tx = db.transaction('targets', 'readwrite')
+        const store = tx.objectStore('targets')
+        store.clear()
+        store.add({ effectiveDate: '2026-08-18', kcal: 1628, proteinG: 126, carbsG: 171, fatG: 49, source: 'computed' })
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(tx.error)
+      }
+      req.onerror = () => reject(req.error)
+    })
+  })
+  await page.reload()
+
+  // Protein/Carbs/Fat still show their real (pre-existing) targets...
+  await expect(page.getByTestId('protein-bar-value')).toContainText('126 g')
+  // ...and Fiber, despite the stored target lacking fiberG, shows a real
+  // computed target (IOM Adequate Intake for a male, 28 -> 38g) instead of 0.
+  await expect(page.getByTestId('fiber-bar-value')).toContainText('38 g')
+})

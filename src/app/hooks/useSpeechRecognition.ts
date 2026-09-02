@@ -9,7 +9,6 @@ interface SpeechRecognitionResultLike extends ArrayLike<SpeechRecognitionResultI
 }
 
 interface SpeechRecognitionEventLike {
-  resultIndex: number
   results: ArrayLike<SpeechRecognitionResultLike>
 }
 
@@ -53,10 +52,27 @@ interface UseSpeechRecognitionResult {
  *
  * `onLiveTranscript` fires on every recognized chunk (interim *and* final)
  * with the full cumulative text recognized so far *in this listening
- * session* (not just what's new) -- `event.results` itself accumulates the
- * whole session, so recomputing the join each time is simpler and less
- * error-prone than tracking committed-vs-interim state by hand, and gives a
- * live, as-you-speak update in the caller's text field.
+ * session* (not just what's new), giving a live, as-you-speak update in the
+ * caller's text field.
+ *
+ * Two mobile-Chrome/Android quirks this specifically works around:
+ *  - `continuous: true` isn't fully honored past a silence timeout -- the
+ *    engine ends the session on its own after a pause mid-sentence. `onend`
+ *    auto-restarts recognition when the caller didn't request the stop, so
+ *    it still reads as one unbroken session (the accumulated text below
+ *    survives the restart).
+ *  - `event.results` isn't reliably one-entry-per-utterance: on some
+ *    engines, each new entry restates the *whole utterance recognized so
+ *    far* rather than just the newest word, and `resultIndex` doesn't
+ *    reliably advance to say so. Naively summing every entry's transcript
+ *    together (the previous implementation) double-counts on exactly this
+ *    pattern, producing repeating prefixes ("how" / "how can" / "how can" /
+ *    "how can i" / ... all concatenated). Only the single latest result
+ *    entry is ever trusted as "what's being said" -- when it extends
+ *    (or is extended by) what was already shown, it *replaces* that text
+ *    rather than appending to it; only when it looks unrelated (a genuine
+ *    new utterance after a pause) does it get appended after what came
+ *    before.
  */
 export function useSpeechRecognition(onLiveTranscript: (sessionText: string) => void): UseSpeechRecognitionResult {
   const [isListening, setIsListening] = useState(false)
@@ -64,37 +80,72 @@ export function useSpeechRecognition(onLiveTranscript: (sessionText: string) => 
   const onLiveTranscriptRef = useRef(onLiveTranscript)
   onLiveTranscriptRef.current = onLiveTranscript
 
+  // Text from utterances judged complete (a new, unrelated result showed up
+  // after them) plus the latest known text for the utterance still growing.
+  const committedTextRef = useRef('')
+  const currentUtteranceRef = useRef('')
+  const intentionalStopRef = useRef(false)
+  const beginRef = useRef<() => void>(() => {})
+
   const Ctor = typeof window !== 'undefined' ? getSpeechRecognitionConstructor() : null
 
   useEffect(() => {
-    return () => recognitionRef.current?.stop()
+    return () => {
+      intentionalStopRef.current = true
+      recognitionRef.current?.stop()
+    }
   }, [])
 
-  const start = useCallback(() => {
-    if (!Ctor || recognitionRef.current) return
+  beginRef.current = () => {
+    if (!Ctor) return
     const recognition = new Ctor()
     recognition.continuous = true
     recognition.interimResults = true
     recognition.lang = navigator.language || 'en-US'
     recognition.onresult = (event) => {
-      let sessionText = ''
-      for (let i = 0; i < event.results.length; i++) {
-        const transcript = event.results[i][0]?.transcript ?? ''
-        sessionText += (sessionText && transcript ? ' ' : '') + transcript
+      if (event.results.length === 0) return
+      const latest = event.results[event.results.length - 1]
+      const latestText = latest[0]?.transcript ?? ''
+      const prev = currentUtteranceRef.current
+
+      const isRefinement = prev === '' || latestText.startsWith(prev) || prev.startsWith(latestText)
+      if (!isRefinement) {
+        committedTextRef.current += (committedTextRef.current && prev ? ' ' : '') + prev
       }
+      currentUtteranceRef.current = latestText
+
+      const sessionText =
+        committedTextRef.current + (committedTextRef.current && latestText ? ' ' : '') + latestText
       onLiveTranscriptRef.current(sessionText)
     }
     recognition.onerror = () => setIsListening(false)
     recognition.onend = () => {
-      setIsListening(false)
       recognitionRef.current = null
+      if (intentionalStopRef.current) {
+        setIsListening(false)
+        return
+      }
+      // The engine ended the session on its own, not the caller -- restart
+      // transparently (accumulated text carries over via committedTextRef/
+      // currentUtteranceRef, neither reset here) so a mid-sentence pause
+      // doesn't surface as "the mic stopped."
+      beginRef.current()
     }
     recognitionRef.current = recognition
     recognition.start()
     setIsListening(true)
+  }
+
+  const start = useCallback(() => {
+    if (!Ctor || recognitionRef.current) return
+    committedTextRef.current = ''
+    currentUtteranceRef.current = ''
+    intentionalStopRef.current = false
+    beginRef.current()
   }, [Ctor])
 
   const stop = useCallback(() => {
+    intentionalStopRef.current = true
     recognitionRef.current?.stop()
   }, [])
 
