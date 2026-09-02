@@ -113,3 +113,7 @@ export function PaletteIcon({ className }: IconProps) {
 export function TrashIcon({ className }: IconProps) {
   return <Ph name="trash" size={18} className={className} />
 }
+
+export function MicIcon({ active, className }: IconProps) {
+  return <Ph name="microphone" variant={active ? 'fill' : 'regular'} size={18} className={className} />
+}

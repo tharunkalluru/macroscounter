@@ -89,6 +89,12 @@ test.describe('touch-target audit (390x844, every visible interactive element >=
     await auditTouchTargets(page, 'add-food sheet')
   })
 
+  test('AI logging page', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/log/ai?meal=breakfast')
+    await auditTouchTargets(page, 'AI logging page')
+  })
+
   test('log tab (Meals view)', async ({ page }) => {
     await onboard(page)
     await page.goto('/log')

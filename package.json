@@ -24,6 +24,7 @@
     "lighthouse": "lighthouse http://localhost:4173 --preset=desktop --chrome-flags=\"--headless=new\""
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.123.0",
     "@neondatabase/serverless": "^1.1.0",
     "@zxing/browser": "^0.1.5",
     "@zxing/library": "^0.21.3",
@@ -35,7 +36,8 @@
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.28.0",
-    "recharts": "^2.13.3"
+    "recharts": "^2.13.3",
+    "zod": "^4.5.4"
   },
   "devDependencies": {
     "@axe-core/playwright": "^4.13.0",

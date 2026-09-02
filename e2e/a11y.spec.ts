@@ -97,6 +97,12 @@ test('quick-add page has no WCAG A/AA violations', async ({ page }) => {
   await expectNoViolations(page)
 })
 
+test('AI logging page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/log/ai?meal=breakfast')
+  await expectNoViolations(page)
+})
+
 test('recipe builder page has no WCAG A/AA violations', async ({ page }) => {
   await onboard(page)
   await page.goto('/recipes/new')
