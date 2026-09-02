@@ -6,12 +6,14 @@ async function onboard(page: Page) {
   await onboardHelper(page, { name: 'Drag Entry Persona' })
 }
 
-// dnd-kit's PointerSensor listens for real pointer events (not the native
-// HTML5 Drag and Drop API), and its default collision detection tracks the
-// accumulated pointer delta rather than page.mouse's OS-level coordinates --
-// coordinate-based `dragTo()` proved unreliable in this suite for the same
-// reason framer-motion's own drag gesture needed direct pointer-event
-// dispatch (see swipeToDelete in logging.spec.ts). Mirrors that same pattern.
+// dnd-kit's MouseSensor (used for non-touch input -- see LogPage.tsx's
+// separate Mouse/TouchSensor setup, split so touch gets a long-press
+// activation distinct from mouse's near-immediate one) listens for native
+// `mousedown`/`mousemove`/`mouseup`, not the HTML5 Drag and Drop API and not
+// Pointer Events either -- coordinate-based `dragTo()` proved unreliable in
+// this suite for the same reason framer-motion's own drag gesture needed
+// direct event dispatch (see swipeToDelete in logging.spec.ts). Mirrors that
+// same pattern with the event type MouseSensor actually listens for.
 async function dragEntryToMeal(page: Page, handle: Locator, dropZone: Locator) {
   const handleBox = await handle.boundingBox()
   const dropBox = await dropZone.boundingBox()
@@ -22,28 +24,25 @@ async function dragEntryToMeal(page: Page, handle: Locator, dropZone: Locator) {
   const endX = dropBox.x + dropBox.width / 2
   const endY = dropBox.y + dropBox.height / 2
 
-  const pointerInit = (x: number, y: number) => ({
+  const mouseInit = (x: number, y: number) => ({
     bubbles: true,
     cancelable: true,
     composed: true,
-    pointerId: 1,
-    pointerType: 'mouse',
-    isPrimary: true,
     button: 0,
     buttons: 1,
     clientX: x,
     clientY: y,
   })
 
-  await handle.dispatchEvent('pointerdown', pointerInit(startX, startY))
+  await handle.dispatchEvent('mousedown', mouseInit(startX, startY))
   const steps = 10
   for (let i = 1; i <= steps; i++) {
     const x = startX + ((endX - startX) * i) / steps
     const y = startY + ((endY - startY) * i) / steps
-    await handle.dispatchEvent('pointermove', pointerInit(x, y))
+    await handle.dispatchEvent('mousemove', mouseInit(x, y))
     await page.waitForTimeout(16)
   }
-  await handle.dispatchEvent('pointerup', { ...pointerInit(endX, endY), buttons: 0 })
+  await handle.dispatchEvent('mouseup', { ...mouseInit(endX, endY), buttons: 0 })
 }
 
 test('dragging an entry by its handle moves it into the dropped-on meal section', async ({ page }) => {

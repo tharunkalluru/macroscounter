@@ -1,8 +1,9 @@
-import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
+import { DndContext, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
 import { useCallback, useEffect, useState } from 'react'
 import type { LogEntry, Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { addDaysISO, todayISO } from '../lib/date'
+import { vibrateTiny } from '../lib/haptics'
 import { getDefaultLogView } from '../lib/settings/logViewPreference'
 import DateStrip from './components/DateStrip'
 import { DragHandleIcon } from './shell/icons'
@@ -39,7 +40,18 @@ export default function LogPage() {
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
   const [draggingEntry, setDraggingEntry] = useState<LogEntry | null>(null)
-  const dragSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
+  // Separate mouse/touch sensors (not the combined PointerSensor) so each
+  // input type gets activation behavior suited to it: a small movement
+  // threshold on mouse feels immediate, but the same threshold on touch
+  // means any finger jitter while trying to scroll the page near a handle
+  // gets hijacked into a drag. Touch instead needs a short press-and-hold
+  // (long-press-to-pick-up, the standard mobile reorder pattern) so a quick
+  // scroll swipe passes through untouched and only a deliberate hold starts
+  // a drag.
+  const dragSensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
+  )
 
   const loadEntries = useCallback(async () => {
     const [dayEntries, historyRange] = await Promise.all([
@@ -67,6 +79,7 @@ export default function LogPage() {
 
   function handleDragStart(event: DragStartEvent) {
     setDraggingEntry(entries.find((e) => e.id === event.active.id) ?? null)
+    vibrateTiny()
   }
 
   function handleDragEnd(event: DragEndEvent) {

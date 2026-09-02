@@ -54,7 +54,11 @@ export default function EntryRow({ entry, onSwipeDelete, draggable = false }: Pr
               {...listeners}
               aria-label={`Reorder ${entry.name} to another meal`}
               data-testid={`entry-drag-handle-${entry.id}`}
-              className="flex min-h-touch min-w-touch shrink-0 touch-none items-center justify-center text-slate-400 dark:text-slate-500"
+              className={`flex min-h-touch min-w-touch shrink-0 touch-none items-center justify-center rounded-full transition-colors ${
+                isDragging
+                  ? 'bg-brand-100 text-brand-700 dark:bg-slate-700 dark:text-brand-400'
+                  : 'text-slate-400 dark:text-slate-500'
+              }`}
             >
               <DragHandleIcon />
             </span>
