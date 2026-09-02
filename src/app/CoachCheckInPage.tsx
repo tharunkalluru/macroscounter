@@ -69,7 +69,7 @@ export default function CoachCheckInPage() {
       <div className="mx-auto max-w-md px-6 py-8">
         <PageHeader title="Weekly check-in" backTo="/coach" />
         <p className="text-sm text-slate-500 dark:text-slate-400" data-testid="checkin-none">
-          Nothing to check in on yet — log a full week (7 days) with at least 2 weigh-ins to unlock your
+          Nothing to check in on yet - log a full week (7 days) with at least 2 weigh-ins to unlock your
           next check-in.
         </p>
       </div>

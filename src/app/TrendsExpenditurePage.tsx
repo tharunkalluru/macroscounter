@@ -74,7 +74,7 @@ export default function TrendsExpenditurePage() {
     <div className="mx-auto max-w-md px-6 py-8">
       <PageHeader title="Expenditure" backTo="/trends" />
       <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
-        Measured from your last 7 days of logs and weigh-ins — not a formula.
+        Measured from your last 7 days of logs and weigh-ins - not a formula.
       </p>
 
       {state === null && <p className="text-sm text-slate-500 dark:text-slate-400">Loading…</p>}
@@ -145,8 +145,8 @@ export default function TrendsExpenditurePage() {
             {Math.abs(state.measured.impliedTDEE - state.formulaTDEE) < 50
               ? 'Your measured expenditure is close to the formula estimate.'
               : state.measured.impliedTDEE > state.formulaTDEE
-                ? "You're burning more than the formula predicted — activity or metabolism running a bit hot."
-                : "You're burning less than the formula predicted — worth factoring into your target."}
+                ? "You're burning more than the formula predicted - activity or metabolism running a bit hot."
+                : "You're burning less than the formula predicted - worth factoring into your target."}
           </p>
         </div>
       )}

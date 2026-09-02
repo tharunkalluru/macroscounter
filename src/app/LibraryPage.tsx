@@ -154,7 +154,7 @@ export default function LibraryPage() {
       {tab === 'quick-add' && (
         <div className="flex flex-col items-center gap-3 py-6 text-center">
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            Log by numbers alone — no food, no serving size, just kcal and macros.
+            Log by numbers alone - no food, no serving size, just kcal and macros.
           </p>
           <button
             type="button"

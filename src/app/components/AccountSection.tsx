@@ -50,7 +50,7 @@ export default function AccountSection() {
   return (
     <div className="flex flex-col gap-2">
       <p className="text-sm text-slate-500 dark:text-slate-400">
-        Not signed in — your data stays on this device.
+        Not signed in - your data stays on this device.
       </p>
       <button
         type="button"

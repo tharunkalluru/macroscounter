@@ -41,5 +41,5 @@ test('Trends shows a placeholder before enough history exists for insights', asy
   await onboard(page)
 
   await page.goto('/trends/report')
-  await expect(page.getByText('Keep logging — patterns in how you eat will show up here.')).toBeVisible()
+  await expect(page.getByText('Keep logging - patterns in how you eat will show up here.')).toBeVisible()
 })

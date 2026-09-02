@@ -1,9 +1,11 @@
+import { DndContext, DragOverlay, PointerSensor, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
 import { useCallback, useEffect, useState } from 'react'
 import type { LogEntry, Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { addDaysISO, todayISO } from '../lib/date'
 import { getDefaultLogView } from '../lib/settings/logViewPreference'
 import DateStrip from './components/DateStrip'
+import { DragHandleIcon } from './shell/icons'
 import MealSection from './components/MealSection'
 import MonthView from './components/MonthView'
 import TimelineView from './components/TimelineView'
@@ -36,6 +38,8 @@ export default function LogPage() {
   const { dataVersion } = useUIState()
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
+  const [draggingEntry, setDraggingEntry] = useState<LogEntry | null>(null)
+  const dragSensors = useSensors(useSensor(PointerSensor, { activationConstraint: { distance: 4 } }))
 
   const loadEntries = useCallback(async () => {
     const [dayEntries, historyRange] = await Promise.all([
@@ -54,6 +58,25 @@ export default function LogPage() {
   async function handleDelete(id: number) {
     await new LogRepo().deleteEntry(id)
     await loadEntries()
+  }
+
+  async function handleMoveEntry(id: number, meal: Meal) {
+    await new LogRepo().updateEntry(id, { meal })
+    await loadEntries()
+  }
+
+  function handleDragStart(event: DragStartEvent) {
+    setDraggingEntry(entries.find((e) => e.id === event.active.id) ?? null)
+  }
+
+  function handleDragEnd(event: DragEndEvent) {
+    setDraggingEntry(null)
+    const overMeal = event.over?.id as Meal | undefined
+    if (!overMeal) return
+    const entryId = Number(event.active.id)
+    const entry = entries.find((e) => e.id === entryId)
+    if (!entry || entry.meal === overMeal) return
+    handleMoveEntry(entryId, overMeal)
   }
 
   const isToday = selectedDate === todayISO()
@@ -100,22 +123,37 @@ export default function LogPage() {
               Return to today
             </button>
           )}
-          {MEALS.map(({ key, label }) => (
-            <MealSection
-              key={key}
-              meal={key}
-              label={label}
-              entries={entries.filter((e) => e.meal === key)}
-              onDelete={handleDelete}
-              // MealSection's own "date" prop doubles as "am I viewing a
-              // specific non-today day" (it decides sheet vs. full-page
-              // add-food navigation on that truthiness) -- passing today's
-              // own date here would wrongly force the full-page route even
-              // while looking at today.
-              date={isToday ? undefined : selectedDate}
-              historyEntries={historyEntries}
-            />
-          ))}
+          <DndContext sensors={dragSensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+            {MEALS.map(({ key, label }) => (
+              <MealSection
+                key={key}
+                meal={key}
+                label={label}
+                entries={entries.filter((e) => e.meal === key)}
+                onDelete={handleDelete}
+                // MealSection's own "date" prop doubles as "am I viewing a
+                // specific non-today day" (it decides sheet vs. full-page
+                // add-food navigation on that truthiness) -- passing today's
+                // own date here would wrongly force the full-page route even
+                // while looking at today.
+                date={isToday ? undefined : selectedDate}
+                historyEntries={historyEntries}
+              />
+            ))}
+            <DragOverlay>
+              {draggingEntry && (
+                <div
+                  className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-card dark:bg-surface-dark-card"
+                  data-testid="entry-drag-overlay"
+                >
+                  <DragHandleIcon className="text-slate-400 dark:text-slate-500" />
+                  <span className="text-body font-medium text-slate-800 dark:text-slate-100">
+                    {draggingEntry.name}
+                  </span>
+                </div>
+              )}
+            </DragOverlay>
+          </DndContext>
         </div>
       )}
 

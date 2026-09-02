@@ -156,13 +156,13 @@ export default function ReportSection({ weekEndDate }: Props) {
           <div className="rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card">
             <p className="text-caption text-slate-500 dark:text-slate-400">Best day</p>
             <p data-testid="report-best-day">
-              {report.bestDay?.date} — {report.bestDay?.kcal} kcal
+              {report.bestDay?.date} - {report.bestDay?.kcal} kcal
             </p>
           </div>
           <div className="rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card">
             <p className="text-caption text-slate-500 dark:text-slate-400">Toughest day</p>
             <p data-testid="report-worst-day">
-              {report.worstDay?.date} — {report.worstDay?.kcal} kcal
+              {report.worstDay?.date} - {report.worstDay?.kcal} kcal
             </p>
           </div>
         </div>

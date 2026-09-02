@@ -1,3 +1,4 @@
+import { useDroppable } from '@dnd-kit/core'
 import { AnimatePresence } from 'framer-motion'
 import { useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -49,6 +50,7 @@ export default function MealSection({
   const [overflowOpen, setOverflowOpen] = useState(false)
   const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const { setNodeRef: setDropRef, isOver } = useDroppable({ id: meal })
 
   const effectiveDate = date ?? todayISO()
   const subtotalKcal = useCountUp(Math.round(entries.reduce((sum, e) => sum + e.kcal, 0)), 300)
@@ -62,11 +64,6 @@ export default function MealSection({
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
     setSnackbar({ message, onUndo })
     undoTimerRef.current = setTimeout(() => setSnackbar(null), UNDO_MS)
-  }
-
-  function handleRowTap(entry: LogEntry) {
-    if (entry.id === undefined) return
-    navigate(entry.customSnapshot ? `/log/quick-add?entryId=${entry.id}` : `/log/edit/${entry.id}`)
   }
 
   function handleSwipeDelete(entry: LogEntry) {
@@ -156,7 +153,13 @@ export default function MealSection({
         </div>
       </div>
 
-      <div className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-lg bg-white shadow-sm dark:divide-slate-700 dark:bg-surface-dark-card">
+      <div
+        ref={setDropRef}
+        data-testid={`meal-drop-zone-${meal}`}
+        className={`mt-2 divide-y divide-slate-100 overflow-hidden rounded-lg bg-white shadow-sm transition-colors dark:divide-slate-700 dark:bg-surface-dark-card ${
+          isOver ? 'ring-2 ring-brand-600 dark:ring-brand-400' : ''
+        }`}
+      >
         {entries.length === 0 &&
           (suggestions.length > 0 ? (
             <div className="flex flex-col gap-2 px-3 py-3">
@@ -183,7 +186,7 @@ export default function MealSection({
 
         <AnimatePresence initial={false}>
           {entries.map((entry) => (
-            <EntryRow key={entry.id} entry={entry} onTap={handleRowTap} onSwipeDelete={handleSwipeDelete} />
+            <EntryRow key={entry.id} entry={entry} onSwipeDelete={handleSwipeDelete} draggable />
           ))}
         </AnimatePresence>
       </div>

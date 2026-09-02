@@ -28,7 +28,7 @@ const CONFETTI = [
 export default function GoalCelebration({
   show,
   onDismiss,
-  message = 'Protein goal hit — nice work.',
+  message = 'Protein goal hit - nice work.',
   icon: Icon = TargetIcon,
   positionClassName = 'bottom-24',
 }: Props) {

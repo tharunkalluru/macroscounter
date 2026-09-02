@@ -232,7 +232,7 @@ export default function SettingsPage() {
           >
             {ACTIVITY_OPTIONS.map((opt) => (
               <option key={opt.value} value={opt.value}>
-                {opt.label} — {opt.description}
+                {opt.label} - {opt.description}
               </option>
             ))}
           </select>
@@ -247,7 +247,7 @@ export default function SettingsPage() {
         )}
         {saved && (
           <p className="text-sm text-brand-700 dark:text-brand-400">
-            Saved — targets recalculated.
+            Saved - targets recalculated.
           </p>
         )}
 

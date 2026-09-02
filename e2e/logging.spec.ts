@@ -115,6 +115,7 @@ test('editing quantity and deleting an entry update the day totals', async ({ pa
   await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('41') // 1 idli (40g), 102.5*0.4=41
 
   await page.getByRole('button', { name: 'Edit Idli' }).click()
+  await page.getByTestId('entry-detail-edit-button').click()
   await page.getByTestId('portion-grams-input').fill('80')
   await page.getByTestId('log-entry-button').click()
   await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('82') // 2 idli (80g), 102.5*0.8=82

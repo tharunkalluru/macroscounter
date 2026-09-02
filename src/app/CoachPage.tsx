@@ -100,7 +100,7 @@ export default function CoachPage() {
           </span>
           <span className="block text-caption text-slate-500 dark:text-slate-400">
             {state?.checkInDue
-              ? 'This week is complete — four questions and your targets update.'
+              ? 'This week is complete - four questions and your targets update.'
               : 'Compare your logged intake against your actual weight trend.'}
           </span>
         </span>

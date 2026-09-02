@@ -117,3 +117,8 @@ export function TrashIcon({ className }: IconProps) {
 export function MicIcon({ active, className }: IconProps) {
   return <Ph name="microphone" variant={active ? 'fill' : 'regular'} size={18} className={className} />
 }
+
+/** Grab handle for dragging a logged entry between meal sections. */
+export function DragHandleIcon({ className }: IconProps) {
+  return <Ph name="dots-six-vertical" size={18} className={className} />
+}

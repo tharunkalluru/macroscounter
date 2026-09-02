@@ -168,7 +168,7 @@ export default function MonthView() {
         <div className="grid grid-cols-2 gap-4">
           <div data-testid="month-avg-kcal">
             <p className="text-title font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-              {monthAverage.daysCounted > 0 ? monthAverage.kcal : '—'}
+              {monthAverage.daysCounted > 0 ? monthAverage.kcal : '-'}
             </p>
             <p className="text-caption text-slate-500 dark:text-slate-400">Avg kcal / day</p>
           </div>
@@ -180,13 +180,13 @@ export default function MonthView() {
           </div>
           <div data-testid="month-avg-protein">
             <p className="text-title font-semibold tabular-nums text-brand-700 dark:text-brand-400">
-              {monthAverage.daysCounted > 0 ? `${monthAverage.p} g` : '—'}
+              {monthAverage.daysCounted > 0 ? `${monthAverage.p} g` : '-'}
             </p>
             <p className="text-caption text-slate-500 dark:text-slate-400">Avg protein</p>
           </div>
           <div data-testid="avg-30day">
             <p className="text-title font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-              {avg30.daysCounted > 0 ? avg30.kcal : '—'}
+              {avg30.daysCounted > 0 ? avg30.kcal : '-'}
             </p>
             <p className="text-caption text-slate-500 dark:text-slate-400">30-day avg kcal</p>
           </div>

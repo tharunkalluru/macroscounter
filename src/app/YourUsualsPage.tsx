@@ -64,7 +64,7 @@ export default function YourUsualsPage() {
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-6">
       <PageHeader title="Your usuals" backTo="/" />
       <p className="-mt-2 mb-2 text-sm text-slate-500 dark:text-slate-400">
-        The fastest way to log. Tap once — no search, no serving picker, no confirmation.
+        The fastest way to log. Tap once - no search, no serving picker, no confirmation.
       </p>
 
       <div className="mt-4 flex gap-2 overflow-x-auto pb-1">
@@ -89,7 +89,7 @@ export default function YourUsualsPage() {
       <div className="mt-4 flex flex-1 flex-col gap-2" data-testid="usuals-list">
         {suggestions.length === 0 && (
           <p className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">
-            No repeated {MEAL_FILTERS.find((f) => f.key === meal)?.label.toLowerCase()} combos yet — log the same
+            No repeated {MEAL_FILTERS.find((f) => f.key === meal)?.label.toLowerCase()} combos yet - log the same
             thing a couple of times and it'll show up here.
           </p>
         )}

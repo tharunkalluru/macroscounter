@@ -69,7 +69,7 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
       onClick={onTap}
       data-testid={testId}
       className="min-h-touch w-full rounded-lg text-left"
-      aria-label={`${label}: ${Math.round(consumed)} of ${Math.round(target)} grams — view breakdown`}
+      aria-label={`${label}: ${Math.round(consumed)} of ${Math.round(target)} grams - view breakdown`}
     >
       {content}
     </button>

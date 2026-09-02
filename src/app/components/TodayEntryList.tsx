@@ -52,11 +52,6 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
     undoTimerRef.current = setTimeout(() => setSnackbar(null), UNDO_MS)
   }
 
-  function handleRowTap(entry: LogEntry) {
-    if (entry.id === undefined) return
-    navigate(entry.customSnapshot ? `/log/quick-add?entryId=${entry.id}` : `/log/edit/${entry.id}`)
-  }
-
   function handleSwipeDelete(entry: LogEntry) {
     if (entry.id === undefined) return
     const { id: _id, ...snapshot } = entry
@@ -89,7 +84,7 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
         )}
         <AnimatePresence initial={false}>
           {sorted.map((entry) => (
-            <EntryRow key={entry.id} entry={entry} onTap={handleRowTap} onSwipeDelete={handleSwipeDelete} />
+            <EntryRow key={entry.id} entry={entry} onSwipeDelete={handleSwipeDelete} />
           ))}
         </AnimatePresence>
       </div>

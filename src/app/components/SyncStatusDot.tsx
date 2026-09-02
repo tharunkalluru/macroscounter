@@ -1,11 +1,11 @@
 import { useSyncStatus } from '../hooks/useSyncStatus'
 
 const STATUS_COPY: Record<string, { label: string; dotClass: string }> = {
-  'signed-out': { label: 'Not signed in — local only', dotClass: 'bg-slate-400 dark:bg-slate-500' },
+  'signed-out': { label: 'Not signed in - local only', dotClass: 'bg-slate-400 dark:bg-slate-500' },
   synced: { label: 'Synced', dotClass: 'bg-brand-600' },
   syncing: { label: 'Syncing…', dotClass: 'bg-warn-500 motion-safe:animate-pulse' },
-  offline: { label: 'Offline — will sync when back online', dotClass: 'bg-slate-400 dark:bg-slate-500' },
-  error: { label: "Couldn't sync — will retry", dotClass: 'bg-danger-600' },
+  offline: { label: 'Offline - will sync when back online', dotClass: 'bg-slate-400 dark:bg-slate-500' },
+  error: { label: "Couldn't sync - will retry", dotClass: 'bg-danger-600' },
 }
 
 export default function SyncStatusDot() {

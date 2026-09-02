@@ -49,12 +49,12 @@ function describeTrend(weeklyWeightChangeKg: number): string {
 function buildReason(weeklyWeightChangeKg: number, adjustment: number): string {
   const trend = describeTrend(weeklyWeightChangeKg)
   if (adjustment > 0) {
-    return `You ${trend} over the last 7 days — faster than your 0.5 kg/week goal, so we're raising your target by ${adjustment} kcal to keep this sustainable.`
+    return `You ${trend} over the last 7 days - faster than your 0.5 kg/week goal, so we're raising your target by ${adjustment} kcal to keep this sustainable.`
   }
   if (adjustment < 0) {
-    return `You ${trend} over the last 7 days — slower than your 0.5 kg/week goal, so we're lowering your target by ${Math.abs(adjustment)} kcal.`
+    return `You ${trend} over the last 7 days - slower than your 0.5 kg/week goal, so we're lowering your target by ${Math.abs(adjustment)} kcal.`
   }
-  return `You ${trend} over the last 7 days — right on track for your 0.5 kg/week goal, no change needed.`
+  return `You ${trend} over the last 7 days - right on track for your 0.5 kg/week goal, no change needed.`
 }
 
 /**

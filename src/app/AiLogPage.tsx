@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import type { FoodItemResult } from '../../api/ai/analyze'
+import { signIn, useSession } from '../lib/auth/authClient'
 import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { compressImageFile } from '../lib/ai/imageCompress'
 import PageHeader from './components/PageHeader'
@@ -11,13 +12,14 @@ const MAX_CHARS = 500
 
 interface AnalyzeErrorResponse {
   error: string
-  code?: 'missing_key' | 'invalid_input' | 'rate_limited' | 'upstream_error'
+  code?: 'not_signed_in' | 'missing_key' | 'invalid_input' | 'rate_limited' | 'upstream_error'
 }
 
 function errorMessageFor(code: AnalyzeErrorResponse['code']): string {
-  if (code === 'missing_key') return "AI logging isn't set up yet — search or scan instead."
-  if (code === 'rate_limited') return 'Too many requests — try again in a moment.'
-  return "Couldn't analyse that — try again, or log it manually."
+  if (code === 'not_signed_in') return 'Your sign-in expired - reload and sign in again to keep using AI logging.'
+  if (code === 'missing_key') return "AI logging isn't set up yet - search or scan instead."
+  if (code === 'rate_limited') return 'Too many requests - try again in a moment.'
+  return "Couldn't analyse that - try again, or log it manually."
 }
 
 /**
@@ -33,12 +35,67 @@ export default function AiLogPage() {
   const [photo, setPhoto] = useState<{ file: Blob; previewUrl: string } | null>(null)
   const [analysing, setAnalysing] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [signingIn, setSigningIn] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+  const { data: session, isPending: sessionPending } = useSession()
 
+  // Snapshot of the textarea's contents from just before the mic was
+  // started -- the hook reports the *full* cumulative transcript for the
+  // current listening session on every update (see its own doc comment),
+  // so each update replaces (not appends to) whatever came before this
+  // session started, rather than compounding on every partial result.
+  const descriptionBeforeListeningRef = useRef('')
   const { isSupported: micSupported, isListening, start: startListening, stop: stopListening } =
-    useSpeechRecognition((transcript) => {
-      setDescription((prev) => `${prev}${prev && !prev.endsWith(' ') ? ' ' : ''}${transcript}`.slice(0, MAX_CHARS))
+    useSpeechRecognition((sessionText) => {
+      const base = descriptionBeforeListeningRef.current
+      setDescription(`${base}${base && sessionText ? ' ' : ''}${sessionText}`.slice(0, MAX_CHARS))
     })
+
+  function handleMicClick() {
+    if (isListening) {
+      stopListening()
+      return
+    }
+    descriptionBeforeListeningRef.current = description
+    startListening()
+  }
+
+  async function handleSignIn() {
+    setSigningIn(true)
+    await signIn.social({ provider: 'google', callbackURL: `/log/ai?meal=${meal}` })
+  }
+
+  if (sessionPending) {
+    return (
+      <div className="flex min-h-screen items-center justify-center text-slate-500 dark:text-slate-400">
+        Loading…
+      </div>
+    )
+  }
+
+  if (!session) {
+    return (
+      <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-6">
+        <PageHeader title="Describe or snap" backTo="/" />
+        <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+          <SparkleIcon className="h-8 w-8 text-brand-600 dark:text-brand-400" />
+          <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">Sign in to use AI logging</p>
+          <p className="max-w-xs text-sm text-slate-500 dark:text-slate-400">
+            AI-powered photo, voice, and text logging is available for signed-in accounts.
+          </p>
+          <button
+            type="button"
+            onClick={handleSignIn}
+            disabled={signingIn}
+            data-testid="ai-signin-button"
+            className="mt-2 min-h-touch rounded-card bg-brand-700 px-5 py-2.5 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50"
+          >
+            Continue with Google
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   function handlePhotoSelected(file: File | undefined) {
     if (!file) return
@@ -52,6 +109,7 @@ export default function AiLogPage() {
   }
 
   async function handleAnalyse() {
+    if (isListening) stopListening()
     setError(null)
     setAnalysing(true)
     try {
@@ -93,7 +151,7 @@ export default function AiLogPage() {
           {micSupported && (
             <button
               type="button"
-              onClick={() => (isListening ? stopListening() : startListening())}
+              onClick={handleMicClick}
               aria-label={isListening ? 'Stop voice input' : 'Start voice input'}
               aria-pressed={isListening}
               data-testid="ai-mic-button"
@@ -150,7 +208,7 @@ export default function AiLogPage() {
       <div className="mt-4 flex gap-3 rounded-card border border-slate-200 p-3.5 dark:border-slate-700">
         <SparkleIcon className="mt-0.5 flex-none text-brand-600 dark:text-brand-400" />
         <p className="text-caption leading-relaxed text-slate-500 dark:text-slate-400">
-          Estimated by AI from what you typed, said, or showed it —{' '}
+          Estimated by AI from what you typed, said, or showed it -{' '}
           <strong className="font-medium text-slate-600 dark:text-slate-300">always check before logging.</strong>
         </p>
       </div>

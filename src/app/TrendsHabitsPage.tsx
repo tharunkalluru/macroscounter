@@ -77,7 +77,7 @@ export default function TrendsHabitsPage() {
           <p className="mt-2 text-caption text-slate-500 dark:text-slate-400">
             {missedInHeatmap === 0
               ? `Every day logged in the last ${HEATMAP_DAYS}.`
-              : `${missedInHeatmap} missed day${missedInHeatmap === 1 ? '' : 's'} in ${HEATMAP_DAYS}. A missed day doesn't reset you — it just doesn't count.`}
+              : `${missedInHeatmap} missed day${missedInHeatmap === 1 ? '' : 's'} in ${HEATMAP_DAYS}. A missed day doesn't reset you - it just doesn't count.`}
           </p>
         )}
       </div>

@@ -49,7 +49,7 @@ export default function Header() {
         if (startDate && !hasCelebratedStreakMilestone(startDate, milestone)) {
           markStreakMilestoneCelebrated(startDate, milestone)
           vibrateSuccess()
-          setMilestoneMessage(`${milestone}-day streak — you're on fire.`)
+          setMilestoneMessage(`${milestone}-day streak - you're on fire.`)
         }
       }
     })()

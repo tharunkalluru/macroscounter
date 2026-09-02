@@ -2,6 +2,9 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import { describe, expect, it, vi } from 'vitest'
 import { buildUserContent, validateRequestBody } from './analyze'
 import handler from './analyze'
+import { getUserId } from '../_auth.js'
+
+vi.mock('../_auth.js', () => ({ getUserId: vi.fn() }))
 
 function mockRes(): VercelResponse {
   const res = {} as VercelResponse
@@ -67,7 +70,24 @@ describe('buildUserContent', () => {
 })
 
 describe('POST /api/ai/analyze', () => {
-  it('returns 503 with code "missing_key" when ANTHROPIC_API_KEY is unset', async () => {
+  it('returns 405 for a non-POST method', async () => {
+    const req = { method: 'GET' } as unknown as VercelRequest
+    const res = mockRes()
+    await handler(req, res)
+    expect(res.status).toHaveBeenCalledWith(405)
+  })
+
+  it('returns 401 with code "not_signed_in" for a guest', async () => {
+    vi.mocked(getUserId).mockResolvedValue(null)
+    const req = { method: 'POST', body: { description: 'a roti' } } as unknown as VercelRequest
+    const res = mockRes()
+    await handler(req, res)
+    expect(res.status).toHaveBeenCalledWith(401)
+    expect(res.json).toHaveBeenCalledWith(expect.objectContaining({ code: 'not_signed_in' }))
+  })
+
+  it('returns 503 with code "missing_key" when signed in but ANTHROPIC_API_KEY is unset', async () => {
+    vi.mocked(getUserId).mockResolvedValue('user_1')
     const original = process.env.ANTHROPIC_API_KEY
     delete process.env.ANTHROPIC_API_KEY
     try {
@@ -83,14 +103,8 @@ describe('POST /api/ai/analyze', () => {
     }
   })
 
-  it('returns 405 for a non-POST method', async () => {
-    const req = { method: 'GET' } as unknown as VercelRequest
-    const res = mockRes()
-    await handler(req, res)
-    expect(res.status).toHaveBeenCalledWith(405)
-  })
-
-  it('returns 400 with code "invalid_input" for an empty body', async () => {
+  it('returns 400 with code "invalid_input" for an empty body when signed in', async () => {
+    vi.mocked(getUserId).mockResolvedValue('user_1')
     process.env.ANTHROPIC_API_KEY = 'test-key-not-used-in-this-path'
     const req = { method: 'POST', body: {} } as unknown as VercelRequest
     const res = mockRes()

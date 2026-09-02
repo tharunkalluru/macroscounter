@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
+import { getUserId } from '../_auth.js'
 
 const MAX_DESCRIPTION_CHARS = 1000
 // ~4MB decoded, comfortably under Vercel's ~4.5MB function body limit.
@@ -99,6 +100,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return
   }
 
+  const userId = await getUserId(req)
+  if (!userId) {
+    res.status(401).json({ error: 'Sign in to use AI logging.', code: 'not_signed_in' })
+    return
+  }
+
   const apiKey = process.env.ANTHROPIC_API_KEY
   if (!apiKey) {
     res.status(503).json({ error: 'AI logging is not configured yet.', code: 'missing_key' })
@@ -115,19 +122,19 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const client = new Anthropic({ apiKey })
     const items = await analyzeMeal(client, validated.value)
     if (!items) {
-      res.status(502).json({ error: "Couldn't analyse that — try again.", code: 'upstream_error' })
+      res.status(502).json({ error: "Couldn't analyse that - try again.", code: 'upstream_error' })
       return
     }
     res.status(200).json({ items })
   } catch (err) {
     if (err instanceof Anthropic.RateLimitError) {
-      res.status(429).json({ error: 'Too many requests — try again shortly.', code: 'rate_limited' })
+      res.status(429).json({ error: 'Too many requests - try again shortly.', code: 'rate_limited' })
       return
     }
     if (err instanceof Anthropic.APIError) {
-      res.status(502).json({ error: "Couldn't analyse that — try again.", code: 'upstream_error' })
+      res.status(502).json({ error: "Couldn't analyse that - try again.", code: 'upstream_error' })
       return
     }
-    res.status(500).json({ error: "Couldn't analyse that — try again.", code: 'upstream_error' })
+    res.status(500).json({ error: "Couldn't analyse that - try again.", code: 'upstream_error' })
   }
 }

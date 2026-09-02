@@ -78,7 +78,7 @@ export default function AiLogResultPage() {
 
       {items.length === 0 ? (
         <p className="text-sm text-slate-500 dark:text-slate-400">
-          Couldn't identify anything from that — try describing it differently or taking another photo.
+          Couldn't identify anything from that - try describing it differently or taking another photo.
         </p>
       ) : (
         <>
@@ -123,7 +123,7 @@ export default function AiLogResultPage() {
           </div>
 
           <p className="mt-3 text-caption text-slate-500 dark:text-slate-400">
-            AI-estimated, not looked up in the food database — edit quantities from the food log after logging if
+            AI-estimated, not looked up in the food database - edit quantities from the food log after logging if
             needed.
           </p>
         </>

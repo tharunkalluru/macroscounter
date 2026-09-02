@@ -54,7 +54,7 @@ export default function ExportPage() {
     <div className="mx-auto max-w-md px-6 py-8">
       <PageHeader title="Export data" backTo="/settings" />
       <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
-        Downloads a CSV file to this device — everything you've logged, in full.
+        Downloads a CSV file to this device - everything you've logged, in full.
       </p>
 
       <div className="flex flex-col gap-3">

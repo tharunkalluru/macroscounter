@@ -358,7 +358,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         )}
 
         {step === 'body-fat' && (
-          <StepShell title="What's your body composition?" subtitle="Optional — skip if you're not sure.">
+          <StepShell title="What's your body composition?" subtitle="Optional - skip if you're not sure.">
             <ChoiceGrid
               legend="Body fat"
               options={BODY_FAT_OPTIONS}
@@ -413,7 +413,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
               {preview && (
                 <div className="grid grid-cols-2 gap-2">
                   <SummaryTile label="Daily budget" value={`${preview.kcal} kcal`} />
-                  <SummaryTile label="Reach goal by" value={goalDateISO ? formatShortDate(goalDateISO) : '—'} />
+                  <SummaryTile label="Reach goal by" value={goalDateISO ? formatShortDate(goalDateISO) : '-'} />
                 </div>
               )}
               {goalWeightLb !== null && (
@@ -502,10 +502,10 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         )}
 
         {step === 'coach-reveal' && (
-          <StepShell title="Here's the math" subtitle="No guesswork — just your numbers.">
+          <StepShell title="Here's the math" subtitle="No guesswork - just your numbers.">
             {preview ? (
               <div className="flex flex-col gap-3">
-                <CoachMessage>Alright — I've got enough to estimate what you burn on an average day.</CoachMessage>
+                <CoachMessage>Alright - I've got enough to estimate what you burn on an average day.</CoachMessage>
                 <CoachMessage testId="coach-reveal-summary">
                   <p className="mb-2 text-caption uppercase tracking-widest text-brand-600 dark:text-brand-400">
                     Estimated daily expenditure
@@ -530,12 +530,12 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
                   </p>
                 </CoachMessage>
                 <CoachMessage>
-                  Weigh in most mornings and log most meals — that's all the algorithm needs.
+                  Weigh in most mornings and log most meals - that's all the algorithm needs.
                 </CoachMessage>
                 {showExplain && (
                   <CoachMessage testId="coach-reveal-explain">
                     We start from the Mifflin-St Jeor formula for your base metabolic rate, scale it by your
-                    activity level, then apply your goal rate as a deficit or surplus — never below your safety
+                    activity level, then apply your goal rate as a deficit or surplus - never below your safety
                     floor.
                   </CoachMessage>
                 )}
@@ -586,7 +586,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
                 {showExplain && (
                   <p className="text-sm text-slate-500 dark:text-slate-400" data-testid="onboarding-explain-text">
                     Your target comes from your base metabolic rate, adjusted for activity and your chosen goal
-                    rate, then split into macros by your diet-style and protein-priority choices — never below
+                    rate, then split into macros by your diet-style and protein-priority choices - never below
                     your safety floor. We'll recalculate every Monday from what actually happened.
                   </p>
                 )}

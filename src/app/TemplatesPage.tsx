@@ -136,7 +136,7 @@ export default function TemplatesPage() {
         ))}
         {templates.length === 0 && (
           <li className="text-sm text-slate-500 dark:text-slate-400">
-            No templates yet — save a meal from the Log tab as a template to see it here.
+            No templates yet - save a meal from the Log tab as a template to see it here.
           </li>
         )}
       </ul>

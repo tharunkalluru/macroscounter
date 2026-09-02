@@ -52,6 +52,7 @@ test('navigate to a past day, edit an entry, verify the calendar color updates',
 
   // Bump grams way up so the day crosses into the red band (>1790.8 kcal).
   await page.getByRole('button', { name: 'Edit Idli' }).click()
+  await page.getByTestId('entry-detail-edit-button').click()
   await page.getByTestId('portion-grams-input').fill('2000') // 2000g -> 2050 kcal
   await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/history/2026-08-10')

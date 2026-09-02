@@ -53,7 +53,7 @@ export const DIET_STYLE_OPTIONS: {
   description: string
   fatGPerKg?: number
 }[] = [
-  { value: 'balanced', label: 'Balanced', description: "Roti and rice stay in — today's default" },
+  { value: 'balanced', label: 'Balanced', description: "Roti and rice stay in - today's default" },
   { value: 'low_fat', label: 'Low-fat', description: 'Less ghee & oil', fatGPerKg: 0.5 },
   { value: 'low_carb', label: 'Low-carb', description: 'Fewer grains', fatGPerKg: 1.1 },
   { value: 'keto', label: 'Keto', description: 'Under 30g carbs', fatGPerKg: 1.5 },
@@ -82,12 +82,12 @@ export const CALORIE_FLOOR_OPTIONS: {
   /** Overrides the standard floor outright rather than buffering above it — see goalEngine's floorKcal input. */
   floorKcalOverride?: number
 }[] = [
-  { value: 'standard', label: 'Standard', description: "Bitewise's usual safety floor — never below 1,200" },
+  { value: 'standard', label: 'Standard', description: "Bitewise's usual safety floor - never below 1,200" },
   { value: 'gentler', label: 'Gentler', description: '+150 kcal/day buffer above the floor', floorBufferKcal: 150 },
   {
     value: 'low',
     label: 'Low',
-    description: 'Below 800 — medical supervision recommended',
+    description: 'Below 800 - medical supervision recommended',
     floorKcalOverride: 800,
   },
 ]

@@ -38,7 +38,7 @@ export default function InsightsSection() {
   if (insights.length === 0) {
     return (
       <p className="text-sm text-slate-500 dark:text-slate-400">
-        Keep logging — patterns in how you eat will show up here.
+        Keep logging - patterns in how you eat will show up here.
       </p>
     )
   }

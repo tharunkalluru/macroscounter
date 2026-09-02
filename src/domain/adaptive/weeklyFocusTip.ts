@@ -17,5 +17,5 @@ export function computeWeeklyFocusTip(days: DayProteinPoint[]): string | null {
   const avg = days.reduce((sum, d) => sum + d.hitRate, 0) / days.length
   const worst = [...days].sort((a, b) => a.hitRate - b.hitRate)[0]
   if (avg - worst.hitRate < 0.15) return null
-  return `Protein on ${WEEKDAY_NAMES[worst.weekday]} is your weak spot this week — worth planning ahead for it.`
+  return `Protein on ${WEEKDAY_NAMES[worst.weekday]} is your weak spot this week - worth planning ahead for it.`
 }

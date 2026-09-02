@@ -21,7 +21,7 @@ export default function GoalRateSlider({ direction, valueLbPerWeek, onChange }: 
           {valueLbPerWeek.toFixed(2)} lb/week
         </p>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Aim to {verb} {valueLbPerWeek.toFixed(2)} lb a week — about {kcalPerDay} kcal/day{' '}
+          Aim to {verb} {valueLbPerWeek.toFixed(2)} lb a week - about {kcalPerDay} kcal/day{' '}
           {direction === 'cut' ? 'deficit' : 'surplus'}.
         </p>
       </div>

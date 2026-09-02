@@ -6,6 +6,30 @@ async function onboard(page: Page) {
   await onboardHelper(page, { name: 'AI Logging Persona' })
 }
 
+// AI logging requires a signed-in session -- mock better-auth's session
+// endpoint so useSession() resolves to a signed-in user without a real
+// Google OAuth round-trip (not automatable in this suite).
+async function mockSignedIn(page: Page) {
+  await page.route('**/api/auth/get-session', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        session: { id: 'sess_1', userId: 'user_1', expiresAt: new Date(Date.now() + 3600_000).toISOString() },
+        user: {
+          id: 'user_1',
+          email: 'persona@example.com',
+          name: 'AI Logging Persona',
+          image: null,
+          emailVerified: true,
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+        },
+      }),
+    })
+  )
+}
+
 async function openAiTab(page: Page) {
   await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await expect(page.getByTestId('bottom-sheet')).toBeVisible()
@@ -13,9 +37,20 @@ async function openAiTab(page: Page) {
   await expect(page).toHaveURL(/\/log\/ai\?meal=breakfast/)
 }
 
+test('a guest is prompted to sign in instead of seeing the AI input screen', async ({ page }) => {
+  await onboard(page)
+  await openAiTab(page)
+
+  await expect(page.getByText('Sign in to use AI logging')).toBeVisible()
+  await expect(page.getByTestId('ai-signin-button')).toBeVisible()
+  await expect(page.getByTestId('ai-description-input')).not.toBeVisible()
+})
+
 test('describing a meal in text analyses it and logs the result', async ({ page }) => {
   await onboard(page)
   const kcalBefore = Number(await page.getByTestId('kcal-remaining').textContent())
+  await mockSignedIn(page)
+  await page.reload()
   await openAiTab(page)
 
   await page.route('**/api/ai/analyze', (route) =>
@@ -53,6 +88,8 @@ test('describing a meal in text analyses it and logs the result', async ({ page 
 
 test('a low-confidence (photo-estimated) item shows the size-estimated flag', async ({ page }) => {
   await onboard(page)
+  await mockSignedIn(page)
+  await page.reload()
   await openAiTab(page)
 
   await page.route('**/api/ai/analyze', (route) =>
@@ -84,6 +121,8 @@ test('a low-confidence (photo-estimated) item shows the size-estimated flag', as
 
 test('a missing API key shows a clear fallback message instead of a raw error', async ({ page }) => {
   await onboard(page)
+  await mockSignedIn(page)
+  await page.reload()
   await openAiTab(page)
 
   await page.route('**/api/ai/analyze', (route) =>
@@ -103,6 +142,8 @@ test('a missing API key shows a clear fallback message instead of a raw error', 
 
 test('selecting a photo shows a preview, and it can be removed before analysing', async ({ page }) => {
   await onboard(page)
+  await mockSignedIn(page)
+  await page.reload()
   await openAiTab(page)
 
   await expect(page.getByTestId('ai-photo-add')).toBeVisible()

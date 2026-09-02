@@ -185,7 +185,7 @@ export default function ScanPage() {
         )}
         {cameraStatus === 'unavailable' && (
           <p className="p-4 text-center text-sm text-slate-300">
-            Camera unavailable — use manual entry below.
+            Camera unavailable - use manual entry below.
           </p>
         )}
         {cameraStatus === 'active' && torchSupported && (

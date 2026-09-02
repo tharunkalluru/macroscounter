@@ -128,7 +128,7 @@ test('reaching a goal weight shows the full-screen takeover on the next app open
   await page.goto('/settings')
   await page.getByTestId('goal-weight-input').fill('90')
   await page.getByRole('button', { name: 'Save & recalculate' }).click()
-  await expect(page.getByText('Saved — targets recalculated.')).toBeVisible()
+  await expect(page.getByText('Saved - targets recalculated.')).toBeVisible()
 
   await page.goto('/weight')
   // Three weigh-ins at the goal weight -> projectGoalWeight resolves 'at-goal'.

@@ -1,6 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
 import { useMemo } from 'react'
-import { useNavigate } from 'react-router-dom'
 import type { LogEntry, Meal } from '../../data/models'
 import EntryRow from './EntryRow'
 
@@ -28,8 +27,6 @@ function formatHour(hour: number): string {
 
 /** Hour-by-hour grouping of a day's entries (the design's Log-tab Timeline view, frame 12). */
 export default function TimelineView({ entries, onDelete }: Props) {
-  const navigate = useNavigate()
-
   const byHour = useMemo(() => {
     const grouped = new Map<number, LogEntry[]>()
     for (const entry of entries) {
@@ -39,10 +36,6 @@ export default function TimelineView({ entries, onDelete }: Props) {
     }
     return [...grouped.entries()].sort((a, b) => a[0] - b[0])
   }, [entries])
-
-  function handleRowTap(entry: LogEntry) {
-    navigate(entry.customSnapshot ? `/log/quick-add?entryId=${entry.id}` : `/log/edit/${entry.id}`)
-  }
 
   if (byHour.length === 0) {
     return (
@@ -67,7 +60,6 @@ export default function TimelineView({ entries, onDelete }: Props) {
                   <EntryRow
                     key={entry.id}
                     entry={entry}
-                    onTap={handleRowTap}
                     onSwipeDelete={(e) => e.id !== undefined && onDelete(e.id)}
                   />
                 ))}

@@ -94,7 +94,7 @@ export default function GoalReachedTakeover() {
   }
 
   async function handleShare() {
-    const text = `I lost ${stats?.lbLost} lb over ${stats?.weeksElapsed} weeks with Bitewise — averaging ${stats?.lbPerWeekAvg} lb/week.`
+    const text = `I lost ${stats?.lbLost} lb over ${stats?.weeksElapsed} weeks with Bitewise - averaging ${stats?.lbPerWeekAvg} lb/week.`
     if (navigator.share) {
       try {
         await navigator.share({ text })

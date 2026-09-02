@@ -32,7 +32,7 @@ export default class ErrorBoundary extends Component<Props, State> {
             Something went wrong
           </h1>
           <p className="max-w-sm text-sm text-slate-500 dark:text-slate-400">
-            Bitewise hit an unexpected error. Your logged data is safe on this device — try
+            Bitewise hit an unexpected error. Your logged data is safe on this device - try
             reloading.
           </p>
           <button

@@ -36,14 +36,21 @@ export default function QuickAddPage() {
     if (editingId === null) return
     ;(async () => {
       const entry = await new LogRepo().getById(editingId)
-      if (!entry?.customSnapshot) return
+      if (!entry) return
+      // Entries with a customSnapshot (quick-add, AI logging) use its exact
+      // saved values; everything else routed here has neither a foodId nor
+      // a recipeId (e.g. a barcode-scanned entry -- AddFoodPage only knows
+      // how to re-select those two kinds), so fall back to the entry's own
+      // denormalized fields, which every LogEntry carries regardless of
+      // source.
+      const snapshot = entry.customSnapshot ?? { name: entry.name, kcal: entry.kcal, p: entry.p, c: entry.c, f: entry.f }
       setMeal(entry.meal)
       setEntryDate(entry.date)
-      setName(entry.customSnapshot.name)
-      setKcal(String(entry.customSnapshot.kcal))
-      setP(String(entry.customSnapshot.p))
-      setC(String(entry.customSnapshot.c))
-      setF(String(entry.customSnapshot.f))
+      setName(snapshot.name)
+      setKcal(String(snapshot.kcal))
+      setP(String(snapshot.p))
+      setC(String(snapshot.c))
+      setF(String(snapshot.f))
     })()
   }, [editingId])
 

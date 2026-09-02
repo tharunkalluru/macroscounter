@@ -54,7 +54,7 @@ export default function CoachProgramUpdatePage() {
     return (
       <div className="mx-auto max-w-md px-6 py-8">
         <p className="text-sm text-slate-500 dark:text-slate-400" data-testid="program-update-none">
-          Nothing to update right now — a new plan appears here once a weekly check-in has a real
+          Nothing to update right now - a new plan appears here once a weekly check-in has a real
           adjustment to suggest.
         </p>
         <button
