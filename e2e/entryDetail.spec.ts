@@ -6,7 +6,7 @@ async function onboard(page: Page) {
   await onboardHelper(page, { name: 'Entry Detail Persona' })
 }
 
-test('tapping a food-database entry shows its macro breakdown, then Edit opens the portion form', async ({
+test('tapping a food-database entry shows an editable serving size, pre-filled with its current grams', async ({
   page,
 }) => {
   await onboard(page)
@@ -14,19 +14,42 @@ test('tapping a food-database entry shows its macro breakdown, then Edit opens t
   await page.getByTestId('fab-scan').click() // 02:00 fixed clock -> defaults to breakfast
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
-  await page.getByTestId('log-entry-button').click()
+  await page.getByTestId('log-entry-button').click() // 40g default portion -> 41 kcal
 
   await page.getByRole('button', { name: 'Edit Idli' }).click()
   await expect(page.getByTestId('bottom-sheet')).toBeVisible()
   await expect(page.getByTestId('bottom-sheet')).toContainText('Idli')
-  await expect(page.getByTestId('entry-detail-content')).toContainText('kcal')
-  await expect(page.getByTestId('entry-detail-content')).toContainText('Protein')
-  await expect(page.getByTestId('entry-detail-content')).toContainText('Carbs')
-  await expect(page.getByTestId('entry-detail-content')).toContainText('Fat')
+  await expect(page.getByTestId('portion-grams-input')).toHaveValue('40')
+  await expect(page.getByTestId('entry-preview')).toContainText('41 kcal')
 
+  // A "Edit name or food" escape hatch still reaches the full form.
   await page.getByTestId('entry-detail-edit-button').click()
   await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
   await expect(page.getByTestId('portion-grams-input')).toBeVisible()
+})
+
+test('editing the serving size in the detail sheet recomputes and saves the other macros', async ({ page }) => {
+  await onboard(page)
+
+  await page.getByTestId('fab-scan').click()
+  await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
+  await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
+  await page.getByTestId('portion-grams-input').fill('40')
+  await page.getByTestId('log-entry-button').click() // 40g -> 41 kcal
+
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('41')
+
+  await page.getByRole('button', { name: 'Edit Idli' }).click()
+  await page.getByTestId('portion-grams-input').fill('80')
+  await expect(page.getByTestId('entry-preview')).toContainText('82 kcal') // 102.5 kcal/100g * 80g
+  await page.getByTestId('log-entry-button').click()
+
+  await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('82')
+
+  // Re-opening shows the saved 80g, not the original 40g.
+  await page.getByRole('button', { name: 'Edit Idli' }).click()
+  await expect(page.getByTestId('portion-grams-input')).toHaveValue('80')
 })
 
 test('tapping a custom quick-add entry shows its macros, then Edit opens the quick-add form pre-filled', async ({
