@@ -1,6 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import { computeGoalTargets, computeKcalFloor } from './goalEngine'
+import { computeFiberTarget, computeGoalTargets, computeKcalFloor } from './goalEngine'
 import type { GoalEngineInput } from './types'
+
+describe('computeFiberTarget', () => {
+  it('Institute of Medicine (2005) Adequate Intake — a flat sex/age target, not scaled by kcal', () => {
+    expect(computeFiberTarget('male', 30)).toBe(38)
+    expect(computeFiberTarget('male', 50)).toBe(38) // 51+ is the cutoff, not 50
+    expect(computeFiberTarget('male', 51)).toBe(30)
+    expect(computeFiberTarget('female', 30)).toBe(25)
+    expect(computeFiberTarget('female', 50)).toBe(25)
+    expect(computeFiberTarget('female', 51)).toBe(21)
+  })
+})
 
 describe('computeKcalFloor', () => {
   it('matches the floor computeGoalTargets applies internally for a cut', () => {
@@ -35,6 +46,7 @@ describe('computeGoalTargets — hand-computed fixtures', () => {
     expect(result.proteinG).toBe(126)
     expect(result.fatG).toBe(49)
     expect(result.carbsG).toBe(171)
+    expect(result.fiberG).toBe(38) // male, 28 -> IOM Adequate Intake
   })
 
   it('female, very_active, cut: no floor binds', () => {
@@ -53,6 +65,7 @@ describe('computeGoalTargets — hand-computed fixtures', () => {
     expect(result.proteinG).toBe(108)
     expect(result.fatG).toBe(42)
     expect(result.carbsG).toBe(309)
+    expect(result.fiberG).toBe(25) // female, 26 -> IOM Adequate Intake
   })
 
   it('female, very low bodyweight: absolute 1200 kcal floor binds', () => {

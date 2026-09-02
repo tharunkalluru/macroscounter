@@ -36,6 +36,7 @@ export function parseFDCResponse(barcode: string, json: unknown): ParsedProduct 
   const p = findAmount(nutrients, 'Protein')
   const c = findAmount(nutrients, 'Carbohydrate, by difference')
   const f = findAmount(nutrients, 'Total lipid (fat)')
+  const fiber = findAmount(nutrients, 'Fiber, total dietary')
 
   if (kcal === undefined || p === undefined || c === undefined || f === undefined) return null
 
@@ -45,7 +46,7 @@ export function parseFDCResponse(barcode: string, json: unknown): ParsedProduct 
     barcode,
     name: typeof food.description === 'string' ? food.description : 'Unknown product',
     brand: typeof food.brandOwner === 'string' ? food.brandOwner : undefined,
-    per100g: { kcal: round1(kcal), p: round1(p), c: round1(c), f: round1(f) },
+    per100g: { kcal: round1(kcal), p: round1(p), c: round1(c), f: round1(f), fiber: fiber === undefined ? undefined : round1(fiber) },
     servingSize,
     source: 'fdc',
   }

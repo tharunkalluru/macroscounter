@@ -12,8 +12,6 @@ const MIN_PROTEIN_G_PER_KG = 1.6
 const MAX_PROTEIN_G_PER_KG = 2.2
 const DEFAULT_PROTEIN_G_PER_KG = 1.8
 const MIN_FAT_G_PER_KG = 0.7
-/** Institute of Medicine dietary guideline: ~14g fiber per 1000 kcal. */
-const FIBER_G_PER_1000_KCAL = 14
 const CUT_DEFICIT_KCAL = 500
 const GAIN_SURPLUS_KCAL = 300
 const MALE_KCAL_FLOOR = 1500
@@ -27,6 +25,18 @@ export function calculateBMR(sex: Sex, weightKg: number, heightCm: number, age: 
 
 export function calculateTDEE(bmr: number, activityLevel: ActivityLevel): number {
   return bmr * ACTIVITY_MULTIPLIERS[activityLevel]
+}
+
+/**
+ * Institute of Medicine (2005) Adequate Intake for total fiber — a flat
+ * sex/age target, not scaled by the user's own kcal target: fiber should
+ * stay high through a cut (it's what keeps a deficit satiating), so tying
+ * it to a possibly-reduced calorie target would push exactly the wrong
+ * direction for the people who benefit from fiber most.
+ */
+export function computeFiberTarget(sex: Sex, age: number): number {
+  if (sex === 'male') return age > 50 ? 30 : 38
+  return age > 50 ? 21 : 25
 }
 
 /** The same never-below-this-many-kcal floor `computeGoalTargets` uses for 'cut' — exported for Phase 7's adaptive job. */
@@ -84,7 +94,7 @@ export function computeGoalTargets(input: GoalEngineInput): GoalEngineResult {
   const carbsKcal = kcal - proteinG * 4 - fatG * 9
   const carbsG = Math.max(0, round(carbsKcal / 4))
 
-  const fiberG = round((kcal / 1000) * FIBER_G_PER_1000_KCAL)
+  const fiberG = computeFiberTarget(sex, age)
 
   return { kcal, proteinG, carbsG, fatG, fiberG, bmr, tdee }
 }

@@ -8,6 +8,7 @@ import { onboard as onboardHelper } from './helpers/onboard'
 const __dirname = dirname(fileURLToPath(import.meta.url))
 const fixturesDir = resolve(__dirname, '../src/domain/barcode/fixtures')
 const multipackBiscuits = JSON.parse(readFileSync(resolve(fixturesDir, 'off-multipack-biscuits.json'), 'utf-8'))
+const britanniaGoodDay = JSON.parse(readFileSync(resolve(fixturesDir, 'off-britannia-goodday.json'), 'utf-8'))
 
 async function onboard(page: Page) {
   await onboardHelper(page, { name: 'Barcode Flow Persona' })
@@ -51,4 +52,32 @@ test('the product card shows brand, image, and per-100g summary, prefilled with 
   await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('figure-eaten').locator('p').first()).not.toHaveText('0')
+})
+
+test('logging a servings-mode product still records fiber even when the source declares per-serving macros but not per-serving fiber', async ({
+  page,
+}) => {
+  await onboard(page)
+  // Real-world OFF gap: this fixture has fiber_100g (1.5) but no
+  // fiber_serving, alongside a full per-serving kcal/protein/carbs/fat
+  // (which is what puts ServingPortionStep into per-serving mode in the
+  // first place) -- fiber must be derived from per100g x grams instead of
+  // silently dropped just because the other three macros came from the
+  // source's own per-serving figures.
+  await page.route('**/api/v2/product/8901063114074.json', (route) =>
+    route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(britanniaGoodDay) })
+  )
+
+  await page.getByTestId('fab-scan').click()
+  await page.getByTestId('sheet-scan-button').click()
+  await page.getByPlaceholder('Enter barcode number').fill('8901063114074')
+  await page.getByRole('button', { name: 'Look up' }).click()
+
+  await expect(page.getByTestId('scanned-product-name')).toHaveText('Good Day Cashew Cookies')
+  await expect(page.getByTestId('portion-servings-input')).toHaveValue('1')
+  await page.getByTestId('log-entry-button').click()
+
+  await expect(page).toHaveURL('/')
+  // 1.5g fiber/100g * 30g serving = 0.45 -> rounds to 1g displayed.
+  await expect(page.getByTestId('fiber-bar-value')).toContainText('1 /')
 })

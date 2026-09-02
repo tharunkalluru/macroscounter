@@ -9,7 +9,7 @@ describe('parseFDCResponse', () => {
     expect(result).not.toBeNull()
     expect(result?.name).toBe('CHOCOLATE CHIP COOKIES')
     expect(result?.brand).toBe('GENERIC BRAND FOODS')
-    expect(result?.per100g).toEqual({ kcal: 480, p: 6.7, c: 63.3, f: 20 })
+    expect(result?.per100g).toEqual({ kcal: 480, p: 6.7, c: 63.3, f: 20, fiber: 3.3 })
     expect(result?.servingSize).toBe(30)
     expect(result?.source).toBe('fdc')
   })

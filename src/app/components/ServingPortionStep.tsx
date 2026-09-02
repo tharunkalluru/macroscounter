@@ -51,7 +51,15 @@ export default function ServingPortionStep({
   const preview =
     servings > 0
       ? perServing
-        ? computeMacrosForServings(perServing, servings)
+        ? {
+            ...computeMacrosForServings(perServing, servings),
+            // A source's own per-serving figures rarely include fiber even
+            // when its per-100g figures do (manufacturers commonly declare
+            // only the primary four per serving) -- derive it from per100g
+            // instead of silently dropping it when perServing.fiber is
+            // absent, rather than only when perServing itself is unset.
+            fiber: perServing.fiber ?? computeMacrosForGrams(per100g, grams).fiber,
+          }
         : computeMacrosForGrams(per100g, grams)
       : null
 

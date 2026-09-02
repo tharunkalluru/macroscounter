@@ -80,6 +80,7 @@ export function parseOFFResponse(barcode: string, json: unknown): ParsedProduct 
           p: round2(pServing as number),
           c: round2(cServing as number),
           f: round2(fServing as number),
+          fiber: optionalRound(numField('fiber_serving'), round2),
         }
       : undefined,
     servingSize: parseServingSize(servingSizeText),
