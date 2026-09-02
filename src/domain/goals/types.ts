@@ -45,6 +45,7 @@ export interface GoalEngineResult {
   proteinG: number
   carbsG: number
   fatG: number
+  fiberG: number
   bmr: number
   tdee: number
 }

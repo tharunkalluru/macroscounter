@@ -9,7 +9,7 @@ import { deriveCurrentProgram, type CurrentProgram } from '../domain/programs/pr
 import { projectGoalWeight } from '../domain/goals/weightProjection'
 import { kgToLb } from '../domain/units/weight'
 import { todayISO } from '../lib/date'
-import { CoachIcon } from './shell/icons'
+import { CoachIcon, SparkleIcon } from './shell/icons'
 
 interface GoalSection {
   startLb: number
@@ -81,6 +81,22 @@ export default function CoachPage() {
         <h1 className="text-title text-slate-900 dark:text-slate-100">Strategy</h1>
       </div>
       <div className="hr-fade mb-4" />
+
+      <Link
+        to="/coach/chat"
+        data-testid="ask-coach-link"
+        className="mb-4 flex min-h-touch items-center gap-3 rounded-card border border-brand-600 bg-brand-50 p-4 shadow-card transition-transform active:scale-[0.98] dark:border-brand-400 dark:bg-slate-800"
+      >
+        <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-brand-600 text-white dark:bg-brand-400 dark:text-slate-900">
+          <SparkleIcon className="h-5 w-5" />
+        </span>
+        <span className="min-w-0 flex-1">
+          <span className="block font-semibold text-slate-900 dark:text-slate-100">Ask your coach</span>
+          <span className="block text-caption text-slate-500 dark:text-slate-400">
+            Chat about your progress, targets, and habits - grounded in your own data.
+          </span>
+        </span>
+      </Link>
 
       <Link
         to="/coach/check-in"

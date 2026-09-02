@@ -32,6 +32,18 @@ export function CoachMessage({ children, testId }: { children: ReactNode; testId
   )
 }
 
+/** A plain sent-message bubble for the user's side of a free-text chat thread — CoachQuickReply is for tappable canned replies, this is for whatever the user actually typed/said. */
+export function CoachUserMessage({ children, testId }: { children: ReactNode; testId?: string }) {
+  return (
+    <div
+      data-testid={testId}
+      className="max-w-[85%] self-end rounded-2xl rounded-br-md bg-brand-700 px-3.5 py-2.5 text-sm leading-relaxed text-white"
+    >
+      {children}
+    </div>
+  )
+}
+
 export function CoachQuickReply({
   children,
   onClick,

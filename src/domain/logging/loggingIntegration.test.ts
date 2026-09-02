@@ -49,7 +49,7 @@ describe('logging integration: log -> totals update -> edit qty -> totals update
     })
 
     let entries = await logRepo.getEntriesForDate(today)
-    expect(sumMacros(entries)).toEqual({ kcal: 175, p: 8.1, c: 28, f: 3.4 })
+    expect(sumMacros(entries)).toEqual({ kcal: 175, p: 8.1, c: 28, f: 3.4, fiber: 0 })
 
     // Edit idli qty 2 -> 3 (80g -> 120g)
     await logRepo.updateEntry(idliId, {
@@ -62,16 +62,16 @@ describe('logging integration: log -> totals update -> edit qty -> totals update
       portionSummary: '3 x 1 idli',
     })
     entries = await logRepo.getEntriesForDate(today)
-    expect(sumMacros(entries)).toEqual({ kcal: 216, p: 9.9, c: 36, f: 3.6 })
+    expect(sumMacros(entries)).toEqual({ kcal: 216, p: 9.9, c: 36, f: 3.6, fiber: 0 })
 
     // Delete sambar -> totals revert to the updated idli entry alone
     await logRepo.deleteEntry(sambarId)
     entries = await logRepo.getEntriesForDate(today)
-    expect(sumMacros(entries)).toEqual({ kcal: 123, p: 5.4, c: 24, f: 0.6 })
+    expect(sumMacros(entries)).toEqual({ kcal: 123, p: 5.4, c: 24, f: 0.6, fiber: 0 })
 
     // Delete idli too -> totals revert to zero
     await logRepo.deleteEntry(idliId)
     entries = await logRepo.getEntriesForDate(today)
-    expect(sumMacros(entries)).toEqual({ kcal: 0, p: 0, c: 0, f: 0 })
+    expect(sumMacros(entries)).toEqual({ kcal: 0, p: 0, c: 0, f: 0, fiber: 0 })
   })
 })

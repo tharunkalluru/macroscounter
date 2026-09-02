@@ -6,7 +6,7 @@ import { addDaysISO, todayISO } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
 import { getDefaultLogView } from '../lib/settings/logViewPreference'
 import DateStrip from './components/DateStrip'
-import { DragHandleIcon } from './shell/icons'
+import EntryRowVisual from './components/EntryRowVisual'
 import MealSection from './components/MealSection'
 import MonthView from './components/MonthView'
 import TimelineView from './components/TimelineView'
@@ -25,6 +25,18 @@ const TABS: { key: Tab; label: string }[] = [
   { key: 'timeline', label: 'Timeline' },
   { key: 'month', label: 'Month' },
 ]
+
+// Hoisted to stable module-level references -- useSensor memoizes internally
+// by object identity, and passing a fresh inline object literal on every
+// render (as this used to) defeats that memoization. That matters here
+// specifically because LogPage re-renders the instant loadEntries()
+// resolves (which happens on every mount, including every time
+// PageTransition's key={location.pathname} remounts this whole page on
+// navigating back to /log), so an unmemoized sensor set was being rebuilt
+// right as the real rows mounted -- the likely cause of "the first drag
+// right after arriving doesn't take."
+const MOUSE_ACTIVATION_CONSTRAINT = { distance: 4 }
+const TOUCH_ACTIVATION_CONSTRAINT = { delay: 200, tolerance: 8 }
 
 /**
  * The Log tab — Meals is the per-meal breakdown; Timeline (Phase F.3) groups
@@ -49,8 +61,8 @@ export default function LogPage() {
   // scroll swipe passes through untouched and only a deliberate hold starts
   // a drag.
   const dragSensors = useSensors(
-    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
-    useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 8 } })
+    useSensor(MouseSensor, { activationConstraint: MOUSE_ACTIVATION_CONSTRAINT }),
+    useSensor(TouchSensor, { activationConstraint: TOUCH_ACTIVATION_CONSTRAINT })
   )
 
   const loadEntries = useCallback(async () => {
@@ -156,13 +168,10 @@ export default function LogPage() {
             <DragOverlay>
               {draggingEntry && (
                 <div
-                  className="flex items-center gap-2 rounded-lg bg-white px-3 py-2 shadow-card dark:bg-surface-dark-card"
+                  className="flex items-center gap-3 rounded-lg bg-white py-2 pl-3 pr-4 shadow-card dark:bg-surface-dark-card"
                   data-testid="entry-drag-overlay"
                 >
-                  <DragHandleIcon className="text-slate-400 dark:text-slate-500" />
-                  <span className="text-body font-medium text-slate-800 dark:text-slate-100">
-                    {draggingEntry.name}
-                  </span>
+                  <EntryRowVisual entry={draggingEntry} />
                 </div>
               )}
             </DragOverlay>

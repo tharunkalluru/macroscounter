@@ -3,9 +3,8 @@ import { motion, useReducedMotion } from 'framer-motion'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LogEntry } from '../../data/models'
-import { formatPortion } from '../../domain/logging/formatPortion'
 import EntryDetailSheet from './EntryDetailSheet'
-import FoodGlyph from './FoodGlyph'
+import EntryRowVisual from './EntryRowVisual'
 import SwipeToDeleteRow from './SwipeToDeleteRow'
 import { DragHandleIcon } from '../shell/icons'
 
@@ -70,21 +69,7 @@ export default function EntryRow({ entry, onSwipeDelete, draggable = false }: Pr
             data-testid={`entry-row-${entry.id}`}
             className={`flex min-h-touch flex-1 items-center gap-3 py-2 text-left ${draggable ? 'pr-3' : 'px-3'}`}
           >
-            <FoodGlyph name={entry.name} size="small" />
-            <div className="min-w-0 flex-1">
-              <p className="truncate text-body font-medium text-slate-800 dark:text-slate-100">{entry.name}</p>
-              <p className="text-caption text-slate-500 dark:text-slate-400">
-                {formatPortion({
-                  qty: entry.qty,
-                  unit: entry.unit,
-                  grams: entry.grams,
-                  portionLabel: entry.portionLabel,
-                  isCustom: !!entry.customSnapshot,
-                })}
-                {' · '}
-                {Math.round(entry.kcal)} kcal
-              </p>
-            </div>
+            <EntryRowVisual entry={entry} />
           </button>
         </div>
       </SwipeToDeleteRow>

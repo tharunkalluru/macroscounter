@@ -12,7 +12,7 @@ const MEAL_LABELS: Record<string, string> = {
 interface Props {
   open: boolean
   onClose: () => void
-  macro: { key: 'p' | 'c' | 'f'; label: string; colorClass: string } | null
+  macro: { key: 'p' | 'c' | 'f' | 'fiber'; label: string; colorClass: string } | null
   entries: LogEntry[]
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { LogRepo } from '../data/repos/LogRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
 import { WeighInRepo } from '../data/repos/WeighInRepo'
@@ -22,6 +23,7 @@ export default function TrendsHabitsPage() {
   const [bestStreak, setBestStreak] = useState(0)
   const [consistency, setConsistency] = useState(0)
   const [week, setWeek] = useState<DayHabit[] | null>(null)
+  const [proteinTargetG, setProteinTargetG] = useState(0)
   const [heatmap, setHeatmap] = useState<{ date: string; logged: boolean }[] | null>(null)
 
   useEffect(() => {
@@ -49,12 +51,14 @@ export default function TrendsHabitsPage() {
 
       const proteinByDate = new Map(groupEntriesByDate(weekEntries).map((d) => [d.date, d.p]))
       const weighInDates = new Set(weighIns.map((w) => w.date))
+      setProteinTargetG(targets?.proteinG ?? 0)
       setWeek(computeHabitsWeek(days, weighInDates, proteinByDate, targets?.proteinG ?? 0))
     })()
   }, [])
 
   const weighInsCompleted = useMemo(() => week?.filter((d) => d.loggedWeighIn).length ?? 0, [week])
   const missedInHeatmap = useMemo(() => heatmap?.filter((d) => !d.logged).length ?? 0, [heatmap])
+  const weekHasProteinData = useMemo(() => week?.some((d) => d.proteinHitRate > 0) ?? false, [week])
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
@@ -112,20 +116,34 @@ export default function TrendsHabitsPage() {
 
           <div className="rounded-card bg-white p-4 shadow-card dark:bg-surface-dark-card" data-testid="protein-habit-chart">
             <p className="mb-2 text-caption text-slate-500 dark:text-slate-400">Protein target hit-rate</p>
-            <div className="flex items-end gap-1.5" style={{ height: 72 }}>
-              {week.map((day, i) => (
-                <div key={day.date} className="flex flex-1 flex-col items-center gap-1">
-                  <div className="flex w-full flex-1 items-end">
-                    <div
-                      data-testid={`protein-day-${day.date}`}
-                      className="w-full rounded-t bg-protein-500"
-                      style={{ height: `${Math.max(day.proteinHitRate * 100, 2)}%` }}
-                    />
+            {proteinTargetG <= 0 ? (
+              <p className="py-4 text-center text-caption text-slate-500 dark:text-slate-400" data-testid="protein-habit-empty">
+                Set a protein target in{' '}
+                <Link to="/settings" className="font-medium text-brand-700 underline dark:text-brand-400">
+                  Settings
+                </Link>{' '}
+                to see your daily hit-rate here.
+              </p>
+            ) : !weekHasProteinData ? (
+              <p className="py-4 text-center text-caption text-slate-500 dark:text-slate-400" data-testid="protein-habit-empty">
+                Log a few meals this week to see this fill in.
+              </p>
+            ) : (
+              <div className="flex items-end gap-1.5" style={{ height: 72 }}>
+                {week.map((day, i) => (
+                  <div key={day.date} className="flex flex-1 flex-col items-center gap-1">
+                    <div className="flex w-full flex-1 items-end">
+                      <div
+                        data-testid={`protein-day-${day.date}`}
+                        className="w-full rounded-t bg-protein-500"
+                        style={{ height: `${Math.max(day.proteinHitRate * 100, 2)}%` }}
+                      />
+                    </div>
+                    <span className="text-caption text-slate-400 dark:text-slate-500">{WEEKDAY_LETTERS[i]}</span>
                   </div>
-                  <span className="text-caption text-slate-400 dark:text-slate-500">{WEEKDAY_LETTERS[i]}</span>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
       )}

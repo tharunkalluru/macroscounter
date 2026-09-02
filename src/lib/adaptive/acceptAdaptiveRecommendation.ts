@@ -21,6 +21,7 @@ export async function acceptAdaptiveRecommendation(recommendation: AdaptiveRecom
     proteinG,
     carbsG,
     fatG,
+    fiberG: currentTargets?.fiberG,
     source: 'adaptive',
   })
 }

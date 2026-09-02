@@ -30,6 +30,7 @@ export default function QuickAddPage() {
   const [p, setP] = useState('')
   const [c, setC] = useState('')
   const [f, setF] = useState('')
+  const [fiber, setFiber] = useState('')
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -43,7 +44,9 @@ export default function QuickAddPage() {
       // how to re-select those two kinds), so fall back to the entry's own
       // denormalized fields, which every LogEntry carries regardless of
       // source.
-      const snapshot = entry.customSnapshot ?? { name: entry.name, kcal: entry.kcal, p: entry.p, c: entry.c, f: entry.f }
+      const snapshot =
+        entry.customSnapshot ??
+        { name: entry.name, kcal: entry.kcal, p: entry.p, c: entry.c, f: entry.f, fiber: entry.fiber }
       setMeal(entry.meal)
       setEntryDate(entry.date)
       setName(snapshot.name)
@@ -51,6 +54,7 @@ export default function QuickAddPage() {
       setP(String(snapshot.p))
       setC(String(snapshot.c))
       setF(String(snapshot.f))
+      setFiber(snapshot.fiber !== undefined ? String(snapshot.fiber) : '')
     })()
   }, [editingId])
 
@@ -62,6 +66,7 @@ export default function QuickAddPage() {
     const pNum = Number(p) || 0
     const cNum = Number(c) || 0
     const fNum = Number(f) || 0
+    const fiberNum = fiber.trim() ? Number(fiber) || 0 : undefined
 
     if (!name.trim()) return setError('Please enter a name.')
     if (!Number.isFinite(kcalNum) || kcalNum < 0) return setError('Calories must be 0 or more.')
@@ -69,7 +74,7 @@ export default function QuickAddPage() {
     const entryData = {
       date: entryDate,
       meal,
-      customSnapshot: { name: name.trim(), kcal: kcalNum, p: pNum, c: cNum, f: fNum },
+      customSnapshot: { name: name.trim(), kcal: kcalNum, p: pNum, c: cNum, f: fNum, fiber: fiberNum },
       name: name.trim(),
       portionSummary: 'custom',
       qty: 1,
@@ -79,6 +84,7 @@ export default function QuickAddPage() {
       p: pNum,
       c: cNum,
       f: fNum,
+      fiber: fiberNum,
     }
 
     const logRepo = new LogRepo()
@@ -147,6 +153,15 @@ export default function QuickAddPage() {
               className={TEXT_INPUT_CLASS}
               value={f}
               onChange={(e) => setF(e.target.value)}
+            />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-sm font-medium">Fiber (g)</span>
+            <input
+              type="number"
+              className={TEXT_INPUT_CLASS}
+              value={fiber}
+              onChange={(e) => setFiber(e.target.value)}
             />
           </label>
         </div>

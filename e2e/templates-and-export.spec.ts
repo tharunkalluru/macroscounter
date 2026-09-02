@@ -57,8 +57,13 @@ test('CSV export downloads parseable files with the correct row counts', async (
   await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
 
   await page.goto('/weight')
-  await page.getByTestId('weight-input-kg').fill('79.5')
-  await page.getByRole('button', { name: 'Log' }).click()
+  await page.getByTestId('weighin-entry-link').click()
+  await expect(page).toHaveURL('/weight/entry')
+  for (const key of '79.5') {
+    await page.getByTestId(`weighin-key-${key}`).click()
+  }
+  await page.getByTestId('weighin-save').click()
+  await expect(page).toHaveURL('/weight')
   await expect(page.getByTestId('weighin-list')).toContainText('79.5 kg')
 
   await page.goto('/export')

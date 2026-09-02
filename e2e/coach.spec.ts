@@ -130,19 +130,32 @@ test('reaching a goal weight shows the full-screen takeover on the next app open
   await page.getByRole('button', { name: 'Save & recalculate' }).click()
   await expect(page.getByText('Saved - targets recalculated.')).toBeVisible()
 
-  await page.goto('/weight')
-  // Three weigh-ins at the goal weight -> projectGoalWeight resolves 'at-goal'.
-  // Waiting for each row to land before the next submission avoids racing
-  // WeightSection's own async save (its Log button has no submitting-disabled guard).
-  for (const date of ['2026-08-10', '2026-08-14', '2026-08-18']) {
-    await page.getByTestId('weight-input-kg').fill('90')
-    await page.locator('input[type="date"]').fill(date)
-    await page.getByRole('button', { name: 'Log' }).click()
-    await expect(page.getByTestId('weighin-list')).toContainText(date)
-  }
-
-  // Not shown reactively at log time -- only checked once per app open.
-  await expect(page.getByTestId('goal-reached-takeover')).not.toBeVisible()
+  // Three weigh-ins at the goal weight -> projectGoalWeight resolves
+  // 'at-goal' (weightProjection.ts's MIN_POINTS=3, MIN_SPAN_DAYS=7). Seeded
+  // directly (mirroring how history.spec.ts seeds an out-of-band target)
+  // rather than through the Weigh-in UI: that flow's own save handler
+  // already marks a reached goal celebrated on the spot (see
+  // WeighInEntryPage's checkGoalReached, needed because /weight/entry lives
+  // outside AppShell, so returning to /weight would otherwise trigger
+  // GoalReachedTakeover's own check immediately) -- exercising this
+  // component's "next app open" behavior instead means arriving at the goal
+  // some other way, e.g. sync from another device, with the app not open
+  // in between.
+  await page.evaluate((dates) => {
+    return new Promise<void>((resolve, reject) => {
+      const req = indexedDB.open('macrodesi')
+      req.onsuccess = () => {
+        const db = req.result
+        const tx = db.transaction('weighIns', 'readwrite')
+        for (const date of dates) {
+          tx.objectStore('weighIns').add({ date, weightKg: 90 })
+        }
+        tx.oncomplete = () => resolve()
+        tx.onerror = () => reject(tx.error)
+      }
+      req.onerror = () => reject(req.error)
+    })
+  }, ['2026-08-10', '2026-08-14', '2026-08-18'])
 
   // A fresh navigation is "the next app open".
   await page.goto('/coach')

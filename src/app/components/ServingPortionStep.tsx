@@ -5,6 +5,7 @@ import {
   type MacroTotals,
   type Per100g,
 } from '../../domain/logging/portionMath'
+import { formatPortion } from '../../domain/logging/formatPortion'
 import type { PortionSaveData } from './PortionStep'
 
 interface Props {
@@ -15,6 +16,12 @@ interface Props {
   servingSize: number
   /** Raw serving-size text from the source, e.g. "325 ml", shown for context. */
   servingSizeText?: string
+  /** When set, this is a real household-unit portion (e.g. "1 idli") -- saves as unit: 'portion' with this label, instead of flattening to grams. Omitted for label-derived servings (e.g. a scanned product's own pack size), which have no discrete unit identity to round-trip. */
+  portionLabel?: string
+  /** Pre-fills the count (edit mode: the entry's current qty). Defaults to 1. */
+  initialServings?: number
+  /** Overrides the button's dynamic "Add {n} servings · {kcal} kcal" text — used for edit mode ("Save changes"). */
+  saveLabel?: string
   onSave: (data: PortionSaveData) => void | Promise<void>
   /** Escape hatch back to the plain grams-first entry (e.g. a partial can, or a size the standard serving doesn't match). */
   onSwitchToGrams: () => void
@@ -31,10 +38,13 @@ export default function ServingPortionStep({
   perServing,
   servingSize,
   servingSizeText,
+  portionLabel,
+  initialServings,
+  saveLabel,
   onSave,
   onSwitchToGrams,
 }: Props) {
-  const [servingsValue, setServingsValue] = useState('1')
+  const [servingsValue, setServingsValue] = useState(String(initialServings ?? 1))
 
   const servings = Number(servingsValue) || 0
   const grams = Math.round(servingSize * servings * 10) / 10
@@ -48,14 +58,18 @@ export default function ServingPortionStep({
   async function handleSave() {
     if (!preview || servings <= 0) return
     await onSave({
-      portionSummary: formatServings(servings),
+      portionSummary: portionLabel
+        ? formatPortion({ qty: servings, unit: 'portion', grams, portionLabel })
+        : formatServings(servings),
       qty: servings,
-      unit: 'grams',
+      unit: portionLabel ? 'portion' : 'grams',
+      portionLabel,
       grams,
       kcal: preview.kcal,
       p: preview.p,
       c: preview.c,
       f: preview.f,
+      fiber: preview.fiber,
     })
   }
 
@@ -112,7 +126,7 @@ export default function ServingPortionStep({
         data-testid="log-entry-button"
         className="mt-4 min-h-touch w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
       >
-        {preview ? `Add ${formatServings(servings)} · ${Math.round(preview.kcal)} kcal` : 'Add'}
+        {saveLabel ?? (preview ? `Add ${formatServings(servings)} · ${Math.round(preview.kcal)} kcal` : 'Add')}
       </button>
 
       <button

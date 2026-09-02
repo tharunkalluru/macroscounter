@@ -78,6 +78,7 @@ export default function GoalReachedTakeover() {
         proteinG: targets.proteinG,
         carbsG: targets.carbsG,
         fatG: targets.fatG,
+        fiberG: targets.fiberG,
         source: 'computed',
       })
       notifyDataChanged()

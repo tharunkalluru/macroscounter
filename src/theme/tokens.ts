@@ -62,9 +62,11 @@ export const brand = {
  * reports. Per the source design's own rule, protein reuses the brand hue
  * (blurple) rather than a fourth distinct color; carbs (sand/gold) and fat
  * (glacier blue) are new hues at the same lightness/saturation curve as
- * brand, so all three read as one consistent family.
+ * brand, so all three read as one consistent family. Fiber (Phase H.1) is a
+ * fourth hue (green) at that identical curve, distinct from the other three.
  * carbs: 500 vs dark bg = 9.99:1; 700 vs white = 5.16:1.
  * fat:   500 vs dark bg = 9.05:1; 700 vs white = 5.90:1.
+ * fiber: 500 vs dark bg = 10.37:1; 700 vs white = 4.72:1.
  */
 export const macros = {
   protein: brand,
@@ -91,6 +93,18 @@ export const macros = {
     700: '#266c84',
     800: '#1b4c5d',
     900: '#12323d',
+  },
+  fiber: {
+    50: '#f3fcf5',
+    100: '#e3f7e8',
+    200: '#ccf0d5',
+    300: '#b0e8be',
+    400: '#a8e6b7',
+    500: '#84d999',
+    600: '#40bf60',
+    700: '#26843d',
+    800: '#1b5d2b',
+    900: '#123d1d',
   },
 } as const
 

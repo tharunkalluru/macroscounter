@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, type FormEvent } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import {
   Area,
   CartesianGrid,
@@ -14,20 +14,17 @@ import { ProfileRepo } from '../../data/repos/ProfileRepo'
 import { WeighInRepo } from '../../data/repos/WeighInRepo'
 import { computeEMA } from '../../domain/history/ema'
 import { kgToLb } from '../../domain/units/weight'
-import { addDaysISO, isFutureDate, todayISO } from '../../lib/date'
+import { addDaysISO, todayISO } from '../../lib/date'
 import { vibrateTiny } from '../../lib/haptics'
 import { isDarkFamily } from '../../domain/theme/resolveTheme'
 import { neutral, semantic, surface, surfaceDark } from '../../theme/tokens'
 import { useTheme } from '../shell/ThemeContext'
-import { TEXT_INPUT_CLASS } from './formStyles'
 import Snackbar from './Snackbar'
 import { WeightSectionSkeleton } from './Skeleton'
 import SwipeToDeleteRow from './SwipeToDeleteRow'
-import WeightInput, { type WeightUnit } from './WeightInput'
+import type { WeightUnit } from './WeightInput'
 
 const UNDO_MS = 5000
-const MIN_KG = 30
-const MAX_KG = 300
 
 const RANGES = [
   { key: '1W', days: 7 },
@@ -46,10 +43,7 @@ export default function WeightSection() {
   const tickColor = isDark ? neutral[400] : neutral[500]
   const [weighIns, setWeighIns] = useState<WeighIn[]>([])
   const [range, setRange] = useState<RangeKey>('3M')
-  const [date, setDate] = useState(todayISO())
-  const [weightKgInput, setWeightKgInput] = useState('')
   const [weightUnit, setWeightUnit] = useState<WeightUnit>('kg')
-  const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
   const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
@@ -95,34 +89,6 @@ export default function WeightSection() {
     return weightUnit === 'lb' ? `${kgToLb(kg)} lb` : `${kg} kg`
   }
 
-  async function handleWeightUnitChange(unit: WeightUnit) {
-    setWeightUnit(unit)
-    const profileRepo = new ProfileRepo()
-    const profile = await profileRepo.get()
-    if (profile) await profileRepo.save({ ...profile, weightUnit: unit })
-  }
-
-  async function handleSubmit(e: FormEvent) {
-    e.preventDefault()
-    setError(null)
-
-    const weightNum = Number(weightKgInput)
-    if (!Number.isFinite(weightNum) || weightNum < MIN_KG || weightNum > MAX_KG) {
-      const bounds =
-        weightUnit === 'lb' ? `${kgToLb(MIN_KG)} and ${kgToLb(MAX_KG)} lb` : `${MIN_KG} and ${MAX_KG} kg`
-      return setError(`Weight must be between ${bounds}.`)
-    }
-    if (isFutureDate(date)) {
-      return setError("You can't log a future weigh-in.")
-    }
-
-    await repo.add({ date, weightKg: weightNum })
-    setWeightKgInput('')
-    await load()
-    // Whether this weigh-in reached the goal is checked once per app open by
-    // GoalReachedTakeover (mounted in AppShell), not reactively here anymore.
-  }
-
   async function handleSwipeDelete(weighIn: WeighIn) {
     if (weighIn.id === undefined) return
     const { id: _id, ...snapshot } = weighIn
@@ -141,39 +107,6 @@ export default function WeightSection() {
 
   return (
     <div>
-      <form
-        onSubmit={handleSubmit}
-        className="flex flex-col gap-4 rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card"
-      >
-        <label className="flex flex-col gap-1">
-          <span className="text-sm font-medium">Date</span>
-          <input
-            type="date"
-            max={todayISO()}
-            className={TEXT_INPUT_CLASS}
-            value={date}
-            onChange={(e) => setDate(e.target.value)}
-          />
-        </label>
-        <WeightInput
-          valueKg={weightKgInput}
-          onChangeKg={setWeightKgInput}
-          unit={weightUnit}
-          onUnitChange={handleWeightUnitChange}
-        />
-        <button
-          type="submit"
-          className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
-        >
-          Log
-        </button>
-      </form>
-      {error && (
-        <p role="alert" className="mt-2 text-sm text-red-600 dark:text-red-400">
-          {error}
-        </p>
-      )}
-
       {weighIns.length > 0 && (
         <div className="mt-6 flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Chart range">
           {RANGES.map((r) => (

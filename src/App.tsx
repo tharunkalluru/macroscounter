@@ -3,6 +3,7 @@ import { Navigate, Route, Routes } from 'react-router-dom'
 import AddFoodPage from './app/AddFoodPage'
 import AiLogPage from './app/AiLogPage'
 import AiLogResultPage from './app/AiLogResultPage'
+import CoachChatPage from './app/CoachChatPage'
 import CoachCheckInPage from './app/CoachCheckInPage'
 import CoachPage from './app/CoachPage'
 import CoachProgramUpdatePage from './app/CoachProgramUpdatePage'
@@ -109,6 +110,7 @@ function App() {
               <Route path="/log/ai" element={<AiLogPage />} />
               <Route path="/log/ai/result" element={<AiLogResultPage />} />
               <Route path="/log/library" element={<LibraryPage />} />
+              <Route path="/coach/chat" element={<CoachChatPage />} />
               <Route path="/coach/check-in" element={<CoachCheckInPage />} />
               <Route path="/coach/check-in/plan" element={<CoachProgramUpdatePage />} />
               <Route path="/recipes/new" element={<RecipeBuilderPage />} />

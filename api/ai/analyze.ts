@@ -15,6 +15,7 @@ const FoodItemSchema = z.object({
   proteinG: z.number(),
   carbsG: z.number(),
   fatG: z.number(),
+  fiberG: z.number(),
   confidence: z.enum(['high', 'low']),
 })
 
@@ -31,7 +32,7 @@ const SYSTEM_PROMPT = `You are a nutrition estimator for a calorie/macro trackin
 
 For each item:
 - Use a stated quantity when the user gives one (e.g. "100g grilled chicken breast"); otherwise estimate a reasonable portion size from visual cues (plate size, common serving sizes) or from typical serving conventions if there's no photo.
-- Compute kcal, protein (g), carbs (g), and fat (g) for that specific quantity, using standard nutrition knowledge for that food and preparation method.
+- Compute kcal, protein (g), carbs (g), fat (g), and dietary fiber (g) for that specific quantity, using standard nutrition knowledge for that food and preparation method.
 - Set confidence to "high" when the user stated an exact quantity, "low" when the portion is your own visual/typical-serving estimate.
 - Only include items actually described or visible — never invent items that weren't mentioned or shown.
 - Return at most 10 items.`

@@ -29,7 +29,7 @@ describe('per-serving vs per-100g math', () => {
     const product = parseOFFResponse('8901491101615', amulButter)!
     const derived = computeMacrosForGrams(product.per100g, product.servingSize!)
     // OFF's own energy-kcal_serving/proteins_serving/etc. for this fixture.
-    expect(derived).toEqual({ kcal: 71.7, p: 0.1, c: 0, f: 8 })
+    expect(derived).toEqual({ kcal: 71.7, p: 0.1, c: 0, f: 8, fiber: 0 })
     // Consistent with the (higher-precision) OFF-reported perServing within rounding.
     expect(derived.kcal).toBeCloseTo(product.perServing!.kcal, 1)
     expect(derived.f).toBeCloseTo(product.perServing!.f, 1)

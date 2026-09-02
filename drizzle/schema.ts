@@ -127,6 +127,9 @@ export const targets = pgTable('targets', {
   proteinG: doublePrecision('protein_g').notNull(),
   carbsG: doublePrecision('carbs_g').notNull(),
   fatG: doublePrecision('fat_g').notNull(),
+  // Phase H.1 -- nullable, no default, a no-op ADD COLUMN for every existing
+  // row; targets computed before this field existed have no fiber goal.
+  fiberG: doublePrecision('fiber_g'),
   source: text('source').notNull(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
@@ -151,6 +154,9 @@ export const logEntries = pgTable('log_entries', {
   p: doublePrecision('p').notNull(),
   c: doublePrecision('c').notNull(),
   f: doublePrecision('f').notNull(),
+  // Phase H.1 -- nullable, no default, a no-op ADD COLUMN for every existing
+  // row; entries logged before this field existed have no fiber value.
+  fiber: doublePrecision('fiber'),
   // Phase F.3 -- nullable, no default, a no-op ADD COLUMN for every
   // existing row; new rows get it stamped by LogRepo.addEntry.
   loggedAt: timestamp('logged_at', { withTimezone: true }),

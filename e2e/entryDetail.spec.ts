@@ -52,6 +52,35 @@ test('editing the serving size in the detail sheet recomputes and saves the othe
   await expect(page.getByTestId('portion-grams-input')).toHaveValue('80')
 })
 
+test('the entry detail sheet offers a servings toggle for foods with known portions', async ({ page }) => {
+  await onboard(page)
+
+  await page.getByTestId('fab-scan').click()
+  await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
+  await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
+  await page.getByTestId('log-entry-button').click() // 40g default -> 41 kcal
+
+  await page.getByRole('button', { name: 'Edit Idli' }).click()
+  await page.getByTestId('entry-edit-mode-servings').click()
+
+  // Idli has two known portions ("1 idli" = 40g, "2 idli" = 80g) -- defaults
+  // to the first, at a count of 1, matching the already-logged 40g.
+  await expect(page.getByTestId('entry-servings-portion-0')).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByTestId('entry-preview')).toContainText('41 kcal')
+
+  await page.getByTestId('entry-servings-portion-1').click() // "2 idli" -> 80g
+  await expect(page.getByTestId('entry-preview')).toContainText('82 kcal') // 102.5 kcal/100g * 80g
+  await page.getByTestId('log-entry-button').click()
+
+  await expect(page.getByTestId('bottom-sheet')).not.toBeVisible()
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('82')
+
+  // Re-opening shows the saved servings selection, not grams.
+  await page.getByRole('button', { name: 'Edit Idli' }).click()
+  await expect(page.getByTestId('entry-edit-mode-servings')).toHaveAttribute('aria-selected', 'true')
+  await expect(page.getByTestId('entry-servings-portion-1')).toHaveAttribute('aria-pressed', 'true')
+})
+
 test('tapping a custom quick-add entry shows its macros, then Edit opens the quick-add form pre-filled', async ({
   page,
 }) => {

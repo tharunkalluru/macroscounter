@@ -66,6 +66,7 @@ test('describing a meal in text analyses it and logs the result', async ({ page 
             proteinG: 31,
             carbsG: 0,
             fatG: 4,
+            fiberG: 0,
             confidence: 'high',
           },
         ],
@@ -78,7 +79,7 @@ test('describing a meal in text analyses it and logs the result', async ({ page 
 
   await expect(page).toHaveURL('/log/ai/result')
   await expect(page.getByTestId('ai-result-list')).toContainText('Grilled chicken breast')
-  await expect(page.getByTestId('ai-result-list')).toContainText('165 kcal · 31P 0C 4F')
+  await expect(page.getByTestId('ai-result-list')).toContainText('165 kcal · 31P 0C 4F 0Fb')
 
   await page.getByTestId('ai-log-all-button').click()
 
@@ -105,6 +106,7 @@ test('a low-confidence (photo-estimated) item shows the size-estimated flag', as
             proteinG: 6,
             carbsG: 22,
             fatG: 11,
+            fiberG: 5,
             confidence: 'low',
           },
         ],

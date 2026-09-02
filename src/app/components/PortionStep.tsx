@@ -1,16 +1,20 @@
 import { useState } from 'react'
 import { computeMacrosForGrams, type Per100g } from '../../domain/logging/portionMath'
 import type { Portion } from '../../domain/fooddb/types'
+import type { Unit } from '../../data/models'
 
 export interface PortionSaveData {
   portionSummary: string
   qty: number
-  unit: 'grams'
+  unit: Unit
+  /** The picked household portion's label (e.g. "1 idli"), set only when unit === 'portion'. */
+  portionLabel?: string
   grams: number
   kcal: number
   p: number
   c: number
   f: number
+  fiber?: number
 }
 
 interface Props {
@@ -66,6 +70,7 @@ export default function PortionStep({
       p: preview.p,
       c: preview.c,
       f: preview.f,
+      fiber: preview.fiber,
     })
   }
 

@@ -43,15 +43,15 @@ describe('applyTemplate', () => {
     )
 
     expect(result).toEqual([
-      { foodId: 'idli', name: 'Idli', portionSummary: '3 x 1 idli', portionLabel: '1 idli', qty: 3, unit: 'portion', grams: 120, kcal: 123, p: 5.4, c: 24, f: 0.6 },
-      { foodId: 'sambar', name: 'Sambar', portionSummary: '1 x 1 katori', portionLabel: '1 katori', qty: 1, unit: 'portion', grams: 150, kcal: 93, p: 4.5, c: 12, f: 3 },
+      { foodId: 'idli', name: 'Idli', portionSummary: '3 x 1 idli', portionLabel: '1 idli', qty: 3, unit: 'portion', grams: 120, kcal: 123, p: 5.4, c: 24, f: 0.6, fiber: 1.1 },
+      { foodId: 'sambar', name: 'Sambar', portionSummary: '1 x 1 katori', portionLabel: '1 katori', qty: 1, unit: 'portion', grams: 150, kcal: 93, p: 4.5, c: 12, f: 3, fiber: 3.3 },
     ])
   })
 
   it('resolves a gram-override entry directly', () => {
     const result = applyTemplate([{ foodId: 'idli', qty: 25, unit: 'grams' }], foodsById)
     expect(result).toEqual([
-      { foodId: 'idli', name: 'Idli', portionSummary: '25 g', qty: 25, unit: 'grams', grams: 25, kcal: 25.6, p: 1.1, c: 5, f: 0.1 },
+      { foodId: 'idli', name: 'Idli', portionSummary: '25 g', qty: 25, unit: 'grams', grams: 25, kcal: 25.6, p: 1.1, c: 5, f: 0.1, fiber: 0.2 },
     ])
   })
 

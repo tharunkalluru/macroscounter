@@ -71,6 +71,8 @@ export interface Targets extends Syncable {
   proteinG: number
   carbsG: number
   fatG: number
+  /** Grams of dietary fiber, computed as ~14g/1000kcal (Institute of Medicine guideline). Optional and additive (Phase H.1) -- targets computed before this field existed have no fiber goal. */
+  fiberG?: number
   source: TargetSource
 }
 
@@ -105,6 +107,7 @@ export interface CustomSnapshot {
   p: number
   c: number
   f: number
+  fiber?: number
 }
 
 export interface LogEntry extends Syncable {
@@ -129,6 +132,8 @@ export interface LogEntry extends Syncable {
   p: number
   c: number
   f: number
+  /** Grams of dietary fiber. Optional and additive (Phase H.1) -- entries logged before this field existed have no fiber value. */
+  fiber?: number
   /**
    * ISO datetime this entry was actually logged at (Phase F.3), powering
    * the Log tab's Timeline view. Optional and additive — entries logged

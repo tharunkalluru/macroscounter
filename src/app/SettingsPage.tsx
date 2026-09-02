@@ -141,6 +141,7 @@ export default function SettingsPage() {
       proteinG: result.proteinG,
       carbsG: result.carbsG,
       fatG: result.fatG,
+      fiberG: result.fiberG,
       source: 'computed',
     })
 

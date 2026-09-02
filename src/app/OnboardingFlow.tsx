@@ -241,6 +241,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         proteinG: preview.proteinG,
         carbsG: preview.carbsG,
         fatG: preview.fatG,
+        fiberG: preview.fiberG,
         source: 'computed',
       })
 

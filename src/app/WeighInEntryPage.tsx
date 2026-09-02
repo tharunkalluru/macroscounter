@@ -77,6 +77,13 @@ export default function WeighInEntryPage() {
       const repo = new WeighInRepo()
       await repo.add({ date, weightKg })
       vibrateSuccess()
+      // Checked here, synchronously before navigating back, rather than left
+      // to GoalReachedTakeover's own once-per-app-open check: /weight/entry
+      // lives outside AppShell (see App.tsx), so returning to /weight
+      // remounts AppShell and would otherwise trigger that check immediately
+      // -- an untimely full-screen takeover flashing right as the user is
+      // routed back, instead of a modest confirmation on the screen where
+      // they just took the action.
       await checkGoalReached(repo)
       navigate('/weight')
     } finally {

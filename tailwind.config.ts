@@ -37,6 +37,7 @@ export default {
         protein: tailwindBrand,
         carbs: macros.carbs,
         fat: macros.fat,
+        fiber: macros.fiber,
         // success also reuses the brand hue — same reasoning as protein above.
         success: tailwindBrand,
         warn: semantic.warn,

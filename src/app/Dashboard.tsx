@@ -29,6 +29,7 @@ const MACRO_DEFS = {
   p: { key: 'p' as const, label: 'Protein', colorClass: 'bg-protein-500' },
   c: { key: 'c' as const, label: 'Carbs', colorClass: 'bg-carbs-500' },
   f: { key: 'f' as const, label: 'Fat', colorClass: 'bg-fat-500' },
+  fiber: { key: 'fiber' as const, label: 'Fiber', colorClass: 'bg-fiber-500' },
 }
 
 type LoadState = 'loading' | 'ready' | 'no-profile' | 'welcome'
@@ -151,7 +152,7 @@ export default function Dashboard() {
   }
 
   const totals = sumMacros(entries)
-  const target = targets ?? { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0 }
+  const target = targets ?? { kcal: 0, proteinG: 0, carbsG: 0, fatG: 0, fiberG: 0 }
 
   return (
     <div className="pb-4" data-testid="today-view">
@@ -221,6 +222,14 @@ export default function Dashboard() {
               colorClass="bg-fat-500"
               testId="fat-bar"
               onTap={() => setBreakdownMacro(MACRO_DEFS.f)}
+            />
+            <MacroBar
+              label="Fiber"
+              consumed={totals.fiber ?? 0}
+              target={target.fiberG ?? 0}
+              colorClass="bg-fiber-500"
+              testId="fiber-bar"
+              onTap={() => setBreakdownMacro(MACRO_DEFS.fiber)}
             />
           </div>
         </div>

@@ -12,6 +12,8 @@ const MIN_PROTEIN_G_PER_KG = 1.6
 const MAX_PROTEIN_G_PER_KG = 2.2
 const DEFAULT_PROTEIN_G_PER_KG = 1.8
 const MIN_FAT_G_PER_KG = 0.7
+/** Institute of Medicine dietary guideline: ~14g fiber per 1000 kcal. */
+const FIBER_G_PER_1000_KCAL = 14
 const CUT_DEFICIT_KCAL = 500
 const GAIN_SURPLUS_KCAL = 300
 const MALE_KCAL_FLOOR = 1500
@@ -82,5 +84,7 @@ export function computeGoalTargets(input: GoalEngineInput): GoalEngineResult {
   const carbsKcal = kcal - proteinG * 4 - fatG * 9
   const carbsG = Math.max(0, round(carbsKcal / 4))
 
-  return { kcal, proteinG, carbsG, fatG, bmr, tdee }
+  const fiberG = round((kcal / 1000) * FIBER_G_PER_1000_KCAL)
+
+  return { kcal, proteinG, carbsG, fatG, fiberG, bmr, tdee }
 }

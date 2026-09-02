@@ -1,9 +1,12 @@
-import type { LogEntry } from '../../data/models'
+import { useEffect, useState } from 'react'
+import type { FoodRecord, LogEntry } from '../../data/models'
+import { FoodRepo } from '../../data/repos/FoodRepo'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { vibrateTiny } from '../../lib/haptics'
 import BottomSheet from '../shell/BottomSheet'
 import { useUIState } from '../shell/UIStateContext'
 import PortionStep, { type PortionSaveData } from './PortionStep'
+import ServingPortionStep from './ServingPortionStep'
 
 interface Props {
   open: boolean
@@ -18,9 +21,46 @@ const MACRO_ROWS: { key: 'p' | 'c' | 'f'; label: string; colorClass: string }[] 
   { key: 'f', label: 'Fat', colorClass: 'bg-fat-500' },
 ]
 
+const FIBER_ROW = { label: 'Fiber', colorClass: 'bg-fiber-500' }
+
+type EditMode = 'grams' | 'servings'
+
 /** Shows a logged entry's full macro breakdown before editing — reached by tapping any EntryRow. */
 export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props) {
   const { notifyDataChanged } = useUIState()
+  const [food, setFood] = useState<FoodRecord | null>(null)
+  const [mode, setMode] = useState<EditMode>('grams')
+  const [portionIdx, setPortionIdx] = useState(0)
+
+  // Recipes have no discrete portions today, so only a real food-database
+  // entry (foodId set) can offer a servings toggle here -- if the entry was
+  // already logged in servings (rare: only LibraryPage's quick-relog and
+  // meal templates produce this today), reopen it in servings mode against
+  // the matching portion instead of always defaulting to grams.
+  useEffect(() => {
+    if (!open || !entry?.foodId) {
+      setFood(null)
+      setMode('grams')
+      setPortionIdx(0)
+      return
+    }
+    let cancelled = false
+    setMode('grams')
+    setPortionIdx(0)
+    new FoodRepo().getById(entry.foodId).then((f) => {
+      if (cancelled) return
+      setFood(f ?? null)
+      const matchIdx = f?.portions.findIndex((p) => p.label === entry.portionLabel) ?? -1
+      if (entry.unit === 'portion' && matchIdx >= 0) {
+        setMode('servings')
+        setPortionIdx(matchIdx)
+      }
+    })
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, entry?.id])
 
   // A grams-denominated entry (from search, scan, or a recipe -- anything
   // logged as an actual quantity of something, not a fixed custom value)
@@ -48,11 +88,85 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
     onClose()
   }
 
+  const hasServingsToggle = per100g !== null && food !== null && food.portions.length > 0
+  const selectedPortion = food?.portions[portionIdx]
+
   return (
     <BottomSheet open={open} onClose={onClose} title={entry?.name ?? ''}>
       {entry && (
         <div className="flex flex-col gap-4" data-testid="entry-detail-content">
-          {per100g ? (
+          {hasServingsToggle && (
+            <div
+              className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800"
+              role="tablist"
+              aria-label="Edit by"
+            >
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === 'grams'}
+                onClick={() => setMode('grams')}
+                data-testid="entry-edit-mode-grams"
+                className={`min-h-touch flex-1 rounded-md text-sm font-medium ${
+                  mode === 'grams'
+                    ? 'bg-white text-brand-700 shadow-sm dark:bg-surface-dark-card dark:text-brand-400'
+                    : 'text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                Grams
+              </button>
+              <button
+                type="button"
+                role="tab"
+                aria-selected={mode === 'servings'}
+                onClick={() => setMode('servings')}
+                data-testid="entry-edit-mode-servings"
+                className={`min-h-touch flex-1 rounded-md text-sm font-medium ${
+                  mode === 'servings'
+                    ? 'bg-white text-brand-700 shadow-sm dark:bg-surface-dark-card dark:text-brand-400'
+                    : 'text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                Servings
+              </button>
+            </div>
+          )}
+
+          {mode === 'servings' && selectedPortion && per100g ? (
+            <>
+              {food!.portions.length > 1 && (
+                <div className="flex flex-wrap gap-2">
+                  {food!.portions.map((p, i) => (
+                    <button
+                      key={p.label}
+                      type="button"
+                      aria-pressed={i === portionIdx}
+                      onClick={() => setPortionIdx(i)}
+                      data-testid={`entry-servings-portion-${i}`}
+                      className={`min-h-touch rounded-full border px-3 py-1 text-caption ${
+                        i === portionIdx
+                          ? 'border-brand-700 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-slate-800 dark:text-brand-400'
+                          : 'border-slate-300 text-slate-600 dark:border-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      {p.label}
+                    </button>
+                  ))}
+                </div>
+              )}
+              <ServingPortionStep
+                key={portionIdx}
+                per100g={per100g}
+                servingSize={selectedPortion.grams}
+                servingSizeText={selectedPortion.label}
+                portionLabel={selectedPortion.label}
+                initialServings={entry.unit === 'portion' && entry.portionLabel === selectedPortion.label ? entry.qty : 1}
+                saveLabel="Save changes"
+                onSave={handleSavePortion}
+                onSwitchToGrams={() => setMode('grams')}
+              />
+            </>
+          ) : per100g ? (
             <PortionStep
               per100g={per100g}
               referencePortions={[]}
@@ -86,6 +200,17 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
                     </span>
                   </li>
                 ))}
+                {entry.fiber !== undefined && (
+                  <li className="flex items-center justify-between py-3 text-slate-900 dark:text-slate-100">
+                    <div className="flex items-center gap-2">
+                      <span className={`h-2.5 w-2.5 rounded-full ${FIBER_ROW.colorClass}`} aria-hidden="true" />
+                      <span>{FIBER_ROW.label}</span>
+                    </div>
+                    <span className="tabular-nums text-slate-600 dark:text-slate-300">
+                      {Math.round(entry.fiber * 10) / 10} g
+                    </span>
+                  </li>
+                )}
               </ul>
             </>
           )}

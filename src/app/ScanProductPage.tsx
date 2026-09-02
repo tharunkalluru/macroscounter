@@ -131,6 +131,7 @@ export default function ScanProductPage() {
               <p className="mt-1 text-caption tabular-nums text-slate-500 dark:text-slate-400">
                 Per 100 g: {Math.round(product.per100g.kcal)} kcal · {product.per100g.p}p /{' '}
                 {product.per100g.c}c / {product.per100g.f}f
+                {product.per100g.fiber !== undefined && ` / ${product.per100g.fiber}fb`}
               </p>
             </div>
           </div>

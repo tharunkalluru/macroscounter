@@ -49,7 +49,14 @@ export default function AiLogResultPage() {
         await logRepo.addEntry({
           date: todayISO(),
           meal,
-          customSnapshot: { name: item.name, kcal: item.kcal, p: item.proteinG, c: item.carbsG, f: item.fatG },
+          customSnapshot: {
+            name: item.name,
+            kcal: item.kcal,
+            p: item.proteinG,
+            c: item.carbsG,
+            f: item.fatG,
+            fiber: item.fiberG,
+          },
           name: item.name,
           portionSummary: item.gramsEstimate ? `${item.gramsEstimate} g (AI estimate)` : 'AI estimate',
           qty: 1,
@@ -59,6 +66,7 @@ export default function AiLogResultPage() {
           p: item.proteinG,
           c: item.carbsG,
           f: item.fatG,
+          fiber: item.fiberG,
         })
       }
       vibrateSuccess()
@@ -112,7 +120,7 @@ export default function AiLogResultPage() {
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium text-slate-900 dark:text-slate-100">{item.name}</p>
                   <p className="text-caption text-slate-500 dark:text-slate-400">
-                    {item.kcal} kcal · {item.proteinG}P {item.carbsG}C {item.fatG}F
+                    {item.kcal} kcal · {item.proteinG}P {item.carbsG}C {item.fatG}F {item.fiberG}Fb
                     {item.confidence === 'low' && (
                       <span className="ml-1 text-over-700 dark:text-over-400">· size estimated</span>
                     )}

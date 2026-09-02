@@ -5,6 +5,8 @@ export interface MacroTotals {
   p: number
   c: number
   f: number
+  /** Grams of dietary fiber. Optional -- entries/sources predating fiber tracking have none. */
+  fiber?: number
 }
 
 export interface Per100g {
@@ -12,6 +14,7 @@ export interface Per100g {
   p: number
   c: number
   f: number
+  fiber?: number
 }
 
 function round1(n: number): number {
@@ -31,6 +34,7 @@ export function computeMacrosForGrams(per100g: Per100g, grams: number): MacroTot
     p: round1(per100g.p * factor),
     c: round1(per100g.c * factor),
     f: round1(per100g.f * factor),
+    fiber: per100g.fiber !== undefined ? round1(per100g.fiber * factor) : undefined,
   }
 }
 
@@ -47,6 +51,7 @@ export function computeMacrosForServings(perServing: MacroTotals, servings: numb
     p: round1(perServing.p * servings),
     c: round1(perServing.c * servings),
     f: round1(perServing.f * servings),
+    fiber: perServing.fiber !== undefined ? round1(perServing.fiber * servings) : undefined,
   }
 }
 
@@ -57,8 +62,9 @@ export function sumMacros(entries: MacroTotals[]): MacroTotals {
       p: round1(acc.p + e.p),
       c: round1(acc.c + e.c),
       f: round1(acc.f + e.f),
+      fiber: round1((acc.fiber ?? 0) + (e.fiber ?? 0)),
     }),
-    { kcal: 0, p: 0, c: 0, f: 0 }
+    { kcal: 0, p: 0, c: 0, f: 0, fiber: 0 }
   )
 }
 

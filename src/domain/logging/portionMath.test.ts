@@ -35,7 +35,7 @@ describe('computeMacrosForGrams', () => {
     const idli = computeMacrosForGrams(IDLI_PER_100G, gramsForPortion(2, 40))
     const sambar = computeMacrosForGrams(SAMBAR_PER_100G, gramsForPortion(1, 150))
     const total = sumMacros([idli, sambar])
-    expect(total).toEqual({ kcal: 175, p: 8.1, c: 28, f: 3.4 })
+    expect(total).toEqual({ kcal: 175, p: 8.1, c: 28, f: 3.4, fiber: 0 })
   })
 
   it('a gram-override entry uses the raw grams directly', () => {
@@ -87,9 +87,9 @@ describe('sumMacrosByMeal', () => {
       { meal: 'lunch' as const, kcal: 400, p: 20, c: 40, f: 10 },
     ]
     const byMeal = sumMacrosByMeal(entries)
-    expect(byMeal.breakfast).toEqual({ kcal: 175, p: 8.1, c: 28, f: 3.4 })
-    expect(byMeal.lunch).toEqual({ kcal: 400, p: 20, c: 40, f: 10 })
-    expect(byMeal.snacks).toEqual({ kcal: 0, p: 0, c: 0, f: 0 })
-    expect(byMeal.dinner).toEqual({ kcal: 0, p: 0, c: 0, f: 0 })
+    expect(byMeal.breakfast).toEqual({ kcal: 175, p: 8.1, c: 28, f: 3.4, fiber: 0 })
+    expect(byMeal.lunch).toEqual({ kcal: 400, p: 20, c: 40, f: 10, fiber: 0 })
+    expect(byMeal.snacks).toEqual({ kcal: 0, p: 0, c: 0, f: 0, fiber: 0 })
+    expect(byMeal.dinner).toEqual({ kcal: 0, p: 0, c: 0, f: 0, fiber: 0 })
   })
 })
