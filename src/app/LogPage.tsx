@@ -2,8 +2,11 @@ import { useCallback, useEffect, useState } from 'react'
 import type { LogEntry, Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { addDaysISO, todayISO } from '../lib/date'
+import { getDefaultLogView } from '../lib/settings/logViewPreference'
+import DateStrip from './components/DateStrip'
 import MealSection from './components/MealSection'
 import MonthView from './components/MonthView'
+import TimelineView from './components/TimelineView'
 import { useUIState } from './shell/UIStateContext'
 
 const MEALS: { key: Meal; label: string }[] = [
@@ -13,38 +16,38 @@ const MEALS: { key: Meal; label: string }[] = [
   { key: 'dinner', label: 'Dinner' },
 ]
 
-type Tab = 'meals' | 'month'
+type Tab = 'meals' | 'timeline' | 'month'
 const TABS: { key: Tab; label: string }[] = [
   { key: 'meals', label: 'Meals' },
+  { key: 'timeline', label: 'Timeline' },
   { key: 'month', label: 'Month' },
 ]
 
 /**
- * The Log tab (Phase R.3) — Meals is today's per-meal breakdown (the exact
- * `MealSection` UI Dashboard used to render directly, relocated now that
- * Today shows a flat list instead); Month is the existing calendar. A
- * Timeline (hour-by-hour) view is in the source design too but needs an
- * honest "when was this logged" timestamp the data model doesn't have yet
- * (LogEntry only has a day + a meal slot) — deferred rather than faked.
+ * The Log tab — Meals is the per-meal breakdown; Timeline (Phase F.3) groups
+ * the same day's entries by the hour they were actually logged, via
+ * `LogEntry.loggedAt`; Month is the existing calendar. Meals/Timeline share
+ * a date strip so either view can look at any of the last 7 days, not just
+ * today.
  */
 export default function LogPage() {
-  const [tab, setTab] = useState<Tab>('meals')
+  const [tab, setTab] = useState<Tab>(getDefaultLogView)
+  const [selectedDate, setSelectedDate] = useState(todayISO())
   const { dataVersion } = useUIState()
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
 
   const loadEntries = useCallback(async () => {
-    const today = todayISO()
     const [dayEntries, historyRange] = await Promise.all([
-      new LogRepo().getEntriesForDate(today),
-      new LogRepo().getEntriesForDateRange(addDaysISO(today, -14), today),
+      new LogRepo().getEntriesForDate(selectedDate),
+      new LogRepo().getEntriesForDateRange(addDaysISO(selectedDate, -14), selectedDate),
     ])
     setEntries(dayEntries)
     setHistoryEntries(historyRange)
-  }, [])
+  }, [selectedDate])
 
   useEffect(() => {
-    if (tab !== 'meals') return
+    if (tab === 'month') return
     loadEntries()
   }, [tab, dataVersion, loadEntries])
 
@@ -52,6 +55,8 @@ export default function LogPage() {
     await new LogRepo().deleteEntry(id)
     await loadEntries()
   }
+
+  const isToday = selectedDate === todayISO()
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
@@ -77,8 +82,24 @@ export default function LogPage() {
         ))}
       </div>
 
-      {tab === 'meals' ? (
+      {tab !== 'month' && (
+        <div className="mt-3">
+          <DateStrip selectedDate={selectedDate} onSelect={setSelectedDate} />
+        </div>
+      )}
+
+      {tab === 'meals' && (
         <div className="mt-2" role="tabpanel">
+          {!isToday && (
+            <button
+              type="button"
+              onClick={() => setSelectedDate(todayISO())}
+              data-testid="log-return-to-today"
+              className="mb-3 min-h-touch rounded-full bg-brand-50 px-3 py-1.5 text-caption font-medium text-brand-700 dark:bg-slate-800 dark:text-brand-400"
+            >
+              Return to today
+            </button>
+          )}
           {MEALS.map(({ key, label }) => (
             <MealSection
               key={key}
@@ -86,11 +107,25 @@ export default function LogPage() {
               label={label}
               entries={entries.filter((e) => e.meal === key)}
               onDelete={handleDelete}
+              // MealSection's own "date" prop doubles as "am I viewing a
+              // specific non-today day" (it decides sheet vs. full-page
+              // add-food navigation on that truthiness) -- passing today's
+              // own date here would wrongly force the full-page route even
+              // while looking at today.
+              date={isToday ? undefined : selectedDate}
               historyEntries={historyEntries}
             />
           ))}
         </div>
-      ) : (
+      )}
+
+      {tab === 'timeline' && (
+        <div className="mt-4" role="tabpanel">
+          <TimelineView entries={entries} onDelete={handleDelete} />
+        </div>
+      )}
+
+      {tab === 'month' && (
         <div className="mt-4" role="tabpanel">
           <MonthView />
         </div>

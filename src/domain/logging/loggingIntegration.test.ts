@@ -1,13 +1,13 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from '../../data/db'
+import { BitewiseDB } from '../../data/db'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { sumMacros } from './portionMath'
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let logRepo: LogRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-logging-integration-${Math.random()}`)
+  db = new BitewiseDB(`test-logging-integration-${Math.random()}`)
   logRepo = new LogRepo(db)
 })
 

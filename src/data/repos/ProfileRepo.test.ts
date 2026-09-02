@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from '../db'
+import { BitewiseDB } from '../db'
 import type { Profile } from '../models'
 import { ProfileRepo } from './ProfileRepo'
 
@@ -13,11 +13,11 @@ const sampleProfile: Profile = {
   goal: 'cut',
 }
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let repo: ProfileRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-profile-${Math.random()}`)
+  db = new BitewiseDB(`test-profile-${Math.random()}`)
   repo = new ProfileRepo(db)
 })
 

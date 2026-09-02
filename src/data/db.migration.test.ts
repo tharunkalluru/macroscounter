@@ -1,8 +1,8 @@
 import Dexie from 'dexie'
 import { afterEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from './db'
+import { BitewiseDB } from './db'
 
-const DB_NAME = 'macrodesi-migration-test'
+const DB_NAME = 'bitewise-migration-test'
 
 afterEach(async () => {
   await Dexie.delete(DB_NAME)
@@ -83,7 +83,7 @@ describe('Dexie migration: v1 -> current (v3), data intact', () => {
 
     // Reopen with the real app class, which declares v1 through v3 -- Dexie
     // upgrades automatically.
-    const upgraded = new MacroDesiDB(DB_NAME)
+    const upgraded = new BitewiseDB(DB_NAME)
     await upgraded.open()
 
     expect(upgraded.verno).toBe(3)

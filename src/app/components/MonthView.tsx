@@ -61,11 +61,21 @@ export default function MonthView() {
   }, [entries])
 
   const recentDayTotals = useMemo(() => groupEntriesByDate(recentEntries), [recentEntries])
-  const avg7 = useMemo(
-    () => computeAverage(recentDayTotals.filter((d) => d.date >= addDaysISO(todayISO(), -6))),
-    [recentDayTotals]
-  )
   const avg30 = useMemo(() => computeAverage(recentDayTotals), [recentDayTotals])
+
+  // "At a glance" (design frame 16) is scoped to the month actually being
+  // viewed, not a rolling window — the past-days-only filter matters when
+  // looking at the current month before it's finished.
+  const monthDaysSoFar = useMemo(() => {
+    const days = grid.filter((d): d is string => d !== null && !isFutureDate(d))
+    return days
+  }, [grid])
+  const monthDayTotals = useMemo(
+    () => monthDaysSoFar.map((d) => dayTotalsByDate.get(d)).filter((t): t is NonNullable<typeof t> => t !== undefined),
+    [monthDaysSoFar, dayTotalsByDate]
+  )
+  const monthAverage = useMemo(() => computeAverage(monthDayTotals), [monthDayTotals])
+  const daysLoggedThisMonth = monthDayTotals.length
 
   function changeMonth(delta: number) {
     let newMonth = monthIndex0 + delta
@@ -151,24 +161,35 @@ export default function MonthView() {
         </div>
       </div>
 
-      <div className="mt-6 grid grid-cols-2 gap-3">
-        <div
-          className="rounded-lg bg-white dark:bg-surface-dark-card p-3 shadow-sm"
-          data-testid="avg-7day"
-        >
-          <p className="text-xs text-slate-500 dark:text-slate-400">7-day avg</p>
-          <p className="text-lg font-semibold">
-            {avg7.daysCounted > 0 ? `${avg7.kcal} kcal` : '—'}
-          </p>
-        </div>
-        <div
-          className="rounded-lg bg-white dark:bg-surface-dark-card p-3 shadow-sm"
-          data-testid="avg-30day"
-        >
-          <p className="text-xs text-slate-500 dark:text-slate-400">30-day avg</p>
-          <p className="text-lg font-semibold">
-            {avg30.daysCounted > 0 ? `${avg30.kcal} kcal` : '—'}
-          </p>
+      <div className="mt-6 rounded-card bg-white p-4 shadow-card dark:bg-surface-dark-card">
+        <p className="mb-3 text-caption uppercase tracking-widest text-slate-500 dark:text-slate-400">
+          {monthLabel} at a glance
+        </p>
+        <div className="grid grid-cols-2 gap-4">
+          <div data-testid="month-avg-kcal">
+            <p className="text-title font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+              {monthAverage.daysCounted > 0 ? monthAverage.kcal : '—'}
+            </p>
+            <p className="text-caption text-slate-500 dark:text-slate-400">Avg kcal / day</p>
+          </div>
+          <div data-testid="month-days-logged">
+            <p className="text-title font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+              {daysLoggedThisMonth} / {monthDaysSoFar.length}
+            </p>
+            <p className="text-caption text-slate-500 dark:text-slate-400">Days logged</p>
+          </div>
+          <div data-testid="month-avg-protein">
+            <p className="text-title font-semibold tabular-nums text-brand-700 dark:text-brand-400">
+              {monthAverage.daysCounted > 0 ? `${monthAverage.p} g` : '—'}
+            </p>
+            <p className="text-caption text-slate-500 dark:text-slate-400">Avg protein</p>
+          </div>
+          <div data-testid="avg-30day">
+            <p className="text-title font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+              {avg30.daysCounted > 0 ? avg30.kcal : '—'}
+            </p>
+            <p className="text-caption text-slate-500 dark:text-slate-400">30-day avg kcal</p>
+          </div>
         </div>
       </div>
 

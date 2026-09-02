@@ -1,10 +1,10 @@
 import { trackDelete, trackUpsert } from '../../lib/sync/syncTracker'
-import type { MacroDesiDB } from '../db'
+import type { BitewiseDB } from '../db'
 import { db as defaultDb } from '../db'
 import type { Recipe } from '../models'
 
 export class RecipeRepo {
-  constructor(private db: MacroDesiDB = defaultDb) {}
+  constructor(private db: BitewiseDB = defaultDb) {}
 
   async add(recipe: Omit<Recipe, 'id'>): Promise<number> {
     const id = await this.db.recipes.add(recipe as Recipe)

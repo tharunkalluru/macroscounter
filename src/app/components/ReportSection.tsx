@@ -13,7 +13,12 @@ import { computeConsistency, computeStreak } from '../../domain/streaks/streak'
 import { addDaysISO, todayISO } from '../../lib/date'
 import CalorieTrendChart from './CalorieTrendChart'
 
-export default function ReportSection() {
+interface Props {
+  /** The last day of the week to report on. Defaults to today (the rolling "this week" report). Passing a past date views that week as a discrete artifact instead. */
+  weekEndDate?: string
+}
+
+export default function ReportSection({ weekEndDate }: Props) {
   const [report, setReport] = useState<WeeklyReport | null>(null)
   const [comparison, setComparison] = useState<WeekComparison | null>(null)
   const [streak, setStreak] = useState(0)
@@ -21,27 +26,31 @@ export default function ReportSection() {
   const [last14, setLast14] = useState<DayTotal[]>([])
   const [targetKcal, setTargetKcal] = useState<number | null>(null)
 
+  const anchor = weekEndDate ?? todayISO()
+
   useEffect(() => {
     ;(async () => {
       const today = todayISO()
-      // Streak needs a wider lookback than the 30-day report/consistency
-      // window so a streak longer than 30 days isn't silently undercounted.
-      const [targets, last30Entries, streakEntries] = await Promise.all([
+      // Streak/consistency always reflect the real present, even when
+      // reporting on a past week -- "current streak" only means something
+      // relative to today. Everything else below is anchored to `anchor`.
+      const [targets, windowEntries, streakEntries] = await Promise.all([
         new TargetRepo().getAll(),
-        new LogRepo().getEntriesForDateRange(addDaysISO(today, -29), today),
+        new LogRepo().getEntriesForDateRange(addDaysISO(anchor, -29), anchor),
         new LogRepo().getEntriesForDateRange(addDaysISO(today, -179), today),
       ])
-      const latestTarget = targets[targets.length - 1]
-      const dayTotals = groupEntriesByDate(last30Entries)
-      const last7 = dayTotals.filter((d) => d.date >= addDaysISO(today, -6))
+      const applicableTargets = targets.filter((t) => t.effectiveDate <= anchor)
+      const latestTarget = applicableTargets[applicableTargets.length - 1]
+      const dayTotals = groupEntriesByDate(windowEntries)
+      const last7 = dayTotals.filter((d) => d.date >= addDaysISO(anchor, -6))
 
       if (latestTarget) {
         const currentReport = computeWeeklyReport(last7, latestTarget)
         setReport(currentReport)
         setTargetKcal(latestTarget.kcal)
 
-        const previousWeekStart = addDaysISO(today, -13)
-        const previousWeekEnd = addDaysISO(today, -7)
+        const previousWeekStart = addDaysISO(anchor, -13)
+        const previousWeekEnd = addDaysISO(anchor, -7)
         const previous7 = dayTotals.filter(
           (d) => d.date >= previousWeekStart && d.date <= previousWeekEnd
         )
@@ -49,13 +58,13 @@ export default function ReportSection() {
         setComparison(compareWeeklyReports(currentReport, previousReport, latestTarget.kcal))
       }
 
-      setLast14(dayTotals.filter((d) => d.date >= addDaysISO(today, -13)))
+      setLast14(dayTotals.filter((d) => d.date >= addDaysISO(anchor, -13)))
 
       const loggedDates = dayTotals.map((d) => d.date)
       setStreak(computeStreak(groupEntriesByDate(streakEntries).map((d) => d.date), today))
       setConsistency(computeConsistency(loggedDates, today, 30))
     })()
-  }, [])
+  }, [anchor])
 
   return (
     <div>

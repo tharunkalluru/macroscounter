@@ -32,7 +32,7 @@ export function deriveCurrentProgram(targets: Targets[], referenceDate: string):
   return { startDate, weekNumber, pastProgramsCount }
 }
 
-function daysBetween(a: string, b: string): number {
+export function daysBetween(a: string, b: string): number {
   const [ay, am, ad] = a.split('-').map(Number)
   const [by, bm, bd] = b.split('-').map(Number)
   const msPerDay = 24 * 60 * 60 * 1000

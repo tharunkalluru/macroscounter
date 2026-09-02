@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from '../db'
+import { BitewiseDB } from '../db'
 import type { ScannedProduct } from '../models'
 import { ScannedProductRepo } from './ScannedProductRepo'
 
@@ -14,11 +14,11 @@ const sample: ScannedProduct = {
   firstScanned: '2026-08-18',
 }
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let repo: ScannedProductRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-scannedproduct-${Math.random()}`)
+  db = new BitewiseDB(`test-scannedproduct-${Math.random()}`)
   repo = new ScannedProductRepo(db)
 })
 

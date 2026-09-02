@@ -1,5 +1,5 @@
 /**
- * MacroDesi design tokens — single source of truth for color, type, and
+ * Bitewise design tokens — single source of truth for color, type, and
  * surface values. `tailwind.config.ts` imports directly from this file (no
  * duplication); components that need raw color values JS can't express via
  * Tailwind classes (SVG `stroke`, Recharts `stroke`/`fill` props) import the
@@ -181,15 +181,55 @@ export const surfaceDark = {
   shadowCard: '0 0 0 1px rgb(233 233 237 / 0.16)',
 } as const
 
-/** size(px) / weight / lineHeight. Unchanged in the Nocturne redesign — the
- *  app deliberately keeps the system font stack (native-PWA load-time
- *  guarantee, see nativeFeel.spec.ts) rather than the source design's
- *  Google-Fonts Inter. */
+/**
+ * Phase F.1: "Contrast" is the third of the design's Dark/Light/Contrast
+ * theme picker (frame 36) — a distinct, always-dark, higher-legibility
+ * appearance, not a "follow OS" option (that option is retired; see
+ * `resolveTheme.ts`'s `migrateStoredPreference`). A deeper background and a
+ * brighter accent than the base dark theme are the two changes that matter
+ * visually; both are strictly lighter-on-darker than their base-dark
+ * counterparts, so contrast against these surfaces is only ever *higher*
+ * than the already-verified base-dark ratios above, never lower.
+ *
+ * These four values are also hand-copied into `src/index.css`'s
+ * `:root.contrast` block as CSS custom properties (`tailwind.config.ts`
+ * wires `surface-dark.DEFAULT/.card` and `brand.400/.600` to
+ * `var(--surface-dark-bg)` etc.) — this is the one token family in this
+ * file that isn't consumed purely through Tailwind's static class
+ * generation, since a same-class-different-value swap at runtime needs a
+ * real CSS variable, not a build-time constant. Keep both in sync by hand
+ * if either changes.
+ */
+export const contrastDark = {
+  bg: '#0a0b12',
+  card: '#141225',
+  brand400: '#c2b8fa',
+  brand600: '#6c58e8',
+} as const
+
+/**
+ * Phase F.0: Inter, loaded via Google Fonts in `index.html` and cached
+ * offline by the `runtimeCaching` rule in `vite.config.ts`. The system-font
+ * fallback stack still runs first paint (no FOIT before the stylesheet
+ * arrives) and covers the rare case the CDN is unreachable.
+ */
+export const fontFamily = {
+  sans: ['Inter', 'system-ui', '-apple-system', 'Segoe UI', 'Roboto', 'sans-serif'],
+  /** Nocturne's uppercase "eyebrow" tag/numeric convention — a system
+   *  monospace stack, no webfont needed for this one. */
+  mono: ['ui-monospace', 'Menlo', 'Monaco', 'monospace'],
+} as const
+
+/** size(px) / weight / lineHeight. */
 export const typeScale = {
   display: { fontSize: '32px', fontWeight: '700', lineHeight: '1.2' },
   title: { fontSize: '20px', fontWeight: '600', lineHeight: '1.3' },
   body: { fontSize: '15px', fontWeight: '450', lineHeight: '1.5' },
   caption: { fontSize: '12.5px', fontWeight: '450', lineHeight: '1.4' },
+  /** The small uppercase monospace label above a section/card, e.g.
+   *  "PROTEIN", "WEEK 12 · 84 LOGGED DAYS". Always paired with
+   *  `tracking-widest uppercase` at the call site. */
+  tag: { fontSize: '10px', fontWeight: '600', lineHeight: '1' },
 } as const
 
 /** 4px base scale only. */

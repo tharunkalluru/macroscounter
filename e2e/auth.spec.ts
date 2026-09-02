@@ -4,7 +4,7 @@ import { onboard } from './helpers/onboard'
 test('first launch shows the sign-in screen with a Google option and a guest skip', async ({ page }) => {
   await page.goto('/')
   await expect(page).toHaveURL(/\/welcome$/)
-  await expect(page.getByRole('heading', { name: 'MacroDesi' })).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Bitewise' })).toBeVisible()
   await expect(page.getByTestId('signin-google-button')).toBeVisible()
   await expect(page.getByTestId('signin-skip-button')).toBeVisible()
 })

@@ -38,7 +38,7 @@ export default function SignInScreen() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center px-6 py-10 text-center">
-      <h1 className="mb-1 text-3xl font-bold text-brand-700 dark:text-brand-400">MacroDesi</h1>
+      <h1 className="mb-1 text-3xl font-bold text-brand-700 dark:text-brand-400">Bitewise</h1>
       <p className="mb-10 text-sm text-slate-500 dark:text-slate-400">
         Simple calorie & macro tracking, built for Indian food.
       </p>

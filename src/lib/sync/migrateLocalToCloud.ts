@@ -1,4 +1,4 @@
-import type { MacroDesiDB } from '../../data/db'
+import type { BitewiseDB } from '../../data/db'
 import { db as defaultDb } from '../../data/db'
 import { SYNCED_TABLES, type SyncedTableName } from '../../domain/sync/types'
 import { runSync } from './syncEngine'
@@ -14,7 +14,7 @@ export type MigrationRowCounts = Record<SyncedTableName, number>
  * when a newly-signed-in account has no server data yet but this device has
  * pre-existing local usage (guest data being adopted into the account).
  */
-export async function migrateLocalToCloud(db: MacroDesiDB = defaultDb): Promise<MigrationRowCounts> {
+export async function migrateLocalToCloud(db: BitewiseDB = defaultDb): Promise<MigrationRowCounts> {
   const rowCounts = {} as MigrationRowCounts
 
   for (const tableName of SYNCED_TABLES) {

@@ -27,6 +27,8 @@ export interface SuggestionChip {
   /** e.g. "3 idli + sambar" */
   label: string
   entries: SuggestionEntry[]
+  /** How many days in the lookback window this exact combo recurred — the "logged N×" count on the full Your-usuals screen. */
+  count: number
 }
 
 function comboSignature(entries: SuggestionEntry[]): string {
@@ -102,5 +104,5 @@ export function computeMealSuggestions(
       return b.stats.mostRecentDate.localeCompare(a.stats.mostRecentDate)
     })
     .slice(0, limit)
-    .map(({ key, stats }) => ({ key, label: comboLabel(stats.entries), entries: stats.entries }))
+    .map(({ key, stats }) => ({ key, label: comboLabel(stats.entries), entries: stats.entries, count: stats.count }))
 }

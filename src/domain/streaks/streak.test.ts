@@ -1,5 +1,29 @@
 import { describe, expect, it } from 'vitest'
-import { computeConsistency, computeStreak, computeStreakStartDate, getStreakMilestone } from './streak'
+import { computeBestStreak, computeConsistency, computeStreak, computeStreakStartDate, getStreakMilestone } from './streak'
+
+describe('computeBestStreak', () => {
+  it('returns 0 for no logged dates', () => {
+    expect(computeBestStreak([])).toBe(0)
+  })
+
+  it('returns the run length for a single unbroken streak', () => {
+    expect(computeBestStreak(['2026-01-01', '2026-01-02', '2026-01-03'])).toBe(3)
+  })
+
+  it('finds the longest of several runs, even one that already ended', () => {
+    // A 5-day run in January, then a shorter 2-day run more recently.
+    const dates = ['2026-01-01', '2026-01-02', '2026-01-03', '2026-01-04', '2026-01-05', '2026-03-01', '2026-03-02']
+    expect(computeBestStreak(dates)).toBe(5)
+  })
+
+  it('is unaffected by duplicate or unsorted input', () => {
+    expect(computeBestStreak(['2026-01-03', '2026-01-01', '2026-01-02', '2026-01-02'])).toBe(3)
+  })
+
+  it('a single logged day is a streak of 1', () => {
+    expect(computeBestStreak(['2026-01-01'])).toBe(1)
+  })
+})
 
 describe('computeStreak', () => {
   it('counts consecutive days ending today when today is logged', () => {

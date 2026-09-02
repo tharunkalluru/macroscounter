@@ -1,7 +1,7 @@
 import { Link, useLocation } from 'react-router-dom'
 import { activeMealWindow } from '../../domain/mealPrompt/activeMealWindow'
 import { useUIState } from './UIStateContext'
-import { CoachIcon, LogIcon, ScanIcon, TodayIcon, TrendsIcon } from './icons'
+import { CoachIcon, LogIcon, PlusIcon, TodayIcon, TrendsIcon } from './icons'
 
 interface TabDef {
   key: string
@@ -55,13 +55,13 @@ export default function BottomTabBar() {
           <button
             type="button"
             onClick={() => openAddFoodSheet(activeMealWindow(new Date()) ?? 'breakfast')}
-            aria-label="Scan or add food"
+            aria-label="Add food"
             data-testid="fab-scan"
             className="absolute -top-6 flex min-h-touch min-w-touch flex-col items-center justify-center rounded-full bg-brand-600 p-4 text-white shadow-card active:scale-95"
           >
-            <ScanIcon />
+            <PlusIcon />
           </button>
-          <span className="pointer-events-none mt-8 text-caption text-slate-500 dark:text-slate-400">Scan</span>
+          <span className="pointer-events-none mt-8 text-caption text-slate-500 dark:text-slate-400">Add</span>
         </div>
 
         {TABS.slice(2).map((tab) => (

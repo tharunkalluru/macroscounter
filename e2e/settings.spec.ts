@@ -18,6 +18,8 @@ test('settings groups You, The App, and Your Data are all visible', async ({ pag
 test('food source toggles default on and persist a change across reload', async ({ page }) => {
   await onboard(page)
   await page.goto('/settings')
+  await page.getByTestId('settings-row-food').click()
+  await expect(page).toHaveURL('/settings/food')
 
   const offToggle = page.getByTestId('food-source-off')
   const fdcToggle = page.getByTestId('food-source-fdc')

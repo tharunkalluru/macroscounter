@@ -103,6 +103,26 @@ test.describe('touch-target audit (390x844, every visible interactive element >=
     await auditTouchTargets(page, 'log month')
   })
 
+  test('log tab (Timeline view)', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/log')
+    await page.getByTestId('log-tab-timeline').click()
+    await expect(page.getByTestId('timeline-view')).toBeVisible()
+    await auditTouchTargets(page, 'log timeline')
+  })
+
+  test('your usuals page', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/log/usuals')
+    await auditTouchTargets(page, 'your usuals')
+  })
+
+  test('weigh-in entry page', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/weight/entry')
+    await auditTouchTargets(page, 'weigh-in entry')
+  })
+
   test('history/calendar page', async ({ page }) => {
     await onboard(page)
     await page.goto('/history')
@@ -137,6 +157,18 @@ test.describe('touch-target audit (390x844, every visible interactive element >=
     await onboard(page)
     await page.goto('/settings')
     await auditTouchTargets(page, 'settings')
+  })
+
+  test('settings food & sources sub-page', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/settings/food')
+    await auditTouchTargets(page, 'settings-food')
+  })
+
+  test('settings appearance & export sub-page', async ({ page }) => {
+    await onboard(page)
+    await page.goto('/settings/appearance')
+    await auditTouchTargets(page, 'settings-appearance')
   })
 
   test('templates page', async ({ page }) => {

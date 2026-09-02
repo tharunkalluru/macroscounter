@@ -292,4 +292,53 @@ describe('computeGoalTargets — floorBufferKcal (Phase R.2 gentler-cut preferen
   })
 })
 
+describe('computeGoalTargets — floorKcalOverride ("Low" medical-supervision floor)', () => {
+  it('allows the cut target below the usual sex-based safety minimum', () => {
+    const input: GoalEngineInput = {
+      sex: 'female',
+      age: 30,
+      heightCm: 155,
+      weightKg: 50, // BMR (~1158) sits below the 1200 sex-based floor
+      activityLevel: 'sedentary',
+      goal: 'cut',
+      goalRateLbPerWeek: 2,
+    }
+    const standard = computeGoalTargets(input)
+    expect(standard.kcal).toBe(1200) // sex-based absolute floor binds, not BMR
+
+    const low = computeGoalTargets({ ...input, floorKcalOverride: 800 })
+    expect(low.kcal).toBeLessThan(standard.kcal)
+    expect(low.kcal).toBeGreaterThanOrEqual(800)
+    expect(low.kcal).toBeGreaterThanOrEqual(Math.round(low.bmr)) // still never below BMR
+  })
+
+  it('never allows the target below the person\'s own BMR, no matter how low the override', () => {
+    const input: GoalEngineInput = {
+      sex: 'female',
+      age: 60,
+      heightCm: 150,
+      weightKg: 45, // low BMR
+      activityLevel: 'sedentary',
+      goal: 'cut',
+      goalRateLbPerWeek: 2,
+      floorKcalOverride: 200, // absurdly low -- BMR still wins
+    }
+    const result = computeGoalTargets(input)
+    expect(result.kcal).toBeGreaterThanOrEqual(Math.round(result.bmr))
+  })
+
+  it('is ignored (existing sex-based minimum applies) unless explicitly set', () => {
+    // Same fixture as the "male, sedentary, cut: BMR floor binds" case above.
+    const result = computeGoalTargets({
+      sex: 'male',
+      age: 28,
+      heightCm: 170,
+      weightKg: 70,
+      activityLevel: 'sedentary',
+      goal: 'cut',
+    })
+    expect(result.kcal).toBe(1628)
+  })
+})
+
 const FEMALE_FLOOR = 1200

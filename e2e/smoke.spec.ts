@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test'
 
 test('home page loads and renders the app shell', async ({ page }) => {
   await page.goto('/')
-  await expect(page.getByRole('heading', { name: /macrodesi/i })).toBeVisible()
+  await expect(page.getByRole('heading', { name: /bitewise/i })).toBeVisible()
 })
 
 test('web app manifest is present and valid', async ({ page, request }) => {
@@ -15,7 +15,7 @@ test('web app manifest is present and valid', async ({ page, request }) => {
   expect(res.ok()).toBeTruthy()
 
   const manifest = await res.json()
-  expect(manifest.name).toBe('MacroDesi')
+  expect(manifest.name).toBe('Bitewise')
   expect(manifest.icons?.length).toBeGreaterThan(0)
 
   // Phase 10.6: installed/standalone-app feel.

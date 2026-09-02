@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from '../db'
+import { BitewiseDB } from '../db'
 import type { FoodRecord } from '../models'
 import { FoodRepo } from './FoodRepo'
 
@@ -15,11 +15,11 @@ const sampleFood = (overrides: Partial<FoodRecord> = {}): FoodRecord => ({
   ...overrides,
 })
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let repo: FoodRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-food-${Math.random()}`)
+  db = new BitewiseDB(`test-food-${Math.random()}`)
   repo = new FoodRepo(db)
 })
 

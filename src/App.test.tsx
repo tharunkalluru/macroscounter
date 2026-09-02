@@ -15,12 +15,12 @@ afterEach(() => {
 })
 
 describe('App', () => {
-  it('redirects to onboarding and renders the MacroDesi shell when no profile exists', async () => {
+  it('redirects to onboarding and renders the Bitewise shell when no profile exists', async () => {
     render(
       <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
         <App />
       </BrowserRouter>
     )
-    expect(await screen.findByRole('heading', { name: /macrodesi/i })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: /bitewise/i })).toBeInTheDocument()
   })
 })

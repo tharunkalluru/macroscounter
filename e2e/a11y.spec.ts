@@ -59,6 +59,26 @@ test('log tab (Month view) has no WCAG A/AA violations', async ({ page }) => {
   await expectNoViolations(page)
 })
 
+test('log tab (Timeline view) has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/log')
+  await page.getByTestId('log-tab-timeline').click()
+  await expect(page.getByTestId('timeline-view')).toBeVisible()
+  await expectNoViolations(page)
+})
+
+test('your usuals page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/log/usuals')
+  await expectNoViolations(page)
+})
+
+test('weigh-in entry page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/weight/entry')
+  await expectNoViolations(page)
+})
+
 test('history/calendar page has no WCAG A/AA violations', async ({ page }) => {
   await onboard(page)
   await page.goto('/history')
@@ -128,6 +148,18 @@ test('trends weekly report page has no WCAG A/AA violations', async ({ page }) =
 test('settings page has no WCAG A/AA violations', async ({ page }) => {
   await onboard(page)
   await page.goto('/settings')
+  await expectNoViolations(page)
+})
+
+test('settings food & sources sub-page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/settings/food')
+  await expectNoViolations(page)
+})
+
+test('settings appearance & export sub-page has no WCAG A/AA violations', async ({ page }) => {
+  await onboard(page)
+  await page.goto('/settings/appearance')
   await expectNoViolations(page)
 })
 

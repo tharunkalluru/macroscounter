@@ -15,10 +15,43 @@ html {
      without that motion leaking into a page-level pull-to-refresh. */
   overscroll-behavior-y: none;
   -webkit-tap-highlight-color: transparent;
+
+  /* Phase F.1: base (non-Contrast) values for the CSS custom properties
+     tailwind.config.ts wires surface-dark.DEFAULT/.card and brand.400/.600
+     through. Must match src/theme/tokens.ts's surfaceDark/brand exactly —
+     these are the one place those values are hand-duplicated outside the
+     token pipeline (see tokens.ts's contrastDark comment for why). */
+  --surface-dark-bg: #161826;
+  --surface-dark-card: #1c1e2b;
+  --brand-400: #b1a8e6;
+  --brand-600: #5340bf;
+}
+
+/* The design's third theme option (frame 36) — a deeper background and a
+   brighter accent than base dark, applied only when html also carries
+   .dark (ThemeContext always sets both together). Values match
+   tokens.ts's `contrastDark` export. */
+html.contrast {
+  --surface-dark-bg: #0a0b12;
+  --surface-dark-card: #141225;
+  --brand-400: #c2b8fa;
+  --brand-600: #6c58e8;
 }
 
 body {
   @apply bg-slate-50 text-slate-900 antialiased dark:bg-surface-dark dark:text-slate-100;
+}
+
+/* Nocturne's signature divider (Phase F.0): a hairline that fades to
+   transparent at both ends instead of running edge to edge. */
+@layer utilities {
+  .hr-fade {
+    height: 1px;
+    background: linear-gradient(to right, transparent, theme('colors.slate.200') 15%, theme('colors.slate.200') 85%, transparent);
+  }
+  .dark .hr-fade {
+    background: linear-gradient(to right, transparent, theme('colors.slate.700') 15%, theme('colors.slate.700') 85%, transparent);
+  }
 }
 
 /* Native-feel chrome (Phase 10.6): controls behave like app UI, not web

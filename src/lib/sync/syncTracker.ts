@@ -1,4 +1,4 @@
-import type { MacroDesiDB } from '../../data/db'
+import type { BitewiseDB } from '../../data/db'
 import { enqueueMutation } from '../../domain/sync/outbox'
 import type { OutboxEntry, SyncedTableName } from '../../domain/sync/types'
 
@@ -13,12 +13,12 @@ export function newClientId(): string {
  * the next push. A no-op for guest (signed-out) users — there's nothing to
  * sync until they sign in, and the outbox would just grow unbounded.
  *
- * Takes the same `MacroDesiDB` instance the calling repo was constructed
+ * Takes the same `BitewiseDB` instance the calling repo was constructed
  * with (not a module-level singleton), so repos stay testable against an
  * isolated, per-test database exactly as before.
  */
 export async function trackUpsert<T extends object>(
-  db: MacroDesiDB,
+  db: BitewiseDB,
   table: SyncedTableName,
   localId: number | string,
   row: T
@@ -42,7 +42,7 @@ export async function trackUpsert<T extends object>(
 
 /** Call right after a syncable row is deleted locally. Queues a tombstone for the next push. */
 export async function trackDelete(
-  db: MacroDesiDB,
+  db: BitewiseDB,
   table: SyncedTableName,
   clientId: string | undefined
 ): Promise<void> {
@@ -55,12 +55,12 @@ export async function trackDelete(
   await writeOutbox(db, outbox, next)
 }
 
-async function isSignedIn(db: MacroDesiDB): Promise<boolean> {
+async function isSignedIn(db: BitewiseDB): Promise<boolean> {
   const meta = await db.syncMeta.toCollection().first()
   return !!meta?.userId
 }
 
-async function writeOutbox(db: MacroDesiDB, previous: OutboxEntry[], next: OutboxEntry[]): Promise<void> {
+async function writeOutbox(db: BitewiseDB, previous: OutboxEntry[], next: OutboxEntry[]): Promise<void> {
   const previousIds = new Set(previous.map((e) => e.id))
   for (const entry of next) {
     if (entry.id !== undefined && previousIds.has(entry.id)) {

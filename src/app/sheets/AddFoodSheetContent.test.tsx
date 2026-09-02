@@ -38,6 +38,8 @@ describe('search -> select -> type grams -> log (Phase 10.4 grams-first integrat
           onRequestScan={vi.fn()}
           onRequestCustom={vi.fn()}
           onRequestNewRecipe={vi.fn()}
+          onRequestAI={vi.fn()}
+          onRequestLibrary={vi.fn()}
         />
       </MemoryRouter>
     )
@@ -86,6 +88,8 @@ describe('search -> select -> type grams -> log (Phase 10.4 grams-first integrat
           onRequestScan={vi.fn()}
           onRequestCustom={vi.fn()}
           onRequestNewRecipe={vi.fn()}
+          onRequestAI={vi.fn()}
+          onRequestLibrary={vi.fn()}
         />
       </MemoryRouter>
     )

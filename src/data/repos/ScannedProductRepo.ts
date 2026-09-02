@@ -1,10 +1,10 @@
 import { trackUpsert } from '../../lib/sync/syncTracker'
-import type { MacroDesiDB } from '../db'
+import type { BitewiseDB } from '../db'
 import { db as defaultDb } from '../db'
 import type { ScannedProduct } from '../models'
 
 export class ScannedProductRepo {
-  constructor(private db: MacroDesiDB = defaultDb) {}
+  constructor(private db: BitewiseDB = defaultDb) {}
 
   async get(barcode: string): Promise<ScannedProduct | undefined> {
     return this.db.scannedProducts.get(barcode)

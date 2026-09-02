@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { LogRepo } from '../../data/repos/LogRepo'
-import { MacroDesiDB } from '../../data/db'
+import { BitewiseDB } from '../../data/db'
 import { getSyncStatus, runSync } from './syncEngine'
 
 /**
@@ -45,12 +45,12 @@ function createMockServer() {
   return { rows, handlePush, handlePull }
 }
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let repo: LogRepo
 let server: ReturnType<typeof createMockServer>
 
 beforeEach(async () => {
-  db = new MacroDesiDB(`test-syncengine-${Math.random()}`)
+  db = new BitewiseDB(`test-syncengine-${Math.random()}`)
   repo = new LogRepo(db)
   server = createMockServer()
 
@@ -171,7 +171,7 @@ describe('runSync', () => {
 
     // A brand-new local db (as if IndexedDB was cleared / a new device),
     // signed in, with no prior sync history (lastSyncedAt = null -> since=0).
-    const freshDb = new MacroDesiDB(`test-fresh-${Math.random()}`)
+    const freshDb = new BitewiseDB(`test-fresh-${Math.random()}`)
     await freshDb.syncMeta.add({
       userId: 'user-1',
       userEmail: 'a@b.com',

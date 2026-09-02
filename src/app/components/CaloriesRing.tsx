@@ -1,7 +1,10 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { computeRingState } from '../../domain/ring/ringState'
+import { isDarkFamily } from '../../domain/theme/resolveTheme'
+import { getLargerNumbers } from '../../lib/settings/appearancePreferences'
 import { motion as motionTokens, neutral, semantic } from '../../theme/tokens'
 import { useCountUp } from '../hooks/useCountUp'
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 import { useTheme } from '../shell/ThemeContext'
 
 interface Props {
@@ -10,13 +13,14 @@ interface Props {
 }
 
 const RADIUS = 70
-const STROKE = 8
+const STROKE = 12
 const CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
 export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
-  const prefersReducedMotion = useReducedMotion()
+  const prefersReducedMotion = usePrefersReducedMotion()
+  const largerNumbers = getLargerNumbers()
   const { resolvedTheme } = useTheme()
-  const trackColor = resolvedTheme === 'dark' ? neutral[700] : neutral[200]
+  const trackColor = isDarkFamily(resolvedTheme) ? neutral[700] : neutral[200]
 
   // Ring fill/color track the final (settled) values — framer-motion handles
   // their own smooth interpolation via the `animate` transition below.
@@ -30,7 +34,10 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
   const textState = computeRingState(eaten, targetKcal)
 
   const dashOffset = CIRCUMFERENCE * (1 - finalState.fillPct)
-  const ringColor = finalState.band === 'over' ? semantic.warn[600] : semantic.success[600]
+  // `semantic.over` exists precisely so the over-budget ring doesn't share
+  // a color with the carbs macro / `semantic.warn` (see tokens.ts) — using
+  // `warn` here recreated the exact ambiguity that token was built to fix.
+  const ringColor = finalState.band === 'over' ? semantic.over[600] : semantic.success[600]
 
   const ariaLabel =
     finalState.band === 'over'
@@ -68,7 +75,7 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
         </svg>
         <div className="absolute flex flex-col items-center" aria-hidden="true">
           <span
-            className="text-display tabular-nums text-slate-900 dark:text-slate-100"
+            className={`tabular-nums text-slate-900 dark:text-slate-100 ${largerNumbers ? 'text-5xl font-bold' : 'text-display'}`}
             data-testid="kcal-remaining"
           >
             {textState.centerText}

@@ -1,13 +1,17 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
 import { Navigate, Route, Routes } from 'react-router-dom'
 import AddFoodPage from './app/AddFoodPage'
+import AiLogPage from './app/AiLogPage'
+import AiLogResultPage from './app/AiLogResultPage'
 import CoachCheckInPage from './app/CoachCheckInPage'
 import CoachPage from './app/CoachPage'
+import CoachProgramUpdatePage from './app/CoachProgramUpdatePage'
 import Dashboard from './app/Dashboard'
 import DayDetailPage from './app/DayDetailPage'
 import ErrorBoundary from './app/components/ErrorBoundary'
 import ExportPage from './app/ExportPage'
 import HistoryPage from './app/HistoryPage'
+import LibraryPage from './app/LibraryPage'
 import LogPage from './app/LogPage'
 import OnboardingFlow from './app/OnboardingFlow'
 import QuickAddPage from './app/QuickAddPage'
@@ -17,10 +21,14 @@ import AppShell from './app/shell/AppShell'
 import SyncTriggers from './app/shell/SyncTriggers'
 import { ThemeProvider } from './app/shell/ThemeContext'
 import { UIStateProvider } from './app/shell/UIStateContext'
+import SettingsAppearancePage from './app/SettingsAppearancePage'
+import SettingsFoodPage from './app/SettingsFoodPage'
 import SettingsPage from './app/SettingsPage'
 import SignInScreen from './app/SignInScreen'
 import TemplateNewPage from './app/TemplateNewPage'
 import TemplatesPage from './app/TemplatesPage'
+import WeighInEntryPage from './app/WeighInEntryPage'
+import YourUsualsPage from './app/YourUsualsPage'
 import { ensureFoodDbSeeded } from './data/seed'
 
 // Recharts (WeightPage/TrendsPage) and @zxing (Scan* pages) are large —
@@ -82,6 +90,8 @@ function App() {
                 <Route path="/trends/report" element={<TrendsReportPage />} />
                 <Route path="/coach" element={<CoachPage />} />
                 <Route path="/settings" element={<SettingsPage />} />
+                <Route path="/settings/food" element={<SettingsFoodPage />} />
+                <Route path="/settings/appearance" element={<SettingsAppearancePage />} />
                 <Route path="/weight" element={<WeightPage />} />
                 <Route path="/report" element={<Navigate to="/trends/report" replace />} />
                 <Route path="/templates" element={<TemplatesPage />} />
@@ -94,7 +104,13 @@ function App() {
               <Route path="/log/add" element={<AddFoodPage />} />
               <Route path="/log/edit/:entryId" element={<AddFoodPage />} />
               <Route path="/log/quick-add" element={<QuickAddPage />} />
+              <Route path="/log/usuals" element={<YourUsualsPage />} />
+              <Route path="/weight/entry" element={<WeighInEntryPage />} />
+              <Route path="/log/ai" element={<AiLogPage />} />
+              <Route path="/log/ai/result" element={<AiLogResultPage />} />
+              <Route path="/log/library" element={<LibraryPage />} />
               <Route path="/coach/check-in" element={<CoachCheckInPage />} />
+              <Route path="/coach/check-in/plan" element={<CoachProgramUpdatePage />} />
               <Route path="/recipes/new" element={<RecipeBuilderPage />} />
               <Route path="/scan" element={<ScanPage />} />
               <Route path="/scan/product/:barcode" element={<ScanProductPage />} />

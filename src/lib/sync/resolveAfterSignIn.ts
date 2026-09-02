@@ -1,5 +1,5 @@
 import { authClient } from '../auth/authClient'
-import type { MacroDesiDB } from '../../data/db'
+import type { BitewiseDB } from '../../data/db'
 import { db as defaultDb } from '../../data/db'
 import { clearLocalSyncedData } from './guestMode'
 import { migrateLocalToCloud } from './migrateLocalToCloud'
@@ -24,7 +24,7 @@ export type PostSignInOutcome = 'onboarding' | 'ready'
  * 3. Else — brand-new account with nothing anywhere — the caller sends the
  *    user to onboarding.
  */
-export async function resolveAfterSignIn(db: MacroDesiDB = defaultDb): Promise<PostSignInOutcome> {
+export async function resolveAfterSignIn(db: BitewiseDB = defaultDb): Promise<PostSignInOutcome> {
   const { data: session } = await authClient.getSession()
   if (!session) return 'onboarding'
 

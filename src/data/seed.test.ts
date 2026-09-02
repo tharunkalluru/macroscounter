@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { MacroDesiDB } from './db'
+import { BitewiseDB } from './db'
 import type { FoodRecord } from './models'
 import { FoodRepo } from './repos/FoodRepo'
 import { ensureFoodDbSeeded } from './seed'
@@ -17,11 +17,11 @@ const sampleFoods: FoodRecord[] = [
   },
 ]
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let repo: FoodRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-seed-${Math.random()}`)
+  db = new BitewiseDB(`test-seed-${Math.random()}`)
   repo = new FoodRepo(db)
 })
 

@@ -9,6 +9,7 @@ import {
   YAxis,
 } from 'recharts'
 import type { DayTotal } from '../../domain/history/averages'
+import { isDarkFamily } from '../../domain/theme/resolveTheme'
 import { brand, neutral, surface, surfaceDark } from '../../theme/tokens'
 import { useTheme } from '../shell/ThemeContext'
 
@@ -20,7 +21,7 @@ interface Props {
 
 export default function CalorieTrendChart({ data, targetKcal }: Props) {
   const { resolvedTheme } = useTheme()
-  const isDark = resolvedTheme === 'dark'
+  const isDark = isDarkFamily(resolvedTheme)
   const gridStroke = isDark ? neutral[700] : neutral[200]
   const tickColor = isDark ? neutral[400] : neutral[500]
 

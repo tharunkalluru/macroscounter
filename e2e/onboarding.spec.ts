@@ -18,9 +18,9 @@ test('completing onboarding computes and shows the correct kcal target on the da
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByRole('radio', { name: 'male', exact: true }).check()
-  await page.getByTestId('onboarding-continue').click()
-
-  await page.getByTestId('dob-input').fill('1998-01-01')
+  await page.getByTestId('dob-month').selectOption('1')
+  await page.getByTestId('dob-day').selectOption('1')
+  await page.getByTestId('dob-year').selectOption('1998')
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByPlaceholder('cm').fill('170')
@@ -30,11 +30,9 @@ test('completing onboarding computes and shows the correct kcal target on the da
   await page.getByTestId('onboarding-continue').click() // weight-history: default
   await page.getByTestId('onboarding-continue').click() // body-fat: skip
 
-  await page.getByTestId('activity-job-desk').click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('activity-exercise-none').click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('activity-movement-low').click()
+  await page.getByTestId('movement-sedentary').click()
+  await page.getByTestId('training-none').click()
+  await page.getByTestId('lifting-none').click()
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByTestId('goal-cut').click()
@@ -73,9 +71,9 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByRole('radio', { name: 'male', exact: true }).check()
-  await page.getByTestId('onboarding-continue').click()
-
-  await page.getByTestId('dob-input').fill('1998-01-01')
+  await page.getByTestId('dob-month').selectOption('1')
+  await page.getByTestId('dob-day').selectOption('1')
+  await page.getByTestId('dob-year').selectOption('1998')
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByTestId('height-unit-ft_in').click()
@@ -88,11 +86,9 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
   await page.getByTestId('onboarding-continue').click() // weight-history: default
   await page.getByTestId('onboarding-continue').click() // body-fat: skip
 
-  await page.getByTestId('activity-job-desk').click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('activity-exercise-none').click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('activity-movement-low').click()
+  await page.getByTestId('movement-sedentary').click()
+  await page.getByTestId('training-none').click()
+  await page.getByTestId('lifting-none').click()
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByTestId('goal-cut').click()
@@ -132,9 +128,9 @@ test('data persists across a reload after onboarding', async ({ page }) => {
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByRole('radio', { name: 'female', exact: true }).check()
-  await page.getByTestId('onboarding-continue').click()
-
-  await page.getByTestId('dob-input').fill('2000-01-01')
+  await page.getByTestId('dob-month').selectOption('1')
+  await page.getByTestId('dob-day').selectOption('1')
+  await page.getByTestId('dob-year').selectOption('2000')
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByPlaceholder('cm').fill('165')
@@ -144,11 +140,9 @@ test('data persists across a reload after onboarding', async ({ page }) => {
   await page.getByTestId('onboarding-continue').click() // weight-history: default
   await page.getByTestId('onboarding-continue').click() // body-fat: skip
 
-  await page.getByTestId('activity-job-physical').click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('activity-exercise-frequent').click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('activity-movement-high').click()
+  await page.getByTestId('movement-very_active').click()
+  await page.getByTestId('training-frequent').click()
+  await page.getByTestId('lifting-advanced').click()
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByTestId('onboarding-continue').click() // goal: default (cut)

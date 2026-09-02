@@ -27,6 +27,25 @@ export function computeConsistency(loggedDates: string[], referenceDate: string,
   return count / windowDays
 }
 
+/**
+ * The longest run of consecutive logged calendar days anywhere in history —
+ * not anchored to a reference date like `computeStreak`, so a broken streak
+ * from months ago still counts if it was the longest one. A full scan over
+ * every logged date rather than a stored counter, so it can never drift out
+ * of sync with the underlying log data (Phase F.5, Habits screen).
+ */
+export function computeBestStreak(loggedDates: string[]): number {
+  if (loggedDates.length === 0) return 0
+  const sorted = [...new Set(loggedDates)].sort()
+  let best = 1
+  let current = 1
+  for (let i = 1; i < sorted.length; i++) {
+    current = addDaysISO(sorted[i - 1], 1) === sorted[i] ? current + 1 : 1
+    best = Math.max(best, current)
+  }
+  return best
+}
+
 const STREAK_MILESTONES = [3, 7, 14, 30, 50, 75, 100]
 
 /**

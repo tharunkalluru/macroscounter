@@ -51,6 +51,10 @@ export default function PortionStep({
   const grams = Number(gramsValue) || 0
   const preview = grams > 0 ? computeMacrosForGrams(per100g, grams) : null
 
+  function step(delta: number) {
+    setGramsValue(String(Math.max(0, grams + delta)))
+  }
+
   async function handleSave() {
     if (!preview || grams <= 0) return
     await onSave({
@@ -69,17 +73,37 @@ export default function PortionStep({
     <div>
       <label className="flex flex-col gap-1">
         <span className="text-sm font-medium">Grams</span>
-        <input
-          type="number"
-          inputMode="decimal"
-          min="0"
-          data-testid="portion-grams-input"
-          className="min-h-touch rounded border border-slate-300 px-3 py-2 text-lg dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
-          value={gramsValue}
-          onChange={(e) => setGramsValue(e.target.value)}
-          autoFocus
-          onFocus={(e) => e.target.select()}
-        />
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => step(-10)}
+            aria-label="Decrease by 10 grams"
+            data-testid="portion-grams-decrement"
+            className="flex min-h-touch min-w-touch items-center justify-center rounded-full border border-slate-300 text-lg font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300"
+          >
+            −
+          </button>
+          <input
+            type="number"
+            inputMode="decimal"
+            min="0"
+            data-testid="portion-grams-input"
+            className="min-h-touch flex-1 rounded border border-slate-300 px-3 py-2 text-center text-lg dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            value={gramsValue}
+            onChange={(e) => setGramsValue(e.target.value)}
+            autoFocus
+            onFocus={(e) => e.target.select()}
+          />
+          <button
+            type="button"
+            onClick={() => step(10)}
+            aria-label="Increase by 10 grams"
+            data-testid="portion-grams-increment"
+            className="flex min-h-touch min-w-touch items-center justify-center rounded-full border border-slate-300 text-lg font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300"
+          >
+            +
+          </button>
+        </div>
       </label>
 
       <div className="mt-2 flex flex-wrap gap-2">

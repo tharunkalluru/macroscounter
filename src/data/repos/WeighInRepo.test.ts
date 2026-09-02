@@ -1,12 +1,12 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from '../db'
+import { BitewiseDB } from '../db'
 import { WeighInRepo } from './WeighInRepo'
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let repo: WeighInRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-weighin-${Math.random()}`)
+  db = new BitewiseDB(`test-weighin-${Math.random()}`)
   repo = new WeighInRepo(db)
 })
 

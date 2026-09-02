@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from '../../data/db'
+import { BitewiseDB } from '../../data/db'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { TargetRepo } from '../../data/repos/TargetRepo'
 import { computeAverage, groupEntriesByDate } from './averages'
 import { classifyDay } from './colorBand'
 import { findApplicableTarget } from './targetForDate'
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let logRepo: LogRepo
 let targetRepo: TargetRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-history-integration-${Math.random()}`)
+  db = new BitewiseDB(`test-history-integration-${Math.random()}`)
   logRepo = new LogRepo(db)
   targetRepo = new TargetRepo(db)
 })

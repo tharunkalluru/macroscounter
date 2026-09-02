@@ -7,6 +7,7 @@ import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
 import { findApplicableTarget } from '../domain/history/targetForDate'
 import { sumMacros } from '../domain/logging/portionMath'
+import { daysBetween, deriveCurrentProgram } from '../domain/programs/program'
 import { addDaysISO, isFutureDate, todayISO } from '../lib/date'
 import { vibrateSuccess } from '../lib/haptics'
 import { hasCelebratedProteinGoal, markProteinGoalCelebrated } from '../lib/logging/proteinGoalCelebration'
@@ -47,6 +48,7 @@ export default function Dashboard() {
   const [targets, setTargets] = useState<Targets | null>(null)
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
+  const [dayOfProgram, setDayOfProgram] = useState<number | null>(null)
   const [breakdownMacro, setBreakdownMacro] = useState<
     (typeof MACRO_DEFS)[keyof typeof MACRO_DEFS] | null
   >(null)
@@ -81,11 +83,18 @@ export default function Dashboard() {
       setTargets(findApplicableTarget(date, allTargets) ?? null)
       setEntries(dayEntries)
       setHistoryEntries(historyRange)
+      if (isToday) {
+        const program = deriveCurrentProgram(allTargets, date)
+        setDayOfProgram(program ? daysBetween(program.startDate, date) + 1 : null)
+      }
       setState('ready')
     })()
     return () => {
       cancelled = true
     }
+    // isToday is derived synchronously from `date`, already a dep -- omitted
+    // to avoid a redundant re-run trigger, same pattern as loadEntries above.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, dataVersion])
 
   const mealPrompt = useMealPrompt(entries, isToday && state === 'ready')
@@ -147,6 +156,14 @@ export default function Dashboard() {
   return (
     <div className="pb-4" data-testid="today-view">
       <h1 className="sr-only">Today</h1>
+      {isToday && dayOfProgram !== null && (
+        <p
+          className="mx-auto max-w-md px-6 pb-1 text-center text-caption text-slate-500 dark:text-slate-400"
+          data-testid="today-program-header"
+        >
+          Day {dayOfProgram} of program
+        </p>
+      )}
       <DateNav date={date} onChange={goToDate} />
       {!isToday && (
         <div className="mt-2 flex justify-center">

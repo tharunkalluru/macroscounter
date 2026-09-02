@@ -53,7 +53,7 @@ export function computeGoalTargets(input: GoalEngineInput): GoalEngineResult {
   const bmr = calculateBMR(sex, weightKg, heightCm, age)
   const tdee = calculateTDEE(bmr, activityLevel)
 
-  const absoluteFloor = sex === 'male' ? MALE_KCAL_FLOOR : FEMALE_KCAL_FLOOR
+  const absoluteFloor = input.floorKcalOverride ?? (sex === 'male' ? MALE_KCAL_FLOOR : FEMALE_KCAL_FLOOR)
   const cutFloor = Math.max(bmr, absoluteFloor) + Math.max(input.floorBufferKcal ?? 0, 0)
 
   const rateKcalPerDay =

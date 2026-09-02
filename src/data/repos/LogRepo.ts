@@ -1,14 +1,20 @@
 import { trackDelete, trackUpsert } from '../../lib/sync/syncTracker'
-import type { MacroDesiDB } from '../db'
+import type { BitewiseDB } from '../db'
 import { db as defaultDb } from '../db'
 import type { LogEntry } from '../models'
 
 export class LogRepo {
-  constructor(private db: MacroDesiDB = defaultDb) {}
+  constructor(private db: BitewiseDB = defaultDb) {}
 
   async addEntry(entry: Omit<LogEntry, 'id'>): Promise<number> {
-    const id = await this.db.logEntries.add(entry as LogEntry)
-    await trackUpsert(this.db, 'logEntries', id, { ...entry, id })
+    // Stamped centrally (Phase F.3) so every one of this app's several
+    // logging entry points gets a real `loggedAt` for free, rather than
+    // needing each call site to remember to set it. A caller can still pass
+    // its own (e.g. "copy yesterday" reusing the original time) since this
+    // only fills in what's missing.
+    const withLoggedAt = { loggedAt: new Date().toISOString(), ...entry }
+    const id = await this.db.logEntries.add(withLoggedAt as LogEntry)
+    await trackUpsert(this.db, 'logEntries', id, { ...withLoggedAt, id })
     return id
   }
 

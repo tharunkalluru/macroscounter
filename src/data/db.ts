@@ -12,7 +12,7 @@ import type {
 } from './models'
 import type { OutboxEntry } from '../domain/sync/types'
 
-export class MacroDesiDB extends Dexie {
+export class BitewiseDB extends Dexie {
   profiles!: Table<Profile, number>
   targets!: Table<Targets, number>
   foods!: Table<FoodRecord, string>
@@ -72,4 +72,4 @@ export class MacroDesiDB extends Dexie {
   }
 }
 
-export const db = new MacroDesiDB()
+export const db = new BitewiseDB()

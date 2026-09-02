@@ -1,10 +1,10 @@
 import { trackUpsert } from '../../lib/sync/syncTracker'
-import type { MacroDesiDB } from '../db'
+import type { BitewiseDB } from '../db'
 import { db as defaultDb } from '../db'
 import type { Targets } from '../models'
 
 export class TargetRepo {
-  constructor(private db: MacroDesiDB = defaultDb) {}
+  constructor(private db: BitewiseDB = defaultDb) {}
 
   async add(target: Omit<Targets, 'id'>): Promise<number> {
     const id = await this.db.targets.add(target as Targets)

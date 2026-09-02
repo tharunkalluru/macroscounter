@@ -23,6 +23,9 @@ test('Templates and Export are reachable from Settings by clicking through the U
   await page.goBack()
   await expect(page).toHaveURL('/settings')
 
+  await page.getByTestId('settings-row-appearance').click()
+  await expect(page).toHaveURL('/settings/appearance')
+
   await page.getByRole('link', { name: 'Export data' }).click()
   await expect(page).toHaveURL('/export')
 })

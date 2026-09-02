@@ -1,4 +1,4 @@
-import type { MacroDesiDB } from '../../data/db'
+import type { BitewiseDB } from '../../data/db'
 import { db as defaultDb } from '../../data/db'
 import { SYNCED_TABLES } from '../../domain/sync/types'
 
@@ -8,12 +8,12 @@ import { SYNCED_TABLES } from '../../domain/sync/types'
  * with `userId: null`). The presence of any row at all is what gates the
  * `/welcome` screen from showing again, not the value of `userId`.
  */
-export async function hasMadeSignInChoice(db: MacroDesiDB = defaultDb): Promise<boolean> {
+export async function hasMadeSignInChoice(db: BitewiseDB = defaultDb): Promise<boolean> {
   return (await db.syncMeta.count()) > 0
 }
 
 /** "Skip for now" — stay fully local-only. A no-op if a choice already exists. */
-export async function chooseGuestMode(db: MacroDesiDB = defaultDb): Promise<void> {
+export async function chooseGuestMode(db: BitewiseDB = defaultDb): Promise<void> {
   const existing = await db.syncMeta.toCollection().first()
   if (existing) return
   await db.syncMeta.add({
@@ -26,7 +26,7 @@ export async function chooseGuestMode(db: MacroDesiDB = defaultDb): Promise<void
   })
 }
 
-export async function isGuest(db: MacroDesiDB = defaultDb): Promise<boolean> {
+export async function isGuest(db: BitewiseDB = defaultDb): Promise<boolean> {
   const meta = await db.syncMeta.toCollection().first()
   return !meta?.userId
 }
@@ -41,7 +41,7 @@ export async function isGuest(db: MacroDesiDB = defaultDb): Promise<boolean> {
  * that and wipes local data first via `clearLocalSyncedData` instead of
  * merging or migrating one account's data into another's.
  */
-export async function signOutLocally(db: MacroDesiDB = defaultDb): Promise<void> {
+export async function signOutLocally(db: BitewiseDB = defaultDb): Promise<void> {
   const meta = await db.syncMeta.toCollection().first()
   const cleared = { userId: null, userEmail: null, userName: null, userAvatarUrl: null }
   if (meta) {
@@ -58,7 +58,7 @@ export async function signOutLocally(db: MacroDesiDB = defaultDb): Promise<void>
  * `foods` (the shared curated database, not user data) or `syncMeta` itself
  * (the caller overwrites that with the new account's identity right after).
  */
-export async function clearLocalSyncedData(db: MacroDesiDB = defaultDb): Promise<void> {
+export async function clearLocalSyncedData(db: BitewiseDB = defaultDb): Promise<void> {
   for (const tableName of SYNCED_TABLES) {
     await db.table(tableName).clear()
   }

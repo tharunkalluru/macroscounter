@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { MacroDesiDB } from '../../data/db'
+import { BitewiseDB } from '../../data/db'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { ProfileRepo } from '../../data/repos/ProfileRepo'
 import { WeighInRepo } from '../../data/repos/WeighInRepo'
@@ -29,11 +29,11 @@ function createMockServer() {
   return { rows, handlePush, handlePull }
 }
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let server: ReturnType<typeof createMockServer>
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-migrate-${Math.random()}`)
+  db = new BitewiseDB(`test-migrate-${Math.random()}`)
   server = createMockServer()
 
   vi.stubGlobal(

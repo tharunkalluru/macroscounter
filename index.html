@@ -5,16 +5,30 @@
     <link rel="icon" type="image/svg+xml" href="/icons/icon.svg" />
     <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-    <meta name="theme-color" content="#0f172a" />
+    <meta name="theme-color" content="#161826" />
     <meta
       name="description"
-      content="MacroDesi — fat-loss focused calorie and macro tracker with an Indian food database"
+      content="Bitewise — fat-loss focused calorie and macro tracker with an Indian food database"
     />
+
+    <!--
+      Nocturne redesign (Phase F.0): Inter + Phosphor Icons, loaded from
+      their canonical CDNs to match the source design exactly. Both are
+      given `runtimeCaching` rules in vite.config.ts so they're cached
+      offline after the first load — see that file's comment for why this
+      doesn't regress the app's offline/fast-repeat-load guarantees.
+    -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css" />
+    <link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/bold/style.css" />
 
     <!-- Standalone/installed-app feel (Phase 10.6) -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-    <meta name="apple-mobile-web-app-title" content="MacroDesi" />
+    <meta name="apple-mobile-web-app-title" content="Bitewise" />
     <meta name="mobile-web-app-capable" content="yes" />
     <!--
       A representative set of current device classes, not Apple's full
@@ -32,16 +46,27 @@
     <link rel="apple-touch-startup-image" href="/icons/apple-splash-1536x2048.png"
       media="(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" />
 
-    <title>MacroDesi</title>
+    <title>Bitewise</title>
     <script>
-      // Applied synchronously, before first paint, to avoid a light->dark flash.
-      // Mirrors the resolution logic in src/app/shell/ThemeContext.tsx.
+      // Applied synchronously, before first paint, to avoid a light->dark
+      // flash. Mirrors migrateStoredPreference/isDarkFamily in
+      // src/domain/theme/resolveTheme.ts: 'system' (or nothing stored) is
+      // resolved against the OS preference the same way ThemeContext does,
+      // defaulting to 'dark' rather than 'light' when nothing is stored at
+      // all (the design has no light-first appearance).
       ;(function () {
         try {
           var stored = localStorage.getItem('macrodesi-theme')
-          var pref = stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
-          var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches)
-          if (dark) document.documentElement.classList.add('dark')
+          var pref
+          if (stored === 'light' || stored === 'dark' || stored === 'contrast') {
+            pref = stored
+          } else if (stored === 'system') {
+            pref = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
+          } else {
+            pref = 'dark'
+          }
+          if (pref !== 'light') document.documentElement.classList.add('dark')
+          if (pref === 'contrast') document.documentElement.classList.add('contrast')
         } catch (e) {}
       })()
     </script>

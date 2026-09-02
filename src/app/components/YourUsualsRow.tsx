@@ -1,4 +1,5 @@
 import { useMemo } from 'react'
+import { Link } from 'react-router-dom'
 import type { LogEntry, Meal } from '../../data/models'
 import { computeMealSuggestions } from '../../domain/logging/suggestions'
 import { vibrateTiny } from '../../lib/haptics'
@@ -33,7 +34,12 @@ export default function YourUsualsRow({ meal, date, historyEntries, onLogged }: 
 
   return (
     <div className="mt-4 flex flex-col gap-2" data-testid="your-usuals-row">
-      <p className="text-caption text-slate-500 dark:text-slate-400">Your usual?</p>
+      <div className="flex items-center justify-between">
+        <p className="text-caption text-slate-500 dark:text-slate-400">Your usual?</p>
+        <Link to="/log/usuals" data-testid="your-usuals-see-all" className="min-h-touch text-caption font-medium text-brand-700 dark:text-brand-400">
+          See all
+        </Link>
+      </div>
       <div className="flex flex-wrap gap-2">
         {suggestions.map((chip) => (
           <button

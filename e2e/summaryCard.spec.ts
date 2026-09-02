@@ -23,7 +23,10 @@ test('over-budget: logging past the target turns the ring amber and shows "+n ov
   await expect(page.getByTestId('calories-ring')).toHaveAccessibleName(/372 over/)
 
   const ringFillCircle = page.getByTestId('calories-ring').locator('circle').nth(1)
-  await expect(ringFillCircle).toHaveAttribute('stroke', '#bf9c40') // semantic.warn[600]
+  // semantic.over[600] — the dedicated over-budget hue, distinct from
+  // semantic.warn/carbs (Phase F.0 bug fix: CaloriesRing previously used
+  // `warn` here, recreating the exact color ambiguity `over` exists to avoid).
+  await expect(ringFillCircle).toHaveAttribute('stroke', '#bf7640')
 })
 
 test('under target: the ring stays brand-colored and shows plain remaining kcal', async ({ page }) => {

@@ -6,6 +6,7 @@ import Header from './Header'
 import PageTransition from './PageTransition'
 import { useUIState } from './UIStateContext'
 import AddFoodSheetContent from '../sheets/AddFoodSheetContent'
+import GoalReachedTakeover from '../components/GoalReachedTakeover'
 import InstallCoachMark from '../components/InstallCoachMark'
 
 const MEAL_LABELS: Record<Meal, string> = {
@@ -26,6 +27,7 @@ export default function AppShell() {
   return (
     <div className="min-h-screen bg-surface dark:bg-surface-dark">
       <InstallCoachMark />
+      <GoalReachedTakeover />
       <Header />
       <main className="pb-24">
         <PageTransition>
@@ -45,6 +47,8 @@ export default function AppShell() {
           onRequestScan={closeAddFoodSheet}
           onRequestCustom={closeAddFoodSheet}
           onRequestNewRecipe={closeAddFoodSheet}
+          onRequestAI={closeAddFoodSheet}
+          onRequestLibrary={closeAddFoodSheet}
         />
       </BottomSheet>
     </div>

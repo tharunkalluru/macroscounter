@@ -178,6 +178,11 @@ export default function ScanPage() {
 
       <div className="relative mt-3 overflow-hidden rounded-xl bg-slate-900" data-testid="camera-preview">
         <video ref={videoRef} className="aspect-video w-full object-cover" muted playsInline />
+        {cameraStatus === 'active' && (
+          <div className="pointer-events-none absolute inset-0 flex items-center justify-center" aria-hidden="true">
+            <div className="h-2/3 w-4/5 rounded-2xl border-2 border-white/60" />
+          </div>
+        )}
         {cameraStatus === 'unavailable' && (
           <p className="p-4 text-center text-sm text-slate-300">
             Camera unavailable — use manual entry below.
@@ -196,6 +201,11 @@ export default function ScanPage() {
           </button>
         )}
       </div>
+      {cameraStatus === 'active' && (
+        <p className="mt-2 text-center text-caption uppercase tracking-widest text-slate-400 dark:text-slate-500">
+          Works offline · cached products scan instantly
+        </p>
+      )}
 
       {showManualEntry && (
         <div className="mt-4" data-testid="manual-entry-fallback">

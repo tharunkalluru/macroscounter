@@ -28,6 +28,16 @@ export interface GoalEngineInput {
    * existing safety minimum. Defaults to 0 (today's behavior).
    */
   floorBufferKcal?: number
+  /**
+   * Explicit opt-in to a lower calorie floor than the sex-based safety
+   * minimum (1500 male / 1200 female) — the design's "Low, medical
+   * supervision recommended" option. Replaces that sex-based minimum in
+   * `max(bmr, ...)`, so the result is never allowed below the person's own
+   * BMR regardless of how low this value is. Omitted = existing
+   * sex-based-minimum behavior; there's no default that lowers the floor
+   * on its own.
+   */
+  floorKcalOverride?: number
 }
 
 export interface GoalEngineResult {

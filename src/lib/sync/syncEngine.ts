@@ -1,4 +1,4 @@
-import type { MacroDesiDB } from '../../data/db'
+import type { BitewiseDB } from '../../data/db'
 import { db as defaultDb } from '../../data/db'
 import { mergeRemoteRows } from '../../domain/sync/lww'
 import { reconcileAfterPush } from '../../domain/sync/outbox'
@@ -25,7 +25,7 @@ export function onSyncStatusChange(listener: Listener): () => void {
   return () => listeners.delete(listener)
 }
 
-async function getMeta(db: MacroDesiDB) {
+async function getMeta(db: BitewiseDB) {
   return db.syncMeta.toCollection().first()
 }
 
@@ -35,7 +35,7 @@ async function getMeta(db: MacroDesiDB) {
  * Safe to call opportunistically (app open, regaining connectivity, after
  * each log) — it no-ops for guests and is not reentrant.
  */
-export async function runSync(db: MacroDesiDB = defaultDb): Promise<void> {
+export async function runSync(db: BitewiseDB = defaultDb): Promise<void> {
   if (syncing) return
   const meta = await getMeta(db)
   if (!meta?.userId) {
@@ -61,7 +61,7 @@ export async function runSync(db: MacroDesiDB = defaultDb): Promise<void> {
   }
 }
 
-async function pushOutbox(db: MacroDesiDB): Promise<void> {
+async function pushOutbox(db: BitewiseDB): Promise<void> {
   const outbox = await db.syncOutbox.toArray()
   if (outbox.length === 0) return
 
@@ -104,7 +104,7 @@ export async function serverHasProfile(): Promise<boolean> {
   return (tables.profiles?.length ?? 0) > 0
 }
 
-async function pullChanges(db: MacroDesiDB, since: number): Promise<void> {
+async function pullChanges(db: BitewiseDB, since: number): Promise<void> {
   const res = await fetch(`/api/sync/pull?since=${since}`, { credentials: 'include' })
   if (!res.ok) throw new Error(`pull failed: ${res.status}`)
 
@@ -117,7 +117,7 @@ async function pullChanges(db: MacroDesiDB, since: number): Promise<void> {
   }
 }
 
-async function mergeTable(db: MacroDesiDB, tableName: SyncedTableName, remoteRows: SyncRow[]): Promise<void> {
+async function mergeTable(db: BitewiseDB, tableName: SyncedTableName, remoteRows: SyncRow[]): Promise<void> {
   const table = db.table(tableName)
   const localRows = (await table.toArray()) as unknown as SyncRow[]
   const merged = mergeRemoteRows(localRows, remoteRows)

@@ -1,17 +1,17 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from '../../data/db'
+import { BitewiseDB } from '../../data/db'
 import { FoodRepo } from '../../data/repos/FoodRepo'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { MealTemplateRepo } from '../../data/repos/MealTemplateRepo'
 import { applyTemplate } from './applyTemplate'
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let foodRepo: FoodRepo
 let templateRepo: MealTemplateRepo
 let logRepo: LogRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-template-integration-${Math.random()}`)
+  db = new BitewiseDB(`test-template-integration-${Math.random()}`)
   foodRepo = new FoodRepo(db)
   templateRepo = new MealTemplateRepo(db)
   logRepo = new LogRepo(db)

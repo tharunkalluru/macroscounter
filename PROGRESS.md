@@ -1322,3 +1322,208 @@ phases (R.0–R.8), each gated identically to every phase before it, in order:
   committed locally but not yet pushed as of this writing (the user has deferred pushing after each
   phase to review the accumulated diff first) — the live walkthrough is outstanding until that push
   happens.
+
+## Nocturne fidelity closeout summary (F.0–F.8: PASS)
+
+After the Nocturne redesign shipped, the user did a full visual pass and pushed back: several of
+R.0–R.8's own deferrals (system font instead of Inter, hand-built icons instead of Phosphor) and a
+long tail of frame-level content/interaction differences meant the app still didn't read as "the
+exact replica" of the source design. Rather than guess at scope, this closeout began with a
+frame-by-frame audit of the complete 37-frame mockup (re-fetched in full this time — the earlier
+session's copy was capped at frame 31 by a sync lag) against the live app, cross-referencing every
+screen against the actual current source rather than memory of what R.0–R.8 built. The audit
+confirmed the color tokens are pixel-exact and several structural decisions (tab-bar composition,
+14-step onboarding count, the goal-rate slider's exact range) were already correct, then catalogued
+everything that wasn't: three cross-cutting deviations touching all 37 frames, nine screens with no
+app counterpart at all, and two confirmed, isolated color-token bugs. Three scope questions —
+whether to finally add the Inter/Phosphor CDNs (network dependency vs. the app's offline-first
+guarantee), whether to build real AI photo/text logging (new cost/infra) or stub it, and whether to
+build real push notifications or keep the in-app-banner pattern — were put to the user explicitly
+rather than assumed; all three answers are recorded in the phase plan below. Nine more phases
+(F.0–F.8), same gate discipline as every phase before them:
+
+- **F.0 — CDN foundation, icon migration, confirmed bugs**: Inter (Google Fonts) and Phosphor
+  Icons (unpkg) added to `index.html` per the user's explicit choice to match the design exactly;
+  `vite.config.ts` gained `runtimeCaching` rules for both origins so only the very first-ever visit
+  pays the network cost — every repeat visit is served from cache, keeping `nativeFeel.spec.ts`'s
+  <1.5s budget green. `shell/icons.tsx` was rewritten in place (every exported component keeps its
+  name and prop shape) to render Phosphor glyphs instead of hand-drawn SVG paths — zero call-site
+  changes needed anywhere else in the app. Fixed two real, previously-undetected bugs the audit
+  surfaced: `CaloriesRing.tsx` colored the over-budget ring with `semantic.warn` (the carbs hue)
+  instead of the dedicated `semantic.over` token that exists specifically to avoid that ambiguity;
+  `MacroBar.tsx` hard-clamped fill at 100%, silently hiding how far over target a macro actually
+  was. `scripts/check-bundle.ts` needed a fix of its own — it started failing on the new
+  cross-origin `<link>` tags, treating them as missing local build assets; now it filters
+  `http(s)://` URLs out of the local-bundle budget entirely, since they're a deliberate,
+  separately-cached trade-off, not part of this app's own JS/CSS.
+- **F.1 — Theme system**: the design's picker is Dark/Light/Contrast with no "follow OS" option, so
+  `ThemePreference` dropped `'system'` in favor of a third concrete `'contrast'` value. Existing
+  users who had explicitly chosen System get a one-time, silent migration
+  (`migrateStoredPreference`, unit-tested): their current OS preference resolves once into a
+  concrete Light or Dark choice and gets written back, so nobody's screen changes the moment this
+  shipped. Contrast itself (deeper background, brighter accent) is layered in via CSS custom
+  properties on just the two token families that need to vary (`--surface-dark-bg/-card`,
+  `--brand-400/-600`) rather than a fourth full Tailwind color family — every existing
+  `dark:bg-surface-dark*` / `dark:text-brand-400` usage across the app picks it up for free.
+- **F.2 — Onboarding rebuild**: the biggest single phase. New `ChoiceGrid` (grid cards, no radio
+  dot — replacing `SelectableCardGroup` everywhere the design uses a grid, not a list),
+  `DateWheelPicker` (native selects standing in for a hand-rolled scroll wheel — same 3-column
+  structure without touch-physics engineering for one onboarding field), and `CoachBubble`
+  (chat-persona message + quick-reply, reused again in F.6). Sex + date of birth merged into one
+  step; weight-history rewritten to the design's actual two questions instead of a generic
+  tracking-experience question; body-fat expanded to a 9-bucket grid; the three separate
+  job/exercise/movement steps collapsed into one screen asking the design's actual three questions
+  (daily movement, training frequency, lifting experience), with `resolveActivityLevel` rewritten
+  to score them onto the same 5-value `ActivityLevel` enum — zero change to `goalEngine`. Added
+  Keto to diet style and a third, genuinely lower calorie-floor option, which needed a real engine
+  change (`floorKcalOverride` on `computeGoalTargets`, unit-tested to never go below someone's own
+  BMR regardless of how low the override requests) since the existing floor logic could only ever
+  raise the safety minimum, never lower it. The target-weight slider wires to the already-existing
+  `Profile.goalWeightKg`; the final screen is a real 7-day×4-metric table instead of a flat kcal-only
+  list. Two new nullable Postgres columns (`weighed_more_before`, `recent_weight_trend`) generated
+  and inspected before shipping; the old `weightHistoryClass` field and its stored values on
+  existing profiles are left untouched, just no longer written to. Touched the shared `onboard()`
+  e2e helper every other spec file depends on — verified by running the full suite twice plus
+  isolated reruns of everything that failed under parallel load.
+- **F.3 — Today & Log tab**: `LogEntry` gained one new field, `loggedAt` (stamped centrally in
+  `LogRepo.addEntry` so all nine of the app's logging entry points get it for free, one nullable
+  Postgres column), unlocking the Timeline view that a prior phase had correctly deferred for
+  exactly this reason. New swipeable date strip shared by Meals/Timeline; a full "Your usuals"
+  screen (meal-period filters, logged-N× counts, copy-a-whole-day) where previously only an inline
+  row existed; a full-screen digit-keypad weigh-in entry with a 14-day trend sparkline, alongside
+  (not replacing) the existing inline form. **Found and fixed a real regression during this
+  phase's own verification**: passing an explicit `date` prop to `MealSection` unconditionally (to
+  support date-strip browsing) broke its sheet-vs-full-page routing, which checks the prop's mere
+  presence, not whether it equals today — every "Add {meal}" tap on the Log tab silently started
+  full-page-navigating instead of opening the sheet, even while viewing today. Fixed by only passing
+  the prop when not viewing today, matching the prop's actual contract.
+- **F.4 — Logging engines**: the add-food sheet gained the design's 5-tab structure
+  (Search/Scan/AI/Quick/Library) — Search stays inline, the other four trigger the same
+  close-sheet-then-navigate pattern the sheet already used for Scan/Quick/New-recipe. Two entirely
+  new screens for AI photo/text logging (per the user's decision: real, reachable UI, wired to a
+  clearly-labeled placeholder result rather than a live vision-API call), a new unified Library
+  screen (Recipes/My foods/Quick add) whose Recipes tab is a genuinely new capability — browsing and
+  one-tap re-logging *existing* saved recipes, which nothing in the app did before (only creation
+  existed). `PortionStep` gained a +/− stepper; `ScanPage` gained a reticle overlay and an offline
+  caption. Label-OCR review (frame 21) was explicitly deferred rather than built, since the
+  underlying vision API is off by default in every current deployment and a full review-screen
+  build for an inactive feature wasn't a good use of this phase's effort.
+- **F.5 — Trends & habits**: entirely pure-computation work, no new tables. New
+  `computeExpenditureHistory` replays the existing `computeAdaptiveAdjustment` math over successive
+  trailing-7-day windows to produce the multi-week series and "since Week 1" delta the design's
+  Expenditure chart needs — nothing persisted, degrades to "not enough data" per-week exactly like
+  the single-window version already did. New `computeBestStreak` (a full history scan, not a stored
+  counter, so it can never drift) and a 30-day heatmap component for Habits — the single most
+  visually distinctive element the earlier redesign phase was missing. The Weekly report gained a
+  real numbered/dated identity via a `?week=` route param instead of always being "trailing 7 days
+  from today," reusing `deriveCurrentProgram` for the week number and `computeWeeklyReport`'s
+  existing date-range parameter — a call-site change, not a new function. The Trends hub went from
+  plain navigation links to live per-card preview data (weight trend, avg kcal, streak).
+- **F.6 — Coach & strategy**: `CoachCheckInPage` rebuilt around `CoachBubble` as a real
+  conversational flow, plus a new personalized closing tip (`computeWeeklyFocusTip`, unit-tested)
+  naming whichever weekday's protein hit-rate lagged furthest behind the week's average. Split the
+  wizard's "accept" action into the genuine second screen the design's own annotation calls for
+  (`/coach/check-in/plan` — a day-by-day grid, before/after diffs, an expandable calculation, reused
+  by both the wizard's last step and a new "Edit program" entry point on the Strategy hub) instead
+  of folding straight into an inline confirmation card. Rebuilt the Strategy hub with a
+  check-in-due state, a budget/protein stat row, and a goal section (start/now/target/%). The
+  goal-reached moment moved from a reactive toast fired mid-weigh-in-entry to a full-screen
+  takeover checked once per app open (`GoalReachedTakeover`, mounted in `AppShell` alongside the
+  existing `InstallCoachMark` precedent) carrying a real lifetime-stats bundle
+  (`computeGoalReachedStats`, unit-tested) and three actions — the old reactive trigger in
+  `WeightSection` and the permanent "you're at goal" banner in `CoachPage` were both removed rather
+  than left running alongside the new one, since they shared the same one-shot gate and would only
+  ever race for which style showed first.
+- **F.7 — Settings**: added the two "reading comfort" toggles the design specifies — Larger
+  numbers and Reduce motion — as real, working preferences rather than decorative switches, this
+  time: a shared `usePrefersReducedMotion` hook (OS setting OR the app preference) wired into the
+  calories ring's animation, and a `largerNumbers` check bumping its center-number type size. Added
+  the expenditure CSV export, reusing F.5's replay function for a 26-week history. Left the
+  design's third food-source toggle (Indian foods/IFCT) out again, for the same reason the earlier
+  redesign phase did: the curated Indian food database isn't a live, toggleable source the way the
+  barcode-lookup OFF/FDC APIs are, so a toggle for it would visibly do nothing. Did not attempt the
+  hub-plus-two-sub-pages restructure the original plan sketched — with ~13 existing E2E specs
+  already depending on `/settings` as a single-page waypoint for unrelated flows, and the design not
+  actually requiring multi-route navigation to function, that risk wasn't justified for what's
+  fundamentally a content-organization preference.
+- **F.8 — Full-suite verification**: extended the a11y and touch-target suites to every new screen
+  (Timeline, Your usuals, weigh-in entry — zero violations after one real fix: a footnote using
+  `dark:text-slate-500`, 3.14:1 against the dark surface, corrected to the `-400` rung the app's own
+  documented contrast contract requires for dark surfaces). Added a dedicated seamless-migration
+  test: an account seeded directly into IndexedDB with pre-closeout shapes (old
+  `weightHistoryClass` vocabulary, a `LogEntry` with no `loggedAt`, a `'system'` theme preference)
+  loads with nothing dropped, nothing crashing, and the theme migrating to a concrete value
+  consistent with what the DOM actually renders. Wrote this summary.
+- **Explicitly deferred, not silently dropped**: nutrition-label OCR's review screen (frame 21 —
+  the underlying vision API is off by default); the IFCT food-source toggle (no corresponding
+  live-source concept in this codebase's food database); the Settings hub/sub-page IA restructure
+  (real E2E blast radius, not required by the design to function).
+- **Tests**: 465 unit tests (up from 445 at the end of the Nocturne redesign), 130 E2E specs across
+  28 files (up from 119 across 26). New unit-tested domain modules: `expenditureHistory`,
+  `weeklyFocusTip`, `goalReachedStats`, plus new coverage on `goalEngine` (`floorKcalOverride`),
+  `activityQuiz` (the rewritten 3-question scoring), `streak` (`computeBestStreak`), and
+  `resolveTheme` (the System-to-concrete migration).
+- **Bundle**: 191.23 KB gz initial (budget 300 KB gz) — up from 185.96 KB at the end of the Nocturne
+  redesign, despite adding several new non-lazy pages (Your usuals, weigh-in entry, the AI logging
+  pair, Library), since none of them pull in a heavy dependency the way the chart/scanner pages do.
+- `lint && tsc --noEmit && check:tokens && check:bundle && test && build && test:e2e` all green
+  after every phase. The same pre-existing, session-documented "element outside of viewport" flake
+  (unrelated to this work — confirmed against a clean baseline in an earlier session) surfaced
+  repeatedly across every phase's full-suite runs, always on a different spec each time and always
+  passing on an isolated rerun; one real regression this closeout introduced itself (F.3's
+  sheet-vs-full-page routing bug, above) was caught by this same discipline, not missed by it.
+- **Not verified — needs a production deploy**: same as the Nocturne redesign before it, this
+  entire closeout is committed locally and not yet pushed; a live walkthrough against the deployed
+  site is outstanding until that push happens.
+
+## Rebrand: MacroDesi -> Bitewise
+
+Renamed the product everywhere it's user-facing or a cosmetic internal identifier: page title,
+PWA manifest, meta tags, every on-screen heading, error/empty-state copy, CSV export filenames,
+`package.json`'s name, the `MacroDesiDB` TypeScript class, and test assertions. Deliberately left
+unchanged: the literal Dexie/IndexedDB database name (`'macrodesi'`, `src/data/db.ts`) and every
+`macrodesi:`/`macrodesi-theme` localStorage key prefix — these are real, already-deployed storage
+identifiers, and renaming them would either orphan every existing user's local data (IndexedDB
+auto-creates an empty database under a new name) or silently reset their saved preferences
+(theme, dismissed prompts, celebration flags). `PROGRESS.md`'s own history above keeps saying
+"MacroDesi" throughout, since that was the product's actual name at the time each phase happened —
+only new writing uses "Bitewise."
+
+## Nocturne round 2: Today/chrome polish + Settings hub restructure (G.0-G.1)
+
+A second look at the live app (after F.0-F.8's own audit-driven closeout) against the real
+37-frame Nocturne mockup, pulled directly from its Claude Design project rather than relying on
+the earlier written audit, turned up a few things that closeout's own plan called for but that
+didn't actually land, plus the one structural gap both prior phases had explicitly deferred:
+
+- **G.0** — the tab-bar FAB opened the full 5-method add-food sheet but was labeled "Scan" with a
+  scan-camera icon (`aria-label="Scan or add food"`); relabeled "Add" with a plain plus icon
+  (the icon glyph itself, `ph-plus`, was already correct — only the exported name `ScanIcon` and
+  the visible label were wrong). Added the "Day N of program" header line to Today
+  (`Dashboard.tsx`, reusing `deriveCurrentProgram`) — the streak-flame pill this closeout's F.3
+  plan also called for turned out to already exist globally in `Header.tsx` (a `streak-chip`
+  wired up before this round even started), so it was **not** duplicated once found. Bumped the
+  calories ring's stroke from 8px to 12px for a bolder look, and applied the `.hr-fade` divider
+  (defined in F.0, never actually used anywhere until now) to the Coach hub.
+- **G.1** — rebuilt Settings from one long inline form into the mockup's flat hub: a profile
+  summary card, then chevron nav rows with monospace value-hints ("2 ON," "CONTRAST") drilling
+  into two new sub-pages, `/settings/food` and `/settings/appearance`. Every existing field,
+  toggle, and handler moved verbatim — same test ids, same storage keys, same logic — the risk
+  this restructure carried was entirely about the ~13 existing E2E specs that used `/settings` as
+  a waypoint for unrelated flows, not about the settings logic itself. The profile-editing form,
+  sync/account controls, and the "Meal templates" link all stay inline on the hub (several specs
+  interact with them with zero intermediate navigation); only the theme picker, reading-comfort
+  toggles, food-source toggles, and the export link actually moved. Added one small new
+  preference in the process (`defaultLogView`, Meals/Timeline) since nothing tracked Log's default
+  view before and the mockup's Food-log sub-page calls for one.
+- **Verification**: full gate green (lint, tsc, tokens, 465 unit tests, build, bundle, and 135/136
+  E2E). The one failure — `goalWeight.spec.ts`'s "unchanged for a user who never sets a goal
+  weight" test — is a real, pre-existing bug traced to `OnboardingFlow.tsx`'s target-weight slider
+  (added in F.2): it silently defaults and saves a goal weight for anyone who picks "Lose fat" or
+  "Gain weight," before they've ever touched the slider, contradicting `GoalWeightCard.tsx`'s own
+  documented "opt-in only" contract. Confirmed unrelated to this round's changes and flagged
+  separately rather than folded into this work.
+- **No data-migration risk**: no Dexie version bump (no new indexed fields), no new Postgres
+  columns, one new additive localStorage key (`macrodesi:defaultLogView`) with a safe default for
+  anyone who's never set it. `e2e/seamlessMigration.spec.ts` (an account seeded with pre-redesign
+  data shapes) passes unchanged against the restructured Settings hub.

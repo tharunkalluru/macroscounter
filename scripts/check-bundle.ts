@@ -25,7 +25,11 @@ function main() {
   // via dynamic import()) are fetched later and don't block first load.
   const scriptSrcs = [...html.matchAll(/<script[^>]+src="([^"]+)"/g)].map((m) => m[1])
   const styleHrefs = [...html.matchAll(/<link[^>]+rel="stylesheet"[^>]+href="([^"]+)"/g)].map((m) => m[1])
-  const assetPaths = [...scriptSrcs, ...styleHrefs]
+  // Phase F.0: Inter (Google Fonts) and Phosphor Icons (unpkg) are loaded
+  // from external CDNs, cached offline via the service worker's
+  // runtimeCaching rules (see vite.config.ts) rather than bundled locally —
+  // this budget only measures this app's own JS/CSS, not third-party assets.
+  const assetPaths = [...scriptSrcs, ...styleHrefs].filter((path) => !/^https?:\/\//.test(path))
 
   if (assetPaths.length === 0) {
     console.error('No <script src> or stylesheet <link> tags found in dist/index.html.')

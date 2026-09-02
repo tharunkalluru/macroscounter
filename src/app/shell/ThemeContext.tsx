@@ -1,6 +1,12 @@
 /* eslint-disable react-refresh/only-export-components -- context + hook are colocated by design */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
-import { resolveTheme, type ResolvedTheme, type ThemePreference } from '../../domain/theme/resolveTheme'
+import {
+  isDarkFamily,
+  migrateStoredPreference,
+  resolveTheme,
+  type ResolvedTheme,
+  type ThemePreference,
+} from '../../domain/theme/resolveTheme'
 
 export const THEME_STORAGE_KEY = 'macrodesi-theme'
 
@@ -9,13 +15,20 @@ function getSystemPrefersDark(): boolean {
   return window.matchMedia('(prefers-color-scheme: dark)').matches
 }
 
-function readStoredPreference(): ThemePreference {
+/** Reads the stored preference and migrates a legacy 'system' value (or no
+ *  value at all) to one of the three concrete preferences — see
+ *  `migrateStoredPreference`'s own doc comment. Persists the migrated value
+ *  immediately so it only ever runs once per device. */
+function readAndMigrateStoredPreference(): ThemePreference {
   const stored = localStorage.getItem(THEME_STORAGE_KEY)
-  return stored === 'light' || stored === 'dark' || stored === 'system' ? stored : 'system'
+  const migrated = migrateStoredPreference(stored, getSystemPrefersDark())
+  if (stored !== migrated) localStorage.setItem(THEME_STORAGE_KEY, migrated)
+  return migrated
 }
 
 function applyResolvedTheme(resolved: ResolvedTheme) {
-  document.documentElement.classList.toggle('dark', resolved === 'dark')
+  document.documentElement.classList.toggle('dark', isDarkFamily(resolved))
+  document.documentElement.classList.toggle('contrast', resolved === 'contrast')
 }
 
 interface ThemeContextValue {
@@ -27,29 +40,16 @@ interface ThemeContextValue {
 const ThemeContext = createContext<ThemeContextValue | null>(null)
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [preference, setPreferenceState] = useState<ThemePreference>(readStoredPreference)
-  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() =>
-    resolveTheme(preference, getSystemPrefersDark())
-  )
+  const [preference, setPreferenceState] = useState<ThemePreference>(readAndMigrateStoredPreference)
+  const [resolvedTheme, setResolvedTheme] = useState<ResolvedTheme>(() => resolveTheme(preference))
 
+  // Runs on mount (in case index.html's pre-paint script didn't execute —
+  // e.g. a component test rendering ThemeProvider directly in jsdom) and on
+  // every subsequent preference change.
   useEffect(() => {
-    const resolved = resolveTheme(preference, getSystemPrefersDark())
+    const resolved = resolveTheme(preference)
     setResolvedTheme(resolved)
     applyResolvedTheme(resolved)
-  }, [preference])
-
-  useEffect(() => {
-    if (preference !== 'system' || typeof window === 'undefined' || typeof window.matchMedia !== 'function') {
-      return
-    }
-    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)')
-    function handleChange() {
-      const resolved = resolveTheme('system', mediaQuery.matches)
-      setResolvedTheme(resolved)
-      applyResolvedTheme(resolved)
-    }
-    mediaQuery.addEventListener('change', handleChange)
-    return () => mediaQuery.removeEventListener('change', handleChange)
   }, [preference])
 
   const setPreference = useCallback((pref: ThemePreference) => {

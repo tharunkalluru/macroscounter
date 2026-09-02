@@ -1,10 +1,10 @@
 import { trackUpsert } from '../../lib/sync/syncTracker'
-import type { MacroDesiDB } from '../db'
+import type { BitewiseDB } from '../db'
 import { db as defaultDb } from '../db'
 import type { Profile } from '../models'
 
 export class ProfileRepo {
-  constructor(private db: MacroDesiDB = defaultDb) {}
+  constructor(private db: BitewiseDB = defaultDb) {}
 
   /** Single-user app: at most one profile row ever exists. */
   async get(): Promise<Profile | undefined> {

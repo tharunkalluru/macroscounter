@@ -1,9 +1,9 @@
-import type { MacroDesiDB } from '../db'
+import type { BitewiseDB } from '../db'
 import { db as defaultDb } from '../db'
 import type { FoodRecord } from '../models'
 
 export class FoodRepo {
-  constructor(private db: MacroDesiDB = defaultDb) {}
+  constructor(private db: BitewiseDB = defaultDb) {}
 
   async seedIfEmpty(foods: FoodRecord[]): Promise<number> {
     const count = await this.db.foods.count()

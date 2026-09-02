@@ -19,7 +19,18 @@ interface Props {
   onRequestScan: () => void
   onRequestCustom: () => void
   onRequestNewRecipe: () => void
+  onRequestAI: () => void
+  onRequestLibrary: () => void
 }
+
+type SheetTab = 'search' | 'scan' | 'ai' | 'quick' | 'library'
+const SHEET_TABS: { key: SheetTab; label: string }[] = [
+  { key: 'search', label: 'Search' },
+  { key: 'scan', label: 'Scan' },
+  { key: 'ai', label: 'AI' },
+  { key: 'quick', label: 'Quick' },
+  { key: 'library', label: 'Library' },
+]
 
 export default function AddFoodSheetContent({
   meal,
@@ -27,6 +38,8 @@ export default function AddFoodSheetContent({
   onRequestScan,
   onRequestCustom,
   onRequestNewRecipe,
+  onRequestAI,
+  onRequestLibrary,
 }: Props) {
   const navigate = useNavigate()
   const { foods, service, loading } = useFoodIndex()
@@ -95,6 +108,21 @@ export default function AddFoodSheetContent({
     navigate('/recipes/new')
   }
 
+  function handleTabSelect(tab: SheetTab) {
+    if (tab === 'search') return
+    if (tab === 'scan') return handleScan()
+    if (tab === 'ai') {
+      onRequestAI()
+      navigate(`/log/ai?meal=${meal}`)
+      return
+    }
+    if (tab === 'quick') return handleCustom()
+    if (tab === 'library') {
+      onRequestLibrary()
+      navigate(`/log/library?meal=${meal}`)
+    }
+  }
+
   if (loading) {
     return <div className="py-8 text-center text-slate-500 dark:text-slate-400">Loading…</div>
   }
@@ -103,6 +131,26 @@ export default function AddFoodSheetContent({
     <div className="pb-2">
       {!selected && (
         <>
+          <div className="mb-3 flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Add food method">
+            {SHEET_TABS.map((t) => (
+              <button
+                key={t.key}
+                type="button"
+                role="tab"
+                aria-selected={t.key === 'search'}
+                onClick={() => handleTabSelect(t.key)}
+                data-testid={`sheet-tab-${t.key}`}
+                className={`min-h-touch flex-1 rounded-md text-caption font-medium transition-transform active:scale-[0.97] ${
+                  t.key === 'search'
+                    ? 'bg-white text-brand-700 shadow-sm dark:bg-surface-dark-card dark:text-brand-400'
+                    : 'text-slate-600 dark:text-slate-300'
+                }`}
+              >
+                {t.label}
+              </button>
+            ))}
+          </div>
+
           <div className="flex gap-2">
             <input
               type="text"

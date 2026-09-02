@@ -65,7 +65,7 @@ export default function Header() {
   return (
     <header className="mx-auto flex max-w-md items-center justify-between px-6 pb-2 pt-6">
       <div>
-        <p className="text-title text-brand-700 dark:text-brand-400">MacroDesi</p>
+        <p className="text-title text-brand-700 dark:text-brand-400">Bitewise</p>
         {streak > 0 && (
           <Link
             to="/trends"

@@ -92,8 +92,9 @@ test('weight tracking respects a pounds preference set at onboarding', async ({ 
   await page.getByPlaceholder('Your name').fill('Pounds Persona')
   await page.getByTestId('onboarding-continue').click()
   await page.getByRole('radio', { name: 'male', exact: true }).check()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('dob-input').fill('1998-01-01')
+  await page.getByTestId('dob-month').selectOption('1')
+  await page.getByTestId('dob-day').selectOption('1')
+  await page.getByTestId('dob-year').selectOption('1998')
   await page.getByTestId('onboarding-continue').click()
   await page.getByPlaceholder('cm').fill('170')
   await page.getByTestId('weight-unit-lb').click()
@@ -101,11 +102,9 @@ test('weight tracking respects a pounds preference set at onboarding', async ({ 
   await page.getByTestId('onboarding-continue').click()
   await page.getByTestId('onboarding-continue').click() // weight-history: default
   await page.getByTestId('onboarding-continue').click() // body-fat: skip
-  await page.getByTestId('activity-job-desk').click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('activity-exercise-none').click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId('activity-movement-low').click()
+  await page.getByTestId('movement-sedentary').click()
+  await page.getByTestId('training-none').click()
+  await page.getByTestId('lifting-none').click()
   await page.getByTestId('onboarding-continue').click()
   await page.getByTestId('onboarding-continue').click() // goal: default (cut)
   await page.getByTestId('onboarding-continue').click() // goal-rate: default

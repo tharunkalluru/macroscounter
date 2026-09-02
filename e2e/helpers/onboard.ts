@@ -14,27 +14,30 @@ interface OnboardOptions {
 }
 
 /**
- * (job, exercise, movement) triples that resolve back to each ActivityLevel
- * via resolveActivityLevel (see src/domain/goals/activityQuiz.ts) — kept in
- * sync with that scoring table by activityQuiz.test.ts's own coverage.
+ * (movement, training, lifting) triples that resolve back to each
+ * ActivityLevel via resolveActivityLevel (see
+ * src/domain/goals/activityQuiz.ts) — kept in sync with that scoring table
+ * by activityQuiz.test.ts's own coverage.
  */
 const ACTIVITY_TO_QUIZ: Record<
   ActivityLevel,
-  { job: string; exercise: string; movement: string }
+  { movement: string; training: string; lifting: string }
 > = {
-  sedentary: { job: 'desk', exercise: 'none', movement: 'low' },
-  light: { job: 'desk', exercise: 'light', movement: 'moderate' },
-  moderate: { job: 'on_feet', exercise: 'moderate', movement: 'moderate' },
-  active: { job: 'on_feet', exercise: 'frequent', movement: 'high' },
-  very_active: { job: 'physical', exercise: 'frequent', movement: 'high' },
+  sedentary: { movement: 'sedentary', training: 'none', lifting: 'none' },
+  light: { movement: 'moderately_active', training: 'light', lifting: 'none' },
+  moderate: { movement: 'moderately_active', training: 'moderate', lifting: 'beginner' },
+  active: { movement: 'very_active', training: 'moderate', lifting: 'intermediate' },
+  very_active: { movement: 'very_active', training: 'frequent', lifting: 'advanced' },
 }
 
 /**
- * Drives the full onboarding wizard (Phase R.2: 14 steps). Defaults match
- * the male/sedentary/cut fixture persona used by goalEngine.test.ts unless
- * overridden. New Phase R.2 steps (weight-history, body-fat, goal-rate,
- * diet-style/protein-priority/calorie-floor, coach-reveal) are left at
- * their defaults, which reproduce pre-R.2 target math exactly — only
+ * Drives the full onboarding wizard (Phase F.2 restructure: name, basics
+ * [sex+DOB combined], stats, weight-history, body-fat, activity [one
+ * combined screen], goal, goal-rate, diet-style, coach-reveal, confirm).
+ * Defaults match the male/sedentary/cut fixture persona used by
+ * goalEngine.test.ts unless overridden. The weight-history, body-fat, and
+ * target-weight/diet-style/protein/floor questions are left at their
+ * defaults, which reproduce pre-existing target math exactly — only
  * name/sex/age/height/weight/activityLevel/goal are parameterized here.
  */
 export async function onboard(page: Page, options: OnboardOptions = {}) {
@@ -58,14 +61,15 @@ export async function onboard(page: Page, options: OnboardOptions = {}) {
   await page.getByPlaceholder('Your name').fill(name)
   await page.getByTestId('onboarding-continue').click()
 
+  // basics: sex + date of birth on one combined screen.
   await page.getByRole('radio', { name: sex, exact: true }).check()
-  await page.getByTestId('onboarding-continue').click()
-
   // Date of birth: Jan 1 of (current year - age) always yields exactly
   // `age` at any later date within that same year, regardless of which
   // fixed clock a given spec is using.
   const referenceYear = await page.evaluate(() => new Date().getFullYear())
-  await page.getByTestId('dob-input').fill(`${referenceYear - Number(age)}-01-01`)
+  await page.getByTestId('dob-month').selectOption('1')
+  await page.getByTestId('dob-day').selectOption('1')
+  await page.getByTestId('dob-year').selectOption(String(referenceYear - Number(age)))
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByPlaceholder('cm').fill(heightCm)
@@ -78,19 +82,18 @@ export async function onboard(page: Page, options: OnboardOptions = {}) {
   // body-fat: skippable, leave unselected.
   await page.getByTestId('onboarding-continue').click()
 
+  // activity: one combined screen (movement, training frequency, lifting experience).
   const quiz = ACTIVITY_TO_QUIZ[activityLevel]
-  await page.getByTestId(`activity-job-${quiz.job}`).click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId(`activity-exercise-${quiz.exercise}`).click()
-  await page.getByTestId('onboarding-continue').click()
-  await page.getByTestId(`activity-movement-${quiz.movement}`).click()
+  await page.getByTestId(`movement-${quiz.movement}`).click()
+  await page.getByTestId(`training-${quiz.training}`).click()
+  await page.getByTestId(`lifting-${quiz.lifting}`).click()
   await page.getByTestId('onboarding-continue').click()
 
   await page.getByTestId(`goal-${goal}`).click()
   await page.getByTestId('onboarding-continue').click()
 
   if (goal !== 'maintain') {
-    // goal-rate: leave the default (reproduces the legacy fixed deficit/surplus).
+    // goal-rate/target-weight: leave the defaults (reproduces the legacy fixed deficit/surplus).
     await page.getByTestId('onboarding-continue').click()
   }
 

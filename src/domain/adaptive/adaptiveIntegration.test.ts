@@ -1,16 +1,16 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from '../../data/db'
+import { BitewiseDB } from '../../data/db'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { WeighInRepo } from '../../data/repos/WeighInRepo'
 import { groupEntriesByDate } from '../history/averages'
 import { computeAdaptiveAdjustment } from './adaptiveTargets'
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let logRepo: LogRepo
 let weighInRepo: WeighInRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-adaptive-integration-${Math.random()}`)
+  db = new BitewiseDB(`test-adaptive-integration-${Math.random()}`)
   logRepo = new LogRepo(db)
   weighInRepo = new WeighInRepo(db)
 })

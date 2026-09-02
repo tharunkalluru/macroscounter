@@ -67,7 +67,7 @@ test('CSV export downloads parseable files with the correct row counts', async (
     page.waitForEvent('download'),
     page.getByRole('button', { name: 'Export food logs (CSV)' }).click(),
   ])
-  expect(logsDownload.suggestedFilename()).toBe('macrodesi-logs.csv')
+  expect(logsDownload.suggestedFilename()).toBe('bitewise-logs.csv')
   const logsPath = await logsDownload.path()
   const logsCsv = readFileSync(logsPath!, 'utf-8')
   const logsLines = logsCsv.trim().split('\r\n')
@@ -78,7 +78,7 @@ test('CSV export downloads parseable files with the correct row counts', async (
     page.waitForEvent('download'),
     page.getByRole('button', { name: 'Export weigh-ins (CSV)' }).click(),
   ])
-  expect(weighInsDownload.suggestedFilename()).toBe('macrodesi-weighins.csv')
+  expect(weighInsDownload.suggestedFilename()).toBe('bitewise-weighins.csv')
   const weighInsPath = await weighInsDownload.path()
   const weighInsCsv = readFileSync(weighInsPath!, 'utf-8')
   const weighInsLines = weighInsCsv.trim().split('\r\n')

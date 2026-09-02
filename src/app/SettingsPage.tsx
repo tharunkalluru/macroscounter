@@ -5,43 +5,25 @@ import { TargetRepo } from '../data/repos/TargetRepo'
 import { computeGoalTargets } from '../domain/goals/goalEngine'
 import { ACTIVITY_OPTIONS, GOAL_OPTIONS } from '../domain/goals/options'
 import type { ActivityLevel, Goal, Sex } from '../domain/goals/types'
-import type { ThemePreference } from '../domain/theme/resolveTheme'
 import { kgToLb, lbToKg } from '../domain/units/weight'
 import { todayISO } from '../lib/date'
-import { getFoodSourcePreferences, setFoodSourcePreference } from '../lib/settings/foodSourcePreferences'
+import { getFoodSourcePreferences } from '../lib/settings/foodSourcePreferences'
 import AccountSection from './components/AccountSection'
 import HeightInput, { type HeightUnit } from './components/HeightInput'
+import ProfileSummaryCard from './components/ProfileSummaryCard'
 import SegmentedControl from './components/SegmentedControl'
 import SelectableCardGroup from './components/SelectableCardGroup'
+import SettingsRow from './components/SettingsRow'
 import SyncStatusDot from './components/SyncStatusDot'
-import ToggleSwitch from './components/ToggleSwitch'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
 import WeightInput, { type WeightUnit } from './components/WeightInput'
+import { ForkKnifeIcon, PaletteIcon, TrashIcon } from './shell/icons'
 import { useTheme } from './shell/ThemeContext'
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
   { value: 'male', label: 'male' },
   { value: 'female', label: 'female' },
 ]
-
-const THEME_OPTIONS: { value: ThemePreference; label: string }[] = [
-  { value: 'light', label: 'Light' },
-  { value: 'dark', label: 'Dark' },
-  { value: 'system', label: 'System' },
-]
-
-function ThemeToggle() {
-  const { preference, setPreference } = useTheme()
-  return (
-    <SegmentedControl
-      label="Appearance"
-      options={THEME_OPTIONS}
-      value={preference}
-      onChange={setPreference}
-      testIdPrefix="theme-option"
-    />
-  )
-}
 
 export default function SettingsPage() {
   const navigate = useNavigate()
@@ -59,12 +41,9 @@ export default function SettingsPage() {
   const [goalWeightInput, setGoalWeightInput] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
-  const [foodSources, setFoodSources] = useState(getFoodSourcePreferences)
-
-  function handleToggleFoodSource(source: 'off' | 'fdc', enabled: boolean) {
-    setFoodSourcePreference(source, enabled)
-    setFoodSources((prev) => ({ ...prev, [source]: enabled }))
-  }
+  const [foodSources] = useState(getFoodSourcePreferences)
+  const { preference: themePreference } = useTheme()
+  const foodSourcesOnCount = Number(foodSources.off) + Number(foodSources.fdc)
 
   useEffect(() => {
     ;(async () => {
@@ -183,6 +162,8 @@ export default function SettingsPage() {
       </Link>
       <h1 className="mb-6 text-2xl font-bold text-brand-700 dark:text-brand-400">Settings</h1>
 
+      <ProfileSummaryCard name={name} />
+
       <SettingsGroup title="You">
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
@@ -289,26 +270,20 @@ export default function SettingsPage() {
       </SettingsGroup>
 
       <SettingsGroup title="The App">
-        <ThemeToggle />
-
-        <div className="mt-6 flex flex-col gap-1">
-          <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Food log defaults</span>
-          <span className="mb-2 text-caption text-slate-500 dark:text-slate-400">
-            Which sources a barcode scan is allowed to look up.
-          </span>
-          <ToggleSwitch
-            label="Open Food Facts"
-            checked={foodSources.off}
-            onChange={(enabled) => handleToggleFoodSource('off', enabled)}
-            testId="food-source-off"
-          />
-          <ToggleSwitch
-            label="USDA FoodData Central"
-            checked={foodSources.fdc}
-            onChange={(enabled) => handleToggleFoodSource('fdc', enabled)}
-            testId="food-source-fdc"
-          />
-        </div>
+        <SettingsRow
+          to="/settings/food"
+          icon={ForkKnifeIcon}
+          label="Food log & sources"
+          valueHint={`${foodSourcesOnCount} ON`}
+          testId="settings-row-food"
+        />
+        <SettingsRow
+          to="/settings/appearance"
+          icon={PaletteIcon}
+          label="Appearance & export"
+          valueHint={themePreference}
+          testId="settings-row-appearance"
+        />
       </SettingsGroup>
 
       <SettingsGroup title="Your Data">
@@ -324,12 +299,6 @@ export default function SettingsPage() {
           >
             Meal templates
           </Link>
-          <Link
-            to="/export"
-            className="min-h-touch inline-flex items-center text-brand-700 underline dark:text-brand-400"
-          >
-            Export data
-          </Link>
         </div>
 
         <div className="mt-6 border-t border-slate-200 pt-4 dark:border-slate-700">
@@ -337,9 +306,10 @@ export default function SettingsPage() {
             type="button"
             disabled
             data-testid="delete-account-button"
-            className="min-h-touch text-sm font-medium text-slate-500 dark:text-slate-400"
+            className="flex min-h-touch items-center gap-2 text-sm font-medium text-danger-600 dark:text-danger-500"
             aria-disabled="true"
           >
+            <TrashIcon />
             Delete account & data
           </button>
           <p className="mt-1 text-caption text-slate-500 dark:text-slate-400">Coming soon.</p>

@@ -107,6 +107,10 @@ export const profiles = pgTable('profiles', {
   dateOfBirth: text('date_of_birth'),
   bodyFatPercent: doublePrecision('body_fat_percent'),
   weightHistoryClass: text('weight_history_class'),
+  // Phase F.2 -- replaced weightHistoryClass's single question with the
+  // design's actual two; nullable, no default, no-op for every existing row.
+  weighedMoreBefore: text('weighed_more_before'),
+  recentWeightTrend: text('recent_weight_trend'),
   dietStyle: text('diet_style'),
   proteinPriority: text('protein_priority'),
   calorieFloorChoice: text('calorie_floor_choice'),
@@ -147,6 +151,9 @@ export const logEntries = pgTable('log_entries', {
   p: doublePrecision('p').notNull(),
   c: doublePrecision('c').notNull(),
   f: doublePrecision('f').notNull(),
+  // Phase F.3 -- nullable, no default, a no-op ADD COLUMN for every
+  // existing row; new rows get it stamped by LogRepo.addEntry.
+  loggedAt: timestamp('logged_at', { withTimezone: true }),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
 })

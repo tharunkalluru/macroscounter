@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom'
-import { ChevronLeftIcon } from '../shell/icons'
+import { ArrowLeftIcon } from '../shell/icons'
 
 interface Props {
   title: string
@@ -20,7 +20,7 @@ export default function PageHeader({ title, backTo, backLabel = 'Back' }: Props)
         aria-label={backLabel}
         className="flex min-h-touch min-w-touch items-center justify-center rounded-full -ml-2 text-slate-600 dark:text-slate-300"
       >
-        <ChevronLeftIcon />
+        <ArrowLeftIcon />
       </Link>
       <h1 className="text-title text-brand-700 dark:text-brand-400">{title}</h1>
     </div>

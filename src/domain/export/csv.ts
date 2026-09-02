@@ -1,4 +1,5 @@
 import type { LogEntry, WeighIn } from '../../data/models'
+import type { ExpenditureWeekPoint } from '../adaptive/expenditureHistory'
 
 export function escapeCsvField(value: string | number): string {
   const str = String(value)
@@ -40,4 +41,11 @@ const WEIGHINS_HEADERS = ['date', 'weightKg']
 export function buildWeighInsCSV(weighIns: WeighIn[]): string {
   const rows = weighIns.map((w) => [w.date, w.weightKg])
   return rowsToCSV(WEIGHINS_HEADERS, rows)
+}
+
+const EXPENDITURE_HEADERS = ['weekEndDate', 'impliedTdeeKcal', 'meanLoggedKcal']
+
+export function buildExpenditureCSV(points: ExpenditureWeekPoint[]): string {
+  const rows = points.map((p) => [p.weekEndDate, p.impliedTDEE, p.meanLoggedKcal])
+  return rowsToCSV(EXPENDITURE_HEADERS, rows)
 }

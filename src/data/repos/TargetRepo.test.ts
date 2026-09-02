@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
-import { MacroDesiDB } from '../db'
+import { BitewiseDB } from '../db'
 import type { Targets } from '../models'
 import { TargetRepo } from './TargetRepo'
 
@@ -13,11 +13,11 @@ const target = (overrides: Partial<Targets> = {}): Omit<Targets, 'id'> => ({
   ...overrides,
 })
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let repo: TargetRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-target-${Math.random()}`)
+  db = new BitewiseDB(`test-target-${Math.random()}`)
   repo = new TargetRepo(db)
 })
 

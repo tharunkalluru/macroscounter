@@ -1,10 +1,15 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import type { AdaptiveRecommendation } from '../domain/adaptive/adaptiveTargets'
-import { acceptAdaptiveRecommendation } from '../lib/adaptive/acceptAdaptiveRecommendation'
+import { computeWeeklyFocusTip } from '../domain/adaptive/weeklyFocusTip'
+import { LogRepo } from '../data/repos/LogRepo'
+import { TargetRepo } from '../data/repos/TargetRepo'
+import { groupEntriesByDate } from '../domain/history/averages'
+import { addDaysISO, todayISO } from '../lib/date'
 import { fetchAdaptiveRecommendation } from '../lib/adaptive/fetchAdaptiveRecommendation'
+import { CoachMessage, CoachQuickReply } from './components/CoachBubble'
 import PageHeader from './components/PageHeader'
-import { ChevronLeftIcon } from './shell/icons'
+import { ArrowLeftIcon } from './shell/icons'
 
 const STEPS = ['intro', 'your-week', 'the-math', 'new-target'] as const
 type Step = (typeof STEPS)[number]
@@ -12,31 +17,43 @@ type Step = (typeof STEPS)[number]
 type LoadState =
   | { status: 'loading' }
   | { status: 'none' }
-  | { status: 'ready'; recommendation: AdaptiveRecommendation }
-  | { status: 'accepted'; recommendation: AdaptiveRecommendation }
+  | { status: 'ready'; recommendation: AdaptiveRecommendation; focusTip: string | null }
 
 export default function CoachCheckInPage() {
   const navigate = useNavigate()
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [stepIndex, setStepIndex] = useState(0)
-  const [saving, setSaving] = useState(false)
 
   useEffect(() => {
-    fetchAdaptiveRecommendation().then(({ recommendation }) => {
-      setState(recommendation ? { status: 'ready', recommendation } : { status: 'none' })
-    })
-  }, [])
+    ;(async () => {
+      const { recommendation } = await fetchAdaptiveRecommendation()
+      if (!recommendation) {
+        setState({ status: 'none' })
+        return
+      }
 
-  async function handleAccept() {
-    if (state.status !== 'ready') return
-    setSaving(true)
-    try {
-      await acceptAdaptiveRecommendation(state.recommendation)
-      setState({ status: 'accepted', recommendation: state.recommendation })
-    } finally {
-      setSaving(false)
-    }
-  }
+      const today = todayISO()
+      const [entries, targets] = await Promise.all([
+        new LogRepo().getEntriesForDateRange(addDaysISO(today, -6), today),
+        new TargetRepo().getLatest(),
+      ])
+      const proteinTarget = targets?.proteinG ?? 0
+      const proteinByDate = new Map(groupEntriesByDate(entries).map((d) => [d.date, d.p]))
+      const focusTip =
+        proteinTarget > 0
+          ? computeWeeklyFocusTip(
+              Array.from({ length: 7 }, (_, i) => {
+                const date = addDaysISO(today, -6 + i)
+                const [y, m, d] = date.split('-').map(Number)
+                const weekday = (new Date(y, m - 1, d).getDay() + 6) % 7
+                return { weekday, hitRate: Math.min(1, (proteinByDate.get(date) ?? 0) / proteinTarget) }
+              })
+            )
+          : null
+
+      setState({ status: 'ready', recommendation, focusTip })
+    })()
+  }, [])
 
   if (state.status === 'loading') {
     return (
@@ -59,28 +76,7 @@ export default function CoachCheckInPage() {
     )
   }
 
-  if (state.status === 'accepted') {
-    return (
-      <div className="mx-auto max-w-md px-6 py-8">
-        <PageHeader title="Weekly check-in" backTo="/coach" />
-        <div className="rounded-card bg-brand-50 p-4 text-center dark:bg-slate-800" data-testid="checkin-accepted">
-          <p className="font-medium text-brand-700 dark:text-brand-400">Your target is updated</p>
-          <p className="mt-1 text-display tabular-nums text-brand-700 dark:text-brand-400">
-            {state.recommendation.suggestedKcal} kcal
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={() => navigate('/coach')}
-          className="mt-4 min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98]"
-        >
-          Done
-        </button>
-      </div>
-    )
-  }
-
-  const { recommendation } = state
+  const { recommendation, focusTip } = state
   const step: Step = STEPS[stepIndex]
   const direction = recommendation.adjustment > 0 ? 'increase' : 'decrease'
 
@@ -103,7 +99,7 @@ export default function CoachCheckInPage() {
             data-testid="checkin-back"
             className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-500 dark:text-slate-400"
           >
-            <ChevronLeftIcon />
+            <ArrowLeftIcon />
           </button>
         ) : (
           <Link
@@ -111,7 +107,7 @@ export default function CoachCheckInPage() {
             aria-label="Leave check-in"
             className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-500 dark:text-slate-400"
           >
-            <ChevronLeftIcon />
+            <ArrowLeftIcon />
           </Link>
         )}
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
@@ -120,84 +116,101 @@ export default function CoachCheckInPage() {
             style={{ transform: `scaleX(${(stepIndex + 1) / STEPS.length})` }}
           />
         </div>
+        <span className="text-caption tabular-nums text-slate-500 dark:text-slate-400">
+          Step {stepIndex + 1}/{STEPS.length}
+        </span>
       </div>
 
-      <div className="flex flex-1 flex-col justify-center py-8" data-testid={`checkin-step-${step}`}>
+      <div className="flex flex-1 flex-col justify-center gap-3 py-8" data-testid={`checkin-step-${step}`}>
         {step === 'intro' && (
-          <div className="flex flex-col gap-3">
-            <h1 className="text-title text-slate-900 dark:text-slate-100">Let's check in on your week</h1>
-            <p className="text-sm text-slate-500 dark:text-slate-400">
-              We'll walk through your last 7 days of logs and weigh-ins, show you the math, and suggest a
-              target adjustment if one's worth making.
-            </p>
-          </div>
+          <CoachMessage>
+            Let's check in on your week. I'll walk through your last 7 days of logs and weigh-ins, show you
+            the math, and suggest a target adjustment if one's worth making.
+          </CoachMessage>
         )}
 
         {step === 'your-week' && (
-          <div className="flex flex-col gap-3">
-            <h1 className="text-title text-slate-900 dark:text-slate-100">Your week</h1>
-            <div className="rounded-card bg-white p-4 shadow-card dark:bg-surface-dark-card">
-              <p className="text-caption text-slate-500 dark:text-slate-400">Average logged intake</p>
-              <p className="text-display tabular-nums" data-testid="checkin-avg-kcal">
-                {Math.round(recommendation.meanLoggedKcal)} kcal
+          <>
+            <CoachMessage testId="checkin-your-week-message">
+              <p className="mb-2 text-caption uppercase tracking-widest text-brand-600 dark:text-brand-400">
+                Your week, measured
               </p>
-            </div>
-            <div className="rounded-card bg-white p-4 shadow-card dark:bg-surface-dark-card">
-              <p className="text-caption text-slate-500 dark:text-slate-400">Weight change</p>
-              <p className="text-display tabular-nums" data-testid="checkin-weight-change">
-                {recommendation.weeklyWeightChangeKg > 0 ? '+' : ''}
-                {recommendation.weeklyWeightChangeKg} kg
+              <p className="mb-1">
+                Average logged intake:{' '}
+                <strong className="tabular-nums" data-testid="checkin-avg-kcal">
+                  {Math.round(recommendation.meanLoggedKcal)} kcal
+                </strong>
               </p>
+              <p>
+                Weight change:{' '}
+                <strong className="tabular-nums" data-testid="checkin-weight-change">
+                  {recommendation.weeklyWeightChangeKg > 0 ? '+' : ''}
+                  {recommendation.weeklyWeightChangeKg} kg
+                </strong>
+              </p>
+            </CoachMessage>
+            <div className="flex justify-end">
+              <CoachQuickReply onClick={handleContinue} testId="checkin-continue">
+                Show me the numbers
+              </CoachQuickReply>
             </div>
-          </div>
+          </>
         )}
 
         {step === 'the-math' && (
-          <div className="flex flex-col gap-3">
-            <h1 className="text-title text-slate-900 dark:text-slate-100">Here's the math</h1>
-            <div className="flex flex-col gap-2 rounded-card bg-white p-4 shadow-card dark:bg-surface-dark-card">
-              <Row label="Measured TDEE" value={`${Math.round(recommendation.impliedTDEE)} kcal`} />
-              <Row label="Current target" value={`${recommendation.currentKcal} kcal`} />
-              <Row
-                label="Adjustment"
-                value={`${recommendation.adjustment > 0 ? '+' : ''}${recommendation.adjustment} kcal`}
-                testId="checkin-adjustment"
-              />
+          <>
+            <CoachMessage testId="checkin-math-message">
+              <p className="mb-1">
+                Measured TDEE:{' '}
+                <strong className="tabular-nums">{Math.round(recommendation.impliedTDEE)} kcal</strong>
+              </p>
+              <p className="mb-1">
+                Current target: <strong className="tabular-nums">{recommendation.currentKcal} kcal</strong>
+              </p>
+              <p>
+                Adjustment:{' '}
+                <strong className="tabular-nums" data-testid="checkin-adjustment">
+                  {recommendation.adjustment > 0 ? '+' : ''}
+                  {recommendation.adjustment} kcal
+                </strong>
+              </p>
+            </CoachMessage>
+            <CoachMessage testId="checkin-reason">{recommendation.reason}</CoachMessage>
+            <div className="flex justify-end">
+              <CoachQuickReply onClick={handleContinue} testId="checkin-continue">
+                So what changes?
+              </CoachQuickReply>
             </div>
-            <p className="text-sm text-slate-500 dark:text-slate-400" data-testid="checkin-reason">
-              {recommendation.reason}
-            </p>
-          </div>
+          </>
         )}
 
         {step === 'new-target' && (
-          <div className="flex flex-col gap-3">
-            <h1 className="text-title text-slate-900 dark:text-slate-100">
-              {direction === 'increase' ? 'Raise' : 'Lower'} your target?
-            </h1>
-            <div className="rounded-card bg-brand-50 p-4 text-center dark:bg-slate-800">
-              <p className="text-caption text-slate-500 dark:text-slate-400">New daily target</p>
+          <>
+            <CoachMessage testId="checkin-new-target-message">
+              <p className="mb-2 text-caption uppercase tracking-widest text-brand-600 dark:text-brand-400">
+                New daily target
+              </p>
               <p
-                className="text-display tabular-nums text-brand-700 dark:text-brand-400"
+                className="text-display font-semibold tabular-nums text-brand-700 dark:text-brand-400"
                 data-testid="checkin-suggested-kcal"
               >
                 {recommendation.suggestedKcal} kcal
               </p>
-            </div>
-          </div>
+            </CoachMessage>
+            {focusTip && <CoachMessage testId="checkin-focus-tip">{focusTip}</CoachMessage>}
+          </>
         )}
       </div>
 
-      {step === 'new-target' ? (
+      {step === 'new-target' && (
         <div className="flex flex-col gap-2">
           <button
             type="button"
-            disabled={saving}
-            onClick={handleAccept}
+            onClick={() => navigate('/coach/check-in/plan')}
             data-testid="checkin-accept"
-            className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50"
+            className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98]"
           >
-            {saving ? 'Saving…' : 'Accept new target'}
+            {direction === 'increase' ? 'Raise' : 'Lower'} for this week
           </button>
           <button
             type="button"
@@ -208,7 +221,8 @@ export default function CoachCheckInPage() {
             Keep current target
           </button>
         </div>
-      ) : (
+      )}
+      {step === 'intro' && (
         <button
           type="button"
           onClick={handleContinue}
@@ -218,17 +232,6 @@ export default function CoachCheckInPage() {
           Continue
         </button>
       )}
-    </div>
-  )
-}
-
-function Row({ label, value, testId }: { label: string; value: string; testId?: string }) {
-  return (
-    <div className="flex items-center justify-between">
-      <span className="text-sm text-slate-500 dark:text-slate-400">{label}</span>
-      <span className="font-semibold tabular-nums" data-testid={testId}>
-        {value}
-      </span>
     </div>
   )
 }

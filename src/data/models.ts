@@ -38,14 +38,28 @@ export interface Profile extends Syncable {
   dateOfBirth?: string
   /** Self-reported body-fat %, from a skippable onboarding picker. Stored only — does not feed calculateBMR (Mifflin-St Jeor, not Katch-McArdle). */
   bodyFatPercent?: number
-  /** Informational only — collected at onboarding, not read by any engine or UI logic yet. */
+  /** Legacy — collected pre-Phase F.2 by a single tracking-experience question. No longer written; kept so existing profiles' stored values keep type-checking. Superseded by weighedMoreBefore/recentTrend below. */
   weightHistoryClass?: 'first_time' | 'some_success' | 'yo_yo' | 'long_term_maintainer'
-  /** Onboarding diet-style preference. 'balanced' (default) matches pre-R.2 behavior (fatGPerKg omitted). */
-  dietStyle?: 'balanced' | 'higher_fat' | 'lower_carb'
-  /** Onboarding protein-priority preference. 'standard' (default) matches pre-R.2 behavior (proteinGPerKg omitted). */
-  proteinPriority?: 'standard' | 'high' | 'very_high'
-  /** Onboarding calorie-floor preference. 'standard' (default) matches pre-R.2 behavior (no floor buffer). */
-  calorieFloorChoice?: 'standard' | 'gentler'
+  /** Onboarding weight-history question 1/2 (Phase F.2): "have you ever weighed more than this before?" Informational only, no engine effect. */
+  weighedMoreBefore?: 'yes' | 'no' | 'not_sure'
+  /** Onboarding weight-history question 2/2 (Phase F.2): 3-month trend direction. Informational only, no engine effect. */
+  recentWeightTrend?: 'falling' | 'rising' | 'stable' | 'not_sure'
+  /**
+   * Onboarding diet-style preference. 'balanced' (default) matches
+   * pre-R.2 behavior (fatGPerKg omitted). `low_fat`/`low_carb`/`keto`
+   * (Phase F.2) replaced the earlier `higher_fat`/`lower_carb` labels —
+   * both old and new values stay valid here since existing profiles may
+   * still carry the old ones.
+   */
+  dietStyle?: 'balanced' | 'higher_fat' | 'lower_carb' | 'low_fat' | 'low_carb' | 'keto'
+  /**
+   * Onboarding protein-priority preference. 'moderate' (Phase F.2; was
+   * 'standard') matches pre-R.2 behavior (proteinGPerKg omitted). Old and
+   * new values both stay valid for the same reason as dietStyle above.
+   */
+  proteinPriority?: 'standard' | 'high' | 'very_high' | 'low' | 'moderate' | 'extra_high'
+  /** Onboarding calorie-floor preference. 'standard' (default) matches pre-R.2 behavior (no floor buffer). 'low' (Phase F.2) opts into a floor below the usual safety minimum. */
+  calorieFloorChoice?: 'standard' | 'gentler' | 'low'
   /** Desired rate of weight change (lb/week) chosen at onboarding, feeding goalEngine's goalRateLbPerWeek. Absent for profiles created before Phase R.2. */
   goalRateLbPerWeek?: number
 }
@@ -115,6 +129,14 @@ export interface LogEntry extends Syncable {
   p: number
   c: number
   f: number
+  /**
+   * ISO datetime this entry was actually logged at (Phase F.3), powering
+   * the Log tab's Timeline view. Optional and additive — entries logged
+   * before this field existed have no `loggedAt`; the Timeline view
+   * buckets those under their `meal`'s typical hour window instead of
+   * hiding them.
+   */
+  loggedAt?: string
 }
 
 export interface WeighIn extends Syncable {

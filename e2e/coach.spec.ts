@@ -96,10 +96,10 @@ test('walking through the weekly check-in wizard and accepting updates the targe
   await page.getByTestId('checkin-continue').click()
 
   await page.getByTestId('checkin-accept').click()
-  await expect(page.getByTestId('checkin-accepted')).toBeVisible()
-  await expect(page.getByTestId('checkin-accepted')).toContainText('2686 kcal')
+  await expect(page).toHaveURL('/coach/check-in/plan')
+  await expect(page.getByTestId('program-update-grid')).toContainText('2686')
 
-  await page.getByRole('button', { name: 'Done' }).click()
+  await page.getByTestId('program-update-use-plan').click()
   await expect(page).toHaveURL('/coach')
 
   await page.goto('/')
@@ -122,7 +122,7 @@ test('keeping the current target from the wizard leaves the target unchanged', a
   await expect(page.getByTestId('kcal-target')).toHaveText('2786 kcal target')
 })
 
-test('reaching a goal weight shows the celebration and the strategy hub banner', async ({ page }) => {
+test('reaching a goal weight shows the full-screen takeover on the next app open, once', async ({ page }) => {
   await onboard(page)
 
   await page.goto('/settings')
@@ -141,8 +141,18 @@ test('reaching a goal weight shows the celebration and the strategy hub banner',
     await expect(page.getByTestId('weighin-list')).toContainText(date)
   }
 
-  await expect(page.getByTestId('goal-celebration')).toBeVisible()
+  // Not shown reactively at log time -- only checked once per app open.
+  await expect(page.getByTestId('goal-reached-takeover')).not.toBeVisible()
 
+  // A fresh navigation is "the next app open".
   await page.goto('/coach')
-  await expect(page.getByTestId('coach-goal-reached')).toBeVisible()
+  await expect(page.getByTestId('goal-reached-takeover')).toBeVisible()
+  await expect(page.getByTestId('goal-reached-takeover')).toContainText("You're there")
+
+  await page.getByTestId('goal-reached-new-goal').click()
+  await expect(page).toHaveURL('/settings')
+
+  // Doesn't reappear on the next open -- it's a one-shot per goal value.
+  await page.goto('/coach')
+  await expect(page.getByTestId('goal-reached-takeover')).not.toBeVisible()
 })

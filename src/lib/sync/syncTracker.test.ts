@@ -1,6 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { LogRepo } from '../../data/repos/LogRepo'
-import { MacroDesiDB } from '../../data/db'
+import { BitewiseDB } from '../../data/db'
 import type { LogEntry } from '../../data/models'
 
 const sampleEntry = (overrides: Partial<LogEntry> = {}): Omit<LogEntry, 'id'> => ({
@@ -19,11 +19,11 @@ const sampleEntry = (overrides: Partial<LogEntry> = {}): Omit<LogEntry, 'id'> =>
   ...overrides,
 })
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let repo: LogRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-sync-${Math.random()}`)
+  db = new BitewiseDB(`test-sync-${Math.random()}`)
   repo = new LogRepo(db)
 })
 

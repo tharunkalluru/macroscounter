@@ -18,8 +18,15 @@ const MIN_VISIBLE_SCALE = 0.025
 
 export default function MacroBar({ label, consumed, target, colorClass, testId, onTap }: Props) {
   const prefersReducedMotion = useReducedMotion()
+  const isOver = target > 0 && consumed > target
   const rawPct = target > 0 ? Math.min(1, consumed / target) : 0
   const scale = consumed > 0 ? Math.max(rawPct, MIN_VISIBLE_SCALE) : 0
+  // Over target: the bar always represents everything eaten (100% = consumed),
+  // split into the portion that was within budget and the portion that
+  // wasn't — rather than clamping at 100% and hiding the overage entirely.
+  const withinPct = isOver ? (target / consumed) * 100 : 0
+  const overPct = isOver ? ((consumed - target) / consumed) * 100 : 0
+  const overAmount = isOver ? Math.round(consumed - target) : 0
 
   const content = (
     <>
@@ -27,17 +34,27 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
         <span>{label}</span>
         <span className="tabular-nums" data-testid={`${testId}-value`}>
           {Math.round(consumed)} / {Math.round(target)} g
+          {isOver && (
+            <span className="text-over-700 dark:text-over-400"> · +{overAmount}</span>
+          )}
         </span>
       </div>
-      <div className="mt-1 h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
-        <motion.div
-          className={`h-2 w-full origin-left rounded-full ${colorClass}`}
-          initial={false}
-          animate={{ scaleX: scale }}
-          transition={
-            prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
-          }
-        />
+      <div className="mt-1 flex h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+        {isOver ? (
+          <>
+            <div className={`h-full ${colorClass}`} style={{ width: `${withinPct}%` }} />
+            <div className="h-full bg-over-500" style={{ width: `${overPct}%` }} />
+          </>
+        ) : (
+          <motion.div
+            className={`h-2 w-full origin-left rounded-full ${colorClass}`}
+            initial={false}
+            animate={{ scaleX: scale }}
+            transition={
+              prefersReducedMotion ? { duration: 0 } : { duration: 0.3, ease: [0.22, 1, 0.36, 1] }
+            }
+          />
+        )}
       </div>
     </>
   )

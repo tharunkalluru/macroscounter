@@ -38,11 +38,11 @@ export default defineConfig({
       registerType: 'autoUpdate',
       includeAssets: ['icons/icon.svg', 'icons/apple-touch-icon.png', 'icons/apple-splash-*.png'],
       manifest: {
-        name: 'MacroDesi',
-        short_name: 'MacroDesi',
+        name: 'Bitewise',
+        short_name: 'Bitewise',
         description: 'Fat-loss focused calorie & macro tracker with an Indian food database',
-        theme_color: '#0f172a',
-        background_color: '#0f172a',
+        theme_color: '#161826',
+        background_color: '#161826',
         display: 'standalone',
         // window-controls-overlay is desktop-PWA-only (Chromium) and falls
         // back to the next entry automatically where it's not supported.
@@ -69,6 +69,43 @@ export default defineConfig({
         // never reached Vercel (no runtime log entry) even though the tab
         // showed a 200 for it -- the service worker answered it locally.
         navigateFallbackDenylist: [/^\/api\//],
+        // Phase F.0: Inter (Google Fonts) and Phosphor Icons (unpkg) are
+        // loaded from index.html to match the source design exactly.
+        // Neither is covered by globPatterns' precache (cross-origin), so
+        // without an explicit runtime-caching rule every repeat visit would
+        // re-fetch them over the network -- costing both the offline
+        // guarantee and the <1.5s repeat-load budget nativeFeel.spec.ts
+        // enforces. CacheFirst + a long expiration means only the very
+        // first-ever visit pays the network cost; everything after is
+        // served from cache, same as the rest of the app shell.
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: 'StaleWhileRevalidate',
+            options: {
+              cacheName: 'google-fonts-stylesheets',
+              cacheableResponse: { statuses: [0, 200] },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'google-fonts-webfonts',
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 12, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/unpkg\.com\/@phosphor-icons\/.*/i,
+            handler: 'CacheFirst',
+            options: {
+              cacheName: 'phosphor-icons',
+              cacheableResponse: { statuses: [0, 200] },
+              expiration: { maxEntries: 30, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+        ],
       },
       devOptions: {
         enabled: false,

@@ -1,0 +1,1 @@
+ALTER TABLE "log_entries" ADD COLUMN "logged_at" timestamp with time zone;

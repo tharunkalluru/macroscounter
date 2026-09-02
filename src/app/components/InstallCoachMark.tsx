@@ -13,7 +13,7 @@ function dismiss(): void {
 }
 
 /**
- * First-visit "Install MacroDesi" banner — Android/Chrome gets the native
+ * First-visit "Install Bitewise" banner — Android/Chrome gets the native
  * `beforeinstallprompt` dialog behind a custom trigger button; iOS Safari
  * has no such event, so it gets illustrated Share -> Add to Home Screen
  * instructions instead. Never shows once the app is already installed
@@ -63,7 +63,7 @@ export default function InstallCoachMark() {
         <InstallIcon />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Install MacroDesi</p>
+        <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Install Bitewise</p>
         {deferredPrompt ? (
           <p className="text-caption text-slate-600 dark:text-slate-300">
             Add it to your home screen for a faster, full-screen experience.

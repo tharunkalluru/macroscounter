@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { MacroDesiDB } from '../../data/db'
+import { BitewiseDB } from '../../data/db'
 import type { ScannedProduct } from '../../data/models'
 import { ScannedProductRepo } from '../../data/repos/ScannedProductRepo'
 import amulButter from './fixtures/off-amul-butter.json'
@@ -9,11 +9,11 @@ import fdcEmpty from './fixtures/fdc-search-empty.json'
 import multipackBiscuits from './fixtures/off-multipack-biscuits.json'
 import { lookupProduct } from './lookupProduct'
 
-let db: MacroDesiDB
+let db: BitewiseDB
 let repo: ScannedProductRepo
 
 beforeEach(() => {
-  db = new MacroDesiDB(`test-lookup-${Math.random()}`)
+  db = new BitewiseDB(`test-lookup-${Math.random()}`)
   repo = new ScannedProductRepo(db)
 })
 

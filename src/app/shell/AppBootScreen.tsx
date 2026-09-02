@@ -1,10 +1,10 @@
-/** Full-screen boot state shown once, before the food DB finishes seeding. Mirrors the app icon's ring mark so the first paint feels like MacroDesi instead of a generic loading page. */
+/** Full-screen boot state shown once, before the food DB finishes seeding. Mirrors the app icon's ring mark so the first paint feels like Bitewise instead of a generic loading page. */
 export default function AppBootScreen() {
   return (
     <div
       className="flex min-h-screen flex-col items-center justify-center gap-4 bg-surface dark:bg-surface-dark"
       role="status"
-      aria-label="Loading MacroDesi"
+      aria-label="Loading Bitewise"
     >
       <svg
         width="56"
@@ -24,7 +24,7 @@ export default function AppBootScreen() {
           className="text-brand-600 dark:text-brand-400"
         />
       </svg>
-      <p className="text-title text-brand-700 dark:text-brand-400">MacroDesi</p>
+      <p className="text-title text-brand-700 dark:text-brand-400">Bitewise</p>
     </div>
   )
 }
