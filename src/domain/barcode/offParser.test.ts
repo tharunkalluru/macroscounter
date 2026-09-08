@@ -79,4 +79,66 @@ describe('parseOFFResponse', () => {
     expect(parseOFFResponse('123', 'not an object')).toBeNull()
     expect(parseOFFResponse('123', {})).toBeNull()
   })
+
+  it("falls back to OFF's numeric serving_quantity when serving_size text is absent", () => {
+    // Real shape (verified against the live OFF API for Nutella): no
+    // `serving_size` at all, only the numeric/imported variants. Reading the
+    // text field alone left servingSize undefined, so the scan dropped into
+    // grams-first mode with a 100 g default and the user had to retype the
+    // amount on every scan.
+    const result = parseOFFResponse('3017620422003', {
+      status: 1,
+      product: {
+        product_name: 'Nutella',
+        nutriments: { 'energy-kcal_100g': 539, proteins_100g: 6.3, carbohydrates_100g: 57.5, fat_100g: 30.9 },
+        serving_quantity: 15,
+        serving_quantity_unit: 'g',
+        quantity: '400 g e',
+        product_quantity: 400,
+        product_quantity_unit: 'g',
+      },
+    })
+    expect(result?.servingSize).toBe(15)
+    expect(result?.quantity).toBe(400)
+  })
+
+  it('falls back to serving_size_imported text when nothing else is parseable', () => {
+    const result = parseOFFResponse('123', {
+      status: 1,
+      product: {
+        product_name: 'Imported only',
+        nutriments: { 'energy-kcal_100g': 100, proteins_100g: 1, carbohydrates_100g: 1, fat_100g: 1 },
+        serving_size_imported: '15 g (15)',
+      },
+    })
+    expect(result?.servingSize).toBe(15)
+    expect(result?.servingSizeText).toBe('15 g (15)')
+  })
+
+  it('uses product_quantity when the quantity text is unparseable', () => {
+    const result = parseOFFResponse('123', {
+      status: 1,
+      product: {
+        product_name: 'Odd quantity text',
+        nutriments: { 'energy-kcal_100g': 100, proteins_100g: 1, carbohydrates_100g: 1, fat_100g: 1 },
+        quantity: 'one large jar',
+        product_quantity: 750,
+        product_quantity_unit: 'g',
+      },
+    })
+    expect(result?.quantity).toBe(750)
+  })
+
+  it('ignores numeric serving fields carrying a non gram/ml unit', () => {
+    const result = parseOFFResponse('123', {
+      status: 1,
+      product: {
+        product_name: 'Ounces',
+        nutriments: { 'energy-kcal_100g': 100, proteins_100g: 1, carbohydrates_100g: 1, fat_100g: 1 },
+        serving_quantity: 2,
+        serving_quantity_unit: 'oz',
+      },
+    })
+    expect(result?.servingSize).toBeUndefined()
+  })
 })

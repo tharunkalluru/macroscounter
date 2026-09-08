@@ -11,24 +11,32 @@ function round1(n: number): number {
  * this isn't just a single leading-number regex. Returns undefined when
  * unparsable.
  */
+/**
+ * Gram/millilitre unit, spelled out or abbreviated. Longest alternatives
+ * first so "40 grams" matches `grams` rather than matching `g` and then
+ * failing the trailing word boundary — which is what made every
+ * spelled-out serving size unparseable before.
+ */
+const UNIT = '(?:grams|gramme|grammes|gram|millilitres|milliliters|millilitre|milliliter|ml|g)'
+
 export function parseServingSize(text: string | undefined): number | undefined {
   if (!text) return undefined
   const trimmed = text.trim()
 
-  const multiPack = trimmed.match(/^(\d+(?:\.\d+)?)\s*x\s*(\d+(?:\.\d+)?)\s*(?:g|ml)\b/i)
+  const multiPack = trimmed.match(new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*x\\s*(\\d+(?:\\.\\d+)?)\\s*${UNIT}\\b`, 'i'))
   if (multiPack) {
     const count = Number(multiPack[1])
     const unit = Number(multiPack[2])
     return Number.isFinite(count) && Number.isFinite(unit) ? round1(count * unit) : undefined
   }
 
-  const single = trimmed.match(/^(\d+(?:\.\d+)?)\s*(?:g|ml)\b/i)
+  const single = trimmed.match(new RegExp(`^(\\d+(?:\\.\\d+)?)\\s*${UNIT}\\b`, 'i'))
   if (single) {
     const value = Number(single[1])
     return Number.isFinite(value) ? value : undefined
   }
 
-  const parenthetical = trimmed.match(/\(\s*(\d+(?:\.\d+)?)\s*(?:g|ml)\s*\)/i)
+  const parenthetical = trimmed.match(new RegExp(`\\(\\s*(\\d+(?:\\.\\d+)?)\\s*${UNIT}\\s*\\)`, 'i'))
   if (parenthetical) {
     const value = Number(parenthetical[1])
     return Number.isFinite(value) ? value : undefined

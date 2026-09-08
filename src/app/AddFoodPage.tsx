@@ -13,7 +13,7 @@ import FoodGlyph from './components/FoodGlyph'
 import PageHeader from './components/PageHeader'
 import PortionStep, { type PortionSaveData } from './components/PortionStep'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
-import { HeartIcon } from './shell/icons'
+import { HeartIcon, SparkleIcon } from './shell/icons'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'Breakfast',
@@ -181,6 +181,29 @@ export default function AddFoodPage() {
             </ul>
           ) : (
             <div className="mt-4 flex flex-col gap-4">
+              {/* The Add Food *sheet* offers AI/custom/scan, but the sheet is
+                  today-only -- a past day routes here instead, which left no
+                  way at all to describe a meal you forgot to log yesterday. */}
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => navigate(`/log/ai?meal=${meal}&date=${entryDate}`)}
+                  data-testid="page-ai-button"
+                  className="flex min-h-touch flex-1 items-center justify-center gap-2 rounded-card border border-brand-700 px-3 py-2 text-sm font-medium text-brand-700 dark:border-brand-400 dark:text-brand-400"
+                >
+                  <SparkleIcon className="h-4 w-4" />
+                  Describe with AI
+                </button>
+                <button
+                  type="button"
+                  onClick={() => navigate(`/log/quick-add?meal=${meal}&date=${entryDate}`)}
+                  data-testid="page-custom-button"
+                  className="min-h-touch flex-1 rounded-card border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 dark:border-slate-600 dark:text-slate-300"
+                >
+                  Custom entry
+                </button>
+              </div>
+
               {favorites.length > 0 && (
                 <FoodChipList
                   title="Favorites"

@@ -5,6 +5,7 @@ import type { FoodItemResult } from '../../api/ai/analyze'
 import { signIn, useSession } from '../lib/auth/authClient'
 import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { compressImageFile } from '../lib/ai/imageCompress'
+import { isFutureDate, todayISO } from '../lib/date'
 import PageHeader from './components/PageHeader'
 import { CameraIcon, MicIcon, SparkleIcon } from './shell/icons'
 
@@ -31,6 +32,12 @@ export default function AiLogPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const meal = (searchParams.get('meal') as Meal) ?? 'breakfast'
+  // Carried through so a meal you forgot to log yesterday can still be
+  // described today and land on the right day.
+  const requestedDate = searchParams.get('date')
+  const entryDate = requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
+  const isToday = entryDate === todayISO()
+  const dateSuffix = isToday ? '' : `&date=${entryDate}`
   const [description, setDescription] = useState('')
   const [photo, setPhoto] = useState<{ file: Blob; previewUrl: string } | null>(null)
   const [analysing, setAnalysing] = useState(false)
@@ -62,7 +69,7 @@ export default function AiLogPage() {
 
   async function handleSignIn() {
     setSigningIn(true)
-    await signIn.social({ provider: 'google', callbackURL: `/log/ai?meal=${meal}` })
+    await signIn.social({ provider: 'google', callbackURL: `/log/ai?meal=${meal}${dateSuffix}` })
   }
 
   if (sessionPending) {
@@ -76,7 +83,7 @@ export default function AiLogPage() {
   if (!session) {
     return (
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-6">
-        <PageHeader title="Describe or snap" backTo="/" />
+        <PageHeader title="Describe or snap" backTo={isToday ? '/' : `/history/${entryDate}`} />
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
           <SparkleIcon className="h-8 w-8 text-brand-600 dark:text-brand-400" />
           <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">Sign in to use AI logging</p>
@@ -124,7 +131,7 @@ export default function AiLogPage() {
         setError(errorMessageFor(json.code))
         return
       }
-      navigate('/log/ai/result', { state: { meal, items: json.items ?? [] } })
+      navigate('/log/ai/result', { state: { meal, date: entryDate, items: json.items ?? [] } })
     } catch {
       setError(errorMessageFor(undefined))
     } finally {
@@ -136,7 +143,7 @@ export default function AiLogPage() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-6">
-      <PageHeader title="Describe or snap" backTo="/" />
+      <PageHeader title="Describe or snap" backTo={isToday ? '/' : `/history/${entryDate}`} />
 
       <div className="flex flex-col gap-1.5">
         <div className="relative">

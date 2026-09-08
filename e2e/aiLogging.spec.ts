@@ -162,3 +162,52 @@ test('selecting a photo shows a preview, and it can be removed before analysing'
   await expect(page.getByTestId('ai-photo-preview')).not.toBeVisible()
   await expect(page.getByTestId('ai-photo-add')).toBeVisible()
 })
+
+test('AI logging can add a meal you forgot to log on a previous day', async ({ page }) => {
+  await onboard(page)
+  await mockSignedIn(page)
+  await page.reload()
+
+  // 2026-08-18 is "today" in this fixture's clock, so this is yesterday.
+  const yesterday = '2026-08-17'
+
+  await page.route('**/api/ai/analyze', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items: [
+          {
+            name: 'Leftover biryani',
+            gramsEstimate: 300,
+            kcal: 520,
+            proteinG: 18,
+            carbsG: 70,
+            fatG: 18,
+            fiberG: 4,
+            confidence: 'low',
+          },
+        ],
+      }),
+    })
+  )
+
+  // Reaching AI logging for a past day goes through the full-screen add
+  // page (the FAB sheet is today-only).
+  await page.goto(`/log/add?meal=dinner&date=${yesterday}`)
+  await page.getByTestId('page-ai-button').click()
+  await expect(page).toHaveURL(`/log/ai?meal=dinner&date=${yesterday}`)
+
+  await page.getByTestId('ai-description-input').fill('a plate of leftover biryani')
+  await page.getByTestId('ai-analyse-button').click()
+
+  await expect(page).toHaveURL('/log/ai/result')
+  await page.getByTestId('ai-log-all-button').click()
+
+  // Lands back on that day, with the entry on that day -- not today.
+  await expect(page).toHaveURL(`/history/${yesterday}`)
+  await expect(page.getByTestId('day-total-kcal')).toContainText('520')
+
+  await page.goto('/')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('0')
+})

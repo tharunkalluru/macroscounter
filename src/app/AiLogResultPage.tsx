@@ -3,7 +3,7 @@ import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import type { FoodItemResult } from '../../api/ai/analyze'
 import { LogRepo } from '../data/repos/LogRepo'
-import { todayISO } from '../lib/date'
+import { isFutureDate, todayISO } from '../lib/date'
 import { vibrateSuccess } from '../lib/haptics'
 import PageHeader from './components/PageHeader'
 import { useUIState } from './shell/UIStateContext'
@@ -11,6 +11,8 @@ import { useUIState } from './shell/UIStateContext'
 interface LocationState {
   meal: Meal
   items: FoodItemResult[]
+  /** ISO date these items belong to. Absent (older links) means today. */
+  date?: string
 }
 
 function isLocationState(state: unknown): state is LocationState {
@@ -26,6 +28,10 @@ export default function AiLogResultPage() {
   const valid = isLocationState(location.state)
   const meal: Meal = valid ? location.state.meal : 'breakfast'
   const items: FoodItemResult[] = valid ? location.state.items : []
+  // A forgotten meal is usually logged the *next* day, so this flow has to
+  // be able to write to a past date rather than always stamping today.
+  const requestedDate = valid ? location.state.date : undefined
+  const entryDate = requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
   const [checked, setChecked] = useState<boolean[]>(() => items.map(() => true))
 
   if (!valid) {
@@ -47,7 +53,7 @@ export default function AiLogResultPage() {
         if (!checked[i]) continue
         const item = items[i]
         await logRepo.addEntry({
-          date: todayISO(),
+          date: entryDate,
           meal,
           customSnapshot: {
             name: item.name,
@@ -71,7 +77,7 @@ export default function AiLogResultPage() {
       }
       vibrateSuccess()
       notifyDataChanged()
-      navigate('/')
+      navigate(entryDate === todayISO() ? '/' : `/history/${entryDate}`)
     } finally {
       setSaving(false)
     }

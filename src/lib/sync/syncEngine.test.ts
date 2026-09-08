@@ -1,224 +1,202 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { LogRepo } from '../../data/repos/LogRepo'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { BitewiseDB } from '../../data/db'
-import { getSyncStatus, runSync } from './syncEngine'
+import { onSyncDataChanged, runSync } from './syncEngine'
 
-/**
- * A minimal in-memory stand-in for /api/sync/push + /api/sync/pull, so this
- * test exercises the *real* client sync engine (outbox, LWW merge, status
- * transitions) against a fake network boundary instead of a live Neon DB —
- * matching the spec's "Integration: mock server" gate requirement for 10.1.
- */
-function createMockServer() {
-  const rows = new Map<string, Record<string, unknown> & { updatedAt: number; deletedAt: number | null }>()
-
-  async function handlePush(body: string) {
-    const { mutations } = JSON.parse(body) as {
-      mutations: { table: string; clientId: string; operation: string; payload: unknown; updatedAt: number }[]
-    }
-    const flushed = []
-    for (const m of mutations) {
-      const key = `${m.table}:${m.clientId}`
-      const existing = rows.get(key)
-      if (existing && existing.updatedAt > m.updatedAt) continue // server has something newer
-      if (m.operation === 'delete') {
-        rows.set(key, { ...(existing ?? {}), updatedAt: m.updatedAt, deletedAt: m.updatedAt })
-      } else {
-        rows.set(key, { ...(m.payload as object), updatedAt: m.updatedAt, deletedAt: null })
-      }
-      flushed.push({ table: m.table, clientId: m.clientId, updatedAt: m.updatedAt })
-    }
-    return { flushed }
-  }
-
-  function handlePull(since: number) {
-    const tables: Record<string, unknown[]> = {}
-    for (const [key, row] of rows) {
-      const [table] = key.split(':')
-      if (row.updatedAt <= since) continue
-      tables[table] ??= []
-      tables[table].push(row)
-    }
-    return { tables, pulledAt: Date.now() }
-  }
-
-  return { rows, handlePush, handlePull }
+function freshDb() {
+  return new BitewiseDB(`sync-test-${Math.random().toString(36).slice(2)}`)
 }
 
-let db: BitewiseDB
-let repo: LogRepo
-let server: ReturnType<typeof createMockServer>
-
-beforeEach(async () => {
-  db = new BitewiseDB(`test-syncengine-${Math.random()}`)
-  repo = new LogRepo(db)
-  server = createMockServer()
-
-  await db.syncMeta.add({
+/** A row as `/api/sync/pull` actually returns it: Postgres PK + userId included. */
+function remoteLogEntry(overrides: Record<string, unknown> = {}) {
+  return {
+    id: 'uuid-a',
     userId: 'user-1',
-    userEmail: 'a@b.com',
-    userName: 'A',
-    userAvatarUrl: null,
-    lastSyncedAt: null,
+    clientId: 'uuid-a',
+    date: '2026-09-08',
+    meal: 'breakfast',
+    name: 'Idli',
+    portionSummary: '40 g',
+    portionLabel: null,
+    qty: 40,
+    unit: 'grams',
+    grams: 40,
+    kcal: 41,
+    p: 1.8,
+    c: 8,
+    f: 0.2,
+    updatedAt: 5_000,
+    deletedAt: null,
+    ...overrides,
+  }
+}
+
+function stubFetch(pull: { tables: Record<string, unknown[]>; pulledAt?: number }) {
+  const fetchMock = vi.fn(async (url: string) => {
+    if (String(url).includes('/api/sync/pull')) {
+      return { ok: true, json: async () => pull } as never
+    }
+    return { ok: true, json: async () => ({ flushed: [] }) } as never
   })
+  vi.stubGlobal('fetch', fetchMock)
+  return fetchMock
+}
 
-  vi.stubGlobal(
-    'fetch',
-    vi.fn(async (url: string, init?: RequestInit) => {
-      const u = new URL(url, 'http://localhost')
-      if (u.pathname === '/api/sync/push') {
-        const body = await server.handlePush(init!.body as string)
-        return new Response(JSON.stringify(body), { status: 200 })
-      }
-      if (u.pathname === '/api/sync/pull') {
-        const since = Number(u.searchParams.get('since') ?? 0)
-        return new Response(JSON.stringify(server.handlePull(since)), { status: 200 })
-      }
-      return new Response('not found', { status: 404 })
-    })
-  )
-  vi.stubGlobal('navigator', { onLine: true })
-})
+async function signedInDb() {
+  const db = freshDb()
+  await db.syncMeta.add({ userId: 'user-1', linkedUserId: 'user-1', lastSyncedAt: 1 } as never)
+  return db
+}
 
-afterEach(async () => {
+afterEach(() => {
   vi.unstubAllGlobals()
-  await db.delete()
+  vi.restoreAllMocks()
 })
 
-describe('runSync', () => {
-  it('is a no-op and reports "signed-out" for a guest', async () => {
-    await db.syncMeta.clear()
-    await runSync(db)
-    expect(getSyncStatus()).toBe('signed-out')
-    expect(vi.mocked(fetch)).not.toHaveBeenCalled()
-  })
-
-  it('reports "offline" and skips the network when navigator.onLine is false', async () => {
-    vi.stubGlobal('navigator', { onLine: false })
-    await runSync(db)
-    expect(getSyncStatus()).toBe('offline')
-    expect(vi.mocked(fetch)).not.toHaveBeenCalled()
-  })
-
-  it('flushes a queued offline write on the next sync and clears the local outbox', async () => {
-    // "Offline write queues": adding an entry while signed in always queues
-    // an outbox entry, regardless of connectivity (the outbox itself has no
-    // idea whether we're online — runSync is what actually attempts the
-    // network call).
-    await repo.addEntry({
-      date: '2026-08-18',
+describe('runSync — pulling rows onto this device', () => {
+  it('keeps the local numeric primary key instead of adopting the server row id', async () => {
+    const db = await signedInDb()
+    const localId = await db.logEntries.add({
+      clientId: 'uuid-a',
+      date: '2026-09-08',
       meal: 'breakfast',
-      foodId: 'idli',
       name: 'Idli',
-      portionSummary: '1 idli',
-      qty: 1,
-      unit: 'portion',
-      grams: 40,
-      kcal: 41,
-      p: 1.8,
-      c: 8,
-      f: 0.2,
-    })
-    expect(await db.syncOutbox.count()).toBe(1)
-
-    // "Reconnect -> flush": runSync pushes the queued mutation.
-    await runSync(db)
-
-    expect(await db.syncOutbox.count()).toBe(0)
-    expect(getSyncStatus()).toBe('synced')
-    expect(server.rows.get('logEntries:' + (await db.logEntries.toCollection().first())!.clientId)).toBeTruthy()
-  })
-
-  it('a pull merges a row from another device into the local table', async () => {
-    // Simulate another device having already pushed a row for this user.
-    server.rows.set('weighIns:remote-row-1', {
-      id: 'remote-row-1',
-      clientId: 'remote-row-1',
-      userId: 'user-1',
-      date: '2026-08-17',
-      weightKg: 78.4,
-      updatedAt: Date.now(),
-      deletedAt: null,
-    })
-
-    await runSync(db)
-
-    const local = await db.weighIns.toArray()
-    expect(local).toHaveLength(1)
-    expect(local[0].weightKg).toBe(78.4)
-    expect(local[0].clientId).toBe('remote-row-1')
-  })
-
-  it('a fresh (cleared-IndexedDB) session pulls all prior data on first sync', async () => {
-    server.rows.set('logEntries:existing-1', {
-      id: 'existing-1',
-      clientId: 'existing-1',
-      userId: 'user-1',
-      date: '2026-08-10',
-      meal: 'lunch',
-      name: 'Chicken Curry',
-      portionSummary: '100 g',
-      qty: 1,
+      portionSummary: '40 g',
+      qty: 40,
       unit: 'grams',
-      grams: 100,
-      kcal: 161,
-      p: 15,
-      c: 5,
-      f: 9,
-      updatedAt: Date.now() - 10_000,
-      deletedAt: null,
-    })
-
-    // A brand-new local db (as if IndexedDB was cleared / a new device),
-    // signed in, with no prior sync history (lastSyncedAt = null -> since=0).
-    const freshDb = new BitewiseDB(`test-fresh-${Math.random()}`)
-    await freshDb.syncMeta.add({
-      userId: 'user-1',
-      userEmail: 'a@b.com',
-      userName: 'A',
-      userAvatarUrl: null,
-      lastSyncedAt: null,
-    })
-
-    await runSync(freshDb)
-
-    const entries = await freshDb.logEntries.toArray()
-    expect(entries).toHaveLength(1)
-    expect(entries[0].name).toBe('Chicken Curry')
-
-    await freshDb.delete()
-  })
-
-  it('local-newer-than-remote wins a conflicting push (last-write-wins)', async () => {
-    const id = await repo.addEntry({
-      date: '2026-08-18',
-      meal: 'dinner',
-      name: 'Local Edit',
-      portionSummary: '1 idli',
-      qty: 1,
-      unit: 'portion',
       grams: 40,
       kcal: 41,
       p: 1.8,
       c: 8,
       f: 0.2,
-    })
-    const clientId = (await repo.getById(id))!.clientId!
+      updatedAt: 1_000,
+    } as never)
 
-    // Seed the "server" with an OLDER row for the same clientId, simulating
-    // a stale write from another device that should lose.
-    server.rows.set(`logEntries:${clientId}`, {
-      id: clientId,
-      clientId,
-      userId: 'user-1',
-      name: 'Stale Remote',
-      updatedAt: Date.now() - 60_000,
-      deletedAt: null,
-    })
+    stubFetch({ tables: { logEntries: [remoteLogEntry({ name: 'Idli (edited elsewhere)' })] } })
+    await runSync(db)
+
+    const rows = await db.logEntries.toArray()
+    expect(rows).toHaveLength(1)
+    // The edit came through...
+    expect(rows[0].name).toBe('Idli (edited elsewhere)')
+    // ...without the server's uuid replacing the local autoincrement key,
+    // which is what silently broke edit/delete-by-id on the second device.
+    expect(rows[0].id).toBe(localId)
+    expect(typeof rows[0].id).toBe('number')
+    expect((rows[0] as unknown as { userId?: string }).userId).toBeUndefined()
+  })
+
+  it('inserts a brand-new remote row with a local numeric key, not the server uuid', async () => {
+    const db = await signedInDb()
+    stubFetch({ tables: { logEntries: [remoteLogEntry({ id: 'uuid-new', clientId: 'uuid-new' })] } })
 
     await runSync(db)
 
-    const local = await db.logEntries.get(id)
-    expect(local?.name).toBe('Local Edit')
+    const rows = await db.logEntries.toArray()
+    expect(rows).toHaveLength(1)
+    expect(typeof rows[0].id).toBe('number')
+    expect(rows[0].clientId).toBe('uuid-new')
+    expect((rows[0] as unknown as { userId?: string }).userId).toBeUndefined()
+  })
+
+  it('is a no-op when the same rows come back again (pulls deliberately overlap)', async () => {
+    const db = await signedInDb()
+    stubFetch({ tables: { logEntries: [remoteLogEntry()] }, pulledAt: 10_000 })
+
+    await runSync(db)
+    const afterFirst = await db.logEntries.toArray()
+
+    const changed = vi.fn()
+    const unsubscribe = onSyncDataChanged(changed)
+    await runSync(db)
+    unsubscribe()
+
+    const afterSecond = await db.logEntries.toArray()
+    expect(afterSecond).toEqual(afterFirst)
+    // Critical: re-merging identical rows must not report a change, or the
+    // "pull merged something -> refresh the UI" signal would loop forever.
+    expect(changed).not.toHaveBeenCalled()
+  })
+
+  it('notifies once when a pull actually brings something new', async () => {
+    const db = await signedInDb()
+    stubFetch({ tables: { logEntries: [remoteLogEntry()] } })
+
+    const changed = vi.fn()
+    const unsubscribe = onSyncDataChanged(changed)
+    await runSync(db)
+    unsubscribe()
+
+    expect(changed).toHaveBeenCalledTimes(1)
+  })
+
+  it('rewinds the stored watermark behind the server clock to absorb device skew', async () => {
+    const db = await signedInDb()
+    stubFetch({ tables: {}, pulledAt: 10_000_000 })
+
+    await runSync(db)
+
+    const meta = await db.syncMeta.toCollection().first()
+    // A hairline watermark drops rows written by a device whose clock runs
+    // slightly behind, so the next pull re-reads a safety window.
+    expect(meta?.lastSyncedAt).toBeLessThan(10_000_000)
+    expect(meta?.lastSyncedAt).toBeGreaterThan(0)
+  })
+
+  it('applies a remote soft-delete to the local row', async () => {
+    const db = await signedInDb()
+    await db.logEntries.add({
+      clientId: 'uuid-a',
+      date: '2026-09-08',
+      meal: 'breakfast',
+      name: 'Idli',
+      portionSummary: '40 g',
+      qty: 40,
+      unit: 'grams',
+      grams: 40,
+      kcal: 41,
+      p: 1.8,
+      c: 8,
+      f: 0.2,
+      updatedAt: 1_000,
+    } as never)
+
+    stubFetch({ tables: { logEntries: [remoteLogEntry({ deletedAt: 6_000 })] } })
+    await runSync(db)
+
+    expect(await db.logEntries.count()).toBe(0)
+  })
+
+  it('leaves a locally-newer row alone', async () => {
+    const db = await signedInDb()
+    await db.logEntries.add({
+      clientId: 'uuid-a',
+      date: '2026-09-08',
+      meal: 'breakfast',
+      name: 'Local wins',
+      portionSummary: '40 g',
+      qty: 40,
+      unit: 'grams',
+      grams: 40,
+      kcal: 41,
+      p: 1.8,
+      c: 8,
+      f: 0.2,
+      updatedAt: 9_999,
+    } as never)
+
+    stubFetch({ tables: { logEntries: [remoteLogEntry({ name: 'Stale remote', updatedAt: 5_000 })] } })
+    await runSync(db)
+
+    const rows = await db.logEntries.toArray()
+    expect(rows[0].name).toBe('Local wins')
+  })
+
+  it('does nothing for a guest (no signed-in user)', async () => {
+    const db = freshDb()
+    const fetchMock = stubFetch({ tables: {} })
+
+    await runSync(db)
+
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

@@ -33,4 +33,16 @@ describe('parseServingSize', () => {
       expect(parseServingSize(text)).toBeUndefined()
     }
   )
+
+  it('parses spelled-out gram and millilitre units', () => {
+    // Real OFF serving_size values are free text -- "40 grams" was
+    // unparseable before, which silently dropped the scan into grams-first
+    // mode with a meaningless 100 g default.
+    expect(parseServingSize('40 grams')).toBe(40)
+    expect(parseServingSize('40 gram')).toBe(40)
+    expect(parseServingSize('30g')).toBe(30)
+    expect(parseServingSize('250 millilitres')).toBe(250)
+    expect(parseServingSize('250 milliliters')).toBe(250)
+    expect(parseServingSize('1 bar (40 grams)')).toBe(40)
+  })
 })

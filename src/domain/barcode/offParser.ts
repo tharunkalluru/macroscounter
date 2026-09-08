@@ -66,7 +66,32 @@ export function parseOFFResponse(barcode: string, json: unknown): ParsedProduct 
     typeof cServing === 'number' &&
     typeof fServing === 'number'
 
+  // OFF exposes its *own* parse of the serving/package size as numeric
+  // fields alongside the free text, and real products very often have one
+  // without the other -- Nutella, for instance, has no `serving_size` at
+  // all, only `serving_size_imported: "15 g (15)"`. Reading the text field
+  // alone (the previous behavior) left `servingSize` undefined for those,
+  // which dropped the scan into grams-first mode with a meaningless 100 g
+  // default and made the user retype the amount every time.
+  const productNumber = (key: string, unitKey: string): number | undefined => {
+    const unit = product[unitKey]
+    // Only gram/millilitre units are interchangeable with our gram model.
+    if (typeof unit === 'string' && !/^(g|ml)$/i.test(unit.trim())) return undefined
+    const raw = product[key]
+    const value = typeof raw === 'number' ? raw : typeof raw === 'string' ? Number(raw) : NaN
+    return Number.isFinite(value) && value > 0 ? value : undefined
+  }
+
   const servingSizeText = product.serving_size as string | undefined
+  const servingSizeImported = product.serving_size_imported as string | undefined
+  const servingSize =
+    parseServingSize(servingSizeText) ??
+    productNumber('serving_quantity', 'serving_quantity_unit') ??
+    parseServingSize(servingSizeImported)
+
+  const quantityText = product.quantity as string | undefined
+  const quantity =
+    parseServingSize(quantityText) ?? productNumber('product_quantity', 'product_quantity_unit')
 
   return {
     barcode,
@@ -83,9 +108,12 @@ export function parseOFFResponse(barcode: string, json: unknown): ParsedProduct 
           fiber: optionalRound(numField('fiber_serving'), round2),
         }
       : undefined,
-    servingSize: parseServingSize(servingSizeText),
-    servingSizeText,
-    quantity: parseServingSize(product.quantity as string | undefined),
+    servingSize,
+    // Keep whichever text we actually have, so ScanProductPage's re-parse
+    // on read (which exists so cached products benefit from later parser
+    // fixes) still has something to work with.
+    servingSizeText: servingSizeText ?? servingSizeImported,
+    quantity,
     source: 'off',
   }
 }
