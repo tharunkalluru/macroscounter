@@ -1,64 +1,65 @@
 import { authClient } from '../auth/authClient'
 import type { BitewiseDB } from '../../data/db'
 import { db as defaultDb } from '../../data/db'
+import { SYNCED_TABLES } from '../../domain/sync/types'
 import { clearLocalSyncedData } from './guestMode'
 import { migrateLocalToCloud } from './migrateLocalToCloud'
-import { runSync, serverHasProfile } from './syncEngine'
+import { getSyncError, runSync, serverHasProfile, withSyncPaused } from './syncEngine'
+import { trackUpsert } from './syncTracker'
 
 export type PostSignInOutcome = 'onboarding' | 'ready'
+const resolutions = new WeakMap<BitewiseDB, Promise<PostSignInOutcome>>()
 
-/**
- * Runs once we know a Better Auth session exists (cookie set, either from
- * just completing the Google redirect or already present from an earlier
- * visit on this browser). Decides, per 10B of the phase-10 spec:
- *
- * 0. If this device's local data is linked to a *different* account than the
- *    one signing in now (e.g. Person A signed out and Person B signed in on
- *    the same shared device/browser) — wipe local data first. Local data
- *    must never be merged or migrated across accounts.
- * 1. If the server already has data for this account (a returning user, or
- *    the same account on another device) — pull it. That always wins; local
- *    data is never pushed on top of it.
- * 2. Else, if this device has pre-existing local (guest) usage — migrate it
- *    up to the account automatically.
- * 3. Else — brand-new account with nothing anywhere — the caller sends the
- *    user to onboarding.
- */
-export async function resolveAfterSignIn(db: BitewiseDB = defaultDb): Promise<PostSignInOutcome> {
-  const { data: session } = await authClient.getSession()
+/** Deduplicate auth effects; account identity is established before any local work is pushed. */
+export function resolveAfterSignIn(db: BitewiseDB = defaultDb): Promise<PostSignInOutcome> {
+  const active = resolutions.get(db)
+  if (active) return active
+  const promise = resolve(db).finally(() => resolutions.delete(db))
+  resolutions.set(db, promise)
+  return promise
+}
+
+async function resolve(db: BitewiseDB): Promise<PostSignInOutcome> {
+  const { data: session, error } = await authClient.getSession()
+  if (error) throw new Error('We could not check your account. Please try again.')
   if (!session) return 'onboarding'
+  const userId = session.user.id
 
-  const existingMeta = await db.syncMeta.toCollection().first()
-  const linkedToDifferentAccount =
-    !!existingMeta?.linkedUserId && existingMeta.linkedUserId !== session.user.id
+  // Read the server before changing ownership or removing anything locally.
+  const hasServerProfile = await serverHasProfile(userId)
+  let migrateAll = false
+  await withSyncPaused(db, async () => {
+    await db.transaction('rw', [...SYNCED_TABLES.map((name) => db.table(name)), db.syncMeta, db.syncOutbox], async () => {
+      const existingMeta = await db.syncMeta.toCollection().first()
+      const linkedId = existingMeta?.linkedUserId ?? existingMeta?.userId
+      const differentAccount = !!linkedId && linkedId !== userId
+      if (differentAccount) await clearLocalSyncedData(db)
+      const guestData = !linkedId && !!(await db.profiles.count())
+      const hadLocalProfile = !!(await db.profiles.count())
+      const fields = {
+        userId, userEmail: session.user.email, userName: session.user.name,
+        userAvatarUrl: session.user.image ?? null, linkedUserId: userId,
+        // The first pull after sign-in is complete, including returning-account recovery.
+        lastSyncedAt: null,
+      }
+      if (existingMeta) await db.syncMeta.update(existingMeta.id!, fields)
+      else await db.syncMeta.add(fields)
 
-  if (linkedToDifferentAccount) {
-    await clearLocalSyncedData(db)
-  }
-
-  const hadLocalProfile = !!(await db.profiles.toCollection().first())
-
-  const metaFields = {
-    userId: session.user.id,
-    userEmail: session.user.email,
-    userName: session.user.name,
-    userAvatarUrl: session.user.image ?? null,
-    linkedUserId: session.user.id,
-    ...(linkedToDifferentAccount ? { lastSyncedAt: null } : {}),
-  }
-  if (existingMeta) {
-    await db.syncMeta.update(existingMeta.id!, metaFields)
-  } else {
-    await db.syncMeta.add({ ...metaFields, lastSyncedAt: null })
-  }
-
-  const hasServerProfile = await serverHasProfile()
-  if (!hasServerProfile && hadLocalProfile) {
-    await migrateLocalToCloud(db)
-  } else {
-    await runSync(db)
-  }
-
-  const hasProfileNow = !!(await db.profiles.toCollection().first())
-  return hasProfileNow ? 'ready' : 'onboarding'
+      if (guestData && hasServerProfile) {
+        // Keep the guest's actual diary and reusable meals. Their cloud profile/goals
+        // take precedence, preventing duplicate profile rows on a returning account.
+        for (const name of SYNCED_TABLES.filter((name) => name !== 'profiles' && name !== 'targets')) {
+          const rows = await db.table(name).toArray() as Record<string, unknown>[]
+          for (const row of rows) await trackUpsert(db, name, (row.id ?? row.barcode) as number | string, row)
+        }
+        await db.profiles.clear()
+        await db.targets.clear()
+      }
+      migrateAll = !hasServerProfile && hadLocalProfile
+    })
+  })
+  if (migrateAll) await migrateLocalToCloud(db)
+  const status = await runSync(db)
+  if (status !== 'synced') throw new Error(getSyncError() ?? 'Connect to the internet to finish setting up your backup, then try again.')
+  return (await db.profiles.count()) > 0 ? 'ready' : 'onboarding'
 }

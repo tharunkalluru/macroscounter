@@ -1,70 +1,41 @@
-# MacroDesi
+# Bitewise
 
-Fat-loss focused calorie & macro tracker, mobile-first installable PWA, with an Indian/South
-Indian food database, chicken & fish staples, and barcode scanning.
+An offline-capable food diary with an Indian food catalog, barcode logging, recipes,
+saved meals, calorie and macro tracking, weight trends, and optional Google sign-in,
+cloud backup and AI-assisted logging.
 
-## Stack
+## Run locally
 
-React 18 + TypeScript + Vite + Tailwind CSS · `vite-plugin-pwa` · Dexie.js (IndexedDB) · Fuse.js ·
-`BarcodeDetector` / ZXing · Recharts · Vitest + React Testing Library · Playwright.
+Use Node 22.12 or newer. Install dependencies with `npm ci`, then run `npm run dev`.
+Guest logging works without credentials. Plain Vite does **not** serve the API;
+sign-in, cloud backup and AI require the server environment described in [SETUP.md](SETUP.md).
 
-## Develop
-
-```bash
-npm install
-npm run dev
-```
-
-## Test gate
+## Verify
 
 ```bash
-npm run lint && npx tsc --noEmit && npm run test -- --run --coverage && npm run build && npm run test:e2e && npm run check:bundle
-```
-
-Also available standalone: `npm run test:e2e -- e2e/a11y.spec.ts` (axe-core WCAG 2.1 A/AA scan of
-every major screen) and `npm run check:bundle` (fails if the initial JS+CSS gzip size referenced
-directly by `index.html` exceeds 300 KB — lazy-loaded routes like `/weight` and `/scan` don't
-count against this, see `scripts/check-bundle.ts`).
-
-## Build & preview
-
-```bash
+npm run lint
+npm run check:tokens
+npm run test -- --run --coverage
 npm run build
-npm run preview
+npm run check:bundle
+npx playwright install chromium
+npm run test:e2e
+npm audit
 ```
 
-## Lighthouse
+The browser suite includes a seven-day logging journey, past-day entry/edit/copy,
+offline logging, templates, keyboard focus, accessibility and phone touch targets.
+Database tests apply every migration to an isolated PostgreSQL-compatible PGlite
+engine and exercise the actual sync SQL. These are not live cloud load tests.
+The GitHub workflow contains quality checks only; it does not deploy or migrate.
 
-```bash
-npm run build && npm run preview   # in one terminal
-npm run lighthouse                 # in another, once preview is up on :4173
-```
+`npm run preview` serves the production frontend build. `npm run check:bundle`
+checks the initial compressed JS/CSS against a 300 KB budget.
 
-Last audited run: Performance 100, Accessibility 100, Best Practices 100, SEO 100.
+## Release preparation
 
-## Environment
-
-Copy `.env.example` to `.env` and fill in optional API keys (USDA FDC, label-reader vision API).
-The app works fully offline without either key.
-
-## Deploy
-
-Static output in `dist/` after `npm run build`. Build command for all three targets:
-`npm run build`, output directory: `dist`. Client-side routing (React Router) needs an SPA
-rewrite/fallback so deep links like `/history` don't 404 on a hard reload — configs for all three
-targets are already checked in:
-
-- **Vercel** — `vercel.json` (rewrites everything to `/index.html`). Connect the repo or run
-  `vercel deploy --prod`; no other config needed.
-- **Netlify** — `netlify.toml` (build command + publish dir + redirect) and `public/_redirects` as
-  a fallback. Connect the repo, or `netlify deploy --prod`.
-- **Cloudflare Pages** — reads `public/_redirects` (copied into `dist/_redirects` by the build)
-  automatically; no `netlify.toml`/`vercel.json` needed. Build command `npm run build`, output
-  directory `dist`.
-
-The service worker (`vite-plugin-pwa`, `generateSW` mode) precaches the app shell and
-`fooddb.json` at build time, so the app installs and works fully offline after the first visit —
-no server-side config required beyond serving the static `dist/` output over HTTPS (required for
-service workers + the `BarcodeDetector`/camera APIs).
-
-See `PROGRESS.md` for phase-by-phase build status and hardening notes.
+See [the product plan](docs/PRODUCTION_PLAN.md) and [setup and release gates](SETUP.md).
+Deployment builds deliberately do not run database migrations. Apply reviewed
+migrations to an isolated staging database first and use a controlled production
+migration window. A static-only deployment supports the guest experience; it
+cannot provide the included Vercel API endpoints by itself.

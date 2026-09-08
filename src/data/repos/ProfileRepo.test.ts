@@ -46,3 +46,9 @@ describe('ProfileRepo', () => {
     expect(all[0].weightKg).toBe(78)
   })
 })
+
+it('resolves two same-time cloud profiles independently of local insertion order', async () => {
+  await db.profiles.add({ ...sampleProfile, id: undefined, name: 'Winner', clientId: 'z', updatedAt: 100 })
+  await db.profiles.add({ ...sampleProfile, id: undefined, name: 'Older', clientId: 'a', updatedAt: 100 })
+  expect((await repo.get())?.name).toBe('Winner')
+})

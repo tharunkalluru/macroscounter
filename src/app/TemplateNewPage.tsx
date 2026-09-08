@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { LogEntry, Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
 import { MealTemplateRepo } from '../data/repos/MealTemplateRepo'
 import { todayISO } from '../lib/date'
+import { buildTemplateEntries } from '../domain/templates/applyTemplate'
 import PageHeader from './components/PageHeader'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
 
@@ -17,6 +18,8 @@ export default function TemplateNewPage() {
   const [name, setName] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [saving, setSaving] = useState(false)
+  const savingRef = useRef(false)
 
   useEffect(() => {
     new LogRepo()
@@ -25,25 +28,25 @@ export default function TemplateNewPage() {
       .finally(() => setLoading(false))
   }, [date, meal])
 
-  const templatable = entries.filter((e) => e.foodId)
-  const skipped = entries.length - templatable.length
-
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (savingRef.current) return
     setError(null)
     if (!name.trim()) return setError('Please name this template.')
-    if (templatable.length === 0)
-      return setError('No foods in this meal can be saved as a template.')
+    if (entries.length === 0)
+      return setError('Add something to this meal before saving a template.')
 
-    await new MealTemplateRepo().add({
-      name: name.trim(),
-      entries: templatable.map((entry) => ({
-        foodId: entry.foodId!,
-        qty: entry.qty,
-        unit: entry.unit,
-      })),
-    })
-    navigate('/templates')
+    savingRef.current = true
+    setSaving(true)
+    try {
+      await new MealTemplateRepo().add({ name: name.trim(), entries: buildTemplateEntries(entries) })
+      navigate('/templates')
+    } catch {
+      setError('Could not save this template. Please try again.')
+    } finally {
+      savingRef.current = false
+      setSaving(false)
+    }
   }
 
   if (loading) {
@@ -56,14 +59,13 @@ export default function TemplateNewPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <PageHeader title="Save as template" backTo="/" />
+      <PageHeader title="Save as template" backTo={`/log?date=${date}`} />
       <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
-        Saving {templatable.length} food{templatable.length === 1 ? '' : 's'} from this meal.
-        {skipped > 0 && ` (${skipped} custom/recipe entr${skipped === 1 ? 'y' : 'ies'} skipped.)`}
+        Save all {entries.length} item{entries.length === 1 ? '' : 's'} with their current portions and nutrition, ready to log again.
       </p>
 
       <ul className="mb-4 divide-y divide-slate-100 dark:divide-slate-700 rounded-lg bg-white dark:bg-surface-dark-card shadow-sm">
-        {templatable.map((entry) => (
+        {entries.map((entry) => (
           <li key={entry.id} className="px-3 py-2 text-sm">
             {entry.name} · {entry.portionSummary}
           </li>
@@ -90,9 +92,10 @@ export default function TemplateNewPage() {
 
         <button
           type="submit"
+          disabled={saving || entries.length === 0}
           className="min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
         >
-          Save template
+          {saving ? 'Saving…' : 'Save template'}
         </button>
       </form>
     </div>

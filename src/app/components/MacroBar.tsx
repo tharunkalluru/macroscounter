@@ -33,7 +33,7 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
       <div className="flex justify-between text-caption text-slate-500 dark:text-slate-400">
         <span>{label}</span>
         <span className="tabular-nums" data-testid={`${testId}-value`}>
-          {Math.round(consumed)} / {Math.round(target)} g
+          {Math.round(consumed)}{target > 0 ? ` / ${Math.round(target)}` : ''} g
           {isOver && (
             <span className="text-over-700 dark:text-over-400"> · +{overAmount}</span>
           )}
@@ -69,7 +69,7 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
       onClick={onTap}
       data-testid={testId}
       className="min-h-touch w-full rounded-lg text-left"
-      aria-label={`${label}: ${Math.round(consumed)} of ${Math.round(target)} grams - view breakdown`}
+      aria-label={`${label}: ${Math.round(consumed)}${target > 0 ? ` of ${Math.round(target)}` : ''} grams - view breakdown`}
     >
       {content}
     </button>

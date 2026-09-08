@@ -1,4 +1,4 @@
-import { addDaysISO, isFutureDate, todayISO } from '../../lib/date'
+import { addDaysISO, isFutureDate, isValidISODate, todayISO } from '../../lib/date'
 import { ChevronLeftIcon, ChevronRightIcon } from '../shell/icons'
 
 interface Props {
@@ -34,12 +34,24 @@ export default function DateNav({ date, onChange }: Props) {
       >
         <ChevronLeftIcon />
       </button>
-      <span
-        className="min-w-[9rem] text-center text-body font-medium text-slate-900 dark:text-slate-100"
+      <label
+        className="relative flex min-h-touch min-w-[10rem] cursor-pointer items-center justify-center rounded-lg px-2 text-center text-body font-medium text-slate-900 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800"
         data-testid="date-nav-label"
       >
         {formatLabel(date)}
-      </span>
+        <input
+          type="date"
+          aria-label="Choose diary date"
+          value={date}
+          max={todayISO()}
+          onChange={(event) => {
+            const value = event.target.value
+            if (isValidISODate(value) && !isFutureDate(value)) onChange(value)
+          }}
+          className="absolute inset-0 h-full w-full cursor-pointer opacity-0"
+          onClick={(event) => event.currentTarget.showPicker?.()}
+        />
+      </label>
       <button
         type="button"
         aria-label="Next day"

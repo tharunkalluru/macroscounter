@@ -1,6 +1,7 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
-import { and, eq, gte, isNull } from 'drizzle-orm'
+import { and, desc, eq, gte, isNull } from 'drizzle-orm'
+import { allowAiRequest } from '../_aiBudget.js'
 import { getUserId } from '../_auth.js'
 import { getDb, schema } from '../_db.js'
 import { computeAdaptiveAdjustment } from '../../src/domain/adaptive/adaptiveTargets.js'
@@ -76,6 +77,7 @@ async function buildUserContext(userId: string): Promise<string | null> {
       .select()
       .from(schema.profiles)
       .where(and(eq(schema.profiles.userId, userId), isNull(schema.profiles.deletedAt)))
+      .orderBy(desc(schema.profiles.updatedAt), desc(schema.profiles.id))
       .limit(1),
     db
       .select()
@@ -106,7 +108,7 @@ async function buildUserContext(userId: string): Promise<string | null> {
   const profile = profileRows[0]
   if (!profile) return null
 
-  const targets = targetRows.sort((a, b) => a.effectiveDate.localeCompare(b.effectiveDate))
+  const targets = targetRows.sort((a, b) => a.effectiveDate.localeCompare(b.effectiveDate) || a.updatedAt.getTime() - b.updatedAt.getTime() || a.id.localeCompare(b.id))
   const latestTarget = targets[targets.length - 1]
   const program = targets.length > 0 ? deriveCurrentProgram(targets as unknown as Targets[], today) : null
 
@@ -212,6 +214,7 @@ export async function chat(
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader?.('Cache-Control', 'no-store')
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' })
     return
@@ -242,7 +245,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return
     }
 
-    const client = new Anthropic({ apiKey })
+    if (!(await allowAiRequest(userId, res))) return
+    const client = new Anthropic({ apiKey, timeout: 45000, maxRetries: 1 })
     const reply = await chat(client, buildSystemPrompt(userContext), validated.value)
     if (!reply) {
       res.status(502).json({ error: "Couldn't get a response - try again.", code: 'upstream_error' })
@@ -261,7 +265,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // Anything else (a DB connection issue, a bug in buildUserContext, etc.)
     // -- logged so a real cause shows up in Vercel's runtime logs instead of
     // only ever surfacing as this same generic message.
-    console.error('coach-chat: unexpected error', err)
+    console.error('coach-chat: unexpected error', { name: err instanceof Error ? err.name : 'UnknownError' })
     res.status(500).json({ error: "Couldn't get a response - try again.", code: 'upstream_error' })
   }
 }

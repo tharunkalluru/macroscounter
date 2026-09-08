@@ -5,7 +5,7 @@ import type { FoodItemResult } from '../../api/ai/analyze'
 import { signIn, useSession } from '../lib/auth/authClient'
 import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { compressImageFile } from '../lib/ai/imageCompress'
-import { isFutureDate, todayISO } from '../lib/date'
+import { diaryDate, diaryPath, todayISO } from '../lib/date'
 import PageHeader from './components/PageHeader'
 import { CameraIcon, MicIcon, SparkleIcon } from './shell/icons'
 
@@ -35,7 +35,7 @@ export default function AiLogPage() {
   // Carried through so a meal you forgot to log yesterday can still be
   // described today and land on the right day.
   const requestedDate = searchParams.get('date')
-  const entryDate = requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
+  const entryDate = diaryDate(requestedDate)
   const isToday = entryDate === todayISO()
   const dateSuffix = isToday ? '' : `&date=${entryDate}`
   const [description, setDescription] = useState('')
@@ -83,7 +83,7 @@ export default function AiLogPage() {
   if (!session) {
     return (
       <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-6">
-        <PageHeader title="Describe or snap" backTo={isToday ? '/' : `/history/${entryDate}`} />
+        <PageHeader title="Describe or snap" backTo={diaryPath(entryDate)} />
         <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
           <SparkleIcon className="h-8 w-8 text-brand-600 dark:text-brand-400" />
           <p className="text-lg font-semibold text-slate-900 dark:text-slate-100">Sign in to use AI logging</p>
@@ -143,7 +143,7 @@ export default function AiLogPage() {
 
   return (
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-6">
-      <PageHeader title="Describe or snap" backTo={isToday ? '/' : `/history/${entryDate}`} />
+      <PageHeader title="Describe or snap" backTo={diaryPath(entryDate)} />
 
       <div className="flex flex-col gap-1.5">
         <div className="relative">

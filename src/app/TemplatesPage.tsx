@@ -1,12 +1,12 @@
 import { useEffect, useRef, useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal, MealTemplate } from '../data/models'
 import { FoodRepo } from '../data/repos/FoodRepo'
 import { LogRepo } from '../data/repos/LogRepo'
 import { MealTemplateRepo } from '../data/repos/MealTemplateRepo'
 import { applyTemplate } from '../domain/templates/applyTemplate'
 import { vibrateTiny } from '../lib/haptics'
-import { todayISO } from '../lib/date'
+import { diaryDate, diaryPath } from '../lib/date'
 import PageHeader from './components/PageHeader'
 import SegmentedControl from './components/SegmentedControl'
 import Snackbar from './components/Snackbar'
@@ -21,10 +21,14 @@ const UNDO_MS = 5000
 
 export default function TemplatesPage() {
   const navigate = useNavigate()
+  const [searchParams] = useSearchParams()
+  const date = diaryDate(searchParams.get('date'))
   const [templates, setTemplates] = useState<MealTemplate[]>([])
   const [mealByTemplate, setMealByTemplate] = useState<Record<number, Meal>>({})
   const [loading, setLoading] = useState(true)
   const [logging, setLogging] = useState<number | null>(null)
+  const loggingRef = useRef(false)
+  const [error, setError] = useState<string | null>(null)
   const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
@@ -45,7 +49,7 @@ export default function TemplatesPage() {
   }
 
   async function handleDelete(template: MealTemplate) {
-    if (template.id === undefined) return
+    if (template.id === undefined || loggingRef.current) return
     const { id: _id, ...snapshot } = template
     const repo = new MealTemplateRepo()
     await repo.delete(template.id)
@@ -58,22 +62,24 @@ export default function TemplatesPage() {
   }
 
   async function handleLogNow(template: MealTemplate) {
-    if (template.id === undefined) return
+    if (template.id === undefined || loggingRef.current) return
+    loggingRef.current = true
     setLogging(template.id)
+    setError(null)
     try {
       const meal = mealByTemplate[template.id] ?? 'breakfast'
       const foodRepo = new FoodRepo()
-      const foods = await foodRepo.getByIds(template.entries.map((e) => e.foodId))
+      const foods = await foodRepo.getByIds(template.entries.flatMap((e) => !e.snapshot && e.foodId ? [e.foodId] : []))
       const foodsById = new Map(foods.map((f) => [f.id, f]))
       const resolved = applyTemplate(template.entries, foodsById)
 
       const logRepo = new LogRepo()
-      const date = todayISO()
-      for (const entry of resolved) {
-        await logRepo.addEntry({ date, meal, ...entry })
-      }
-      navigate('/')
+      await logRepo.addEntries(resolved.map((entry) => ({ date, meal, ...entry })))
+      navigate(diaryPath(date))
+    } catch {
+      setError('Could not log this template. Please check your log before trying again.')
     } finally {
+      loggingRef.current = false
       setLogging(null)
     }
   }
@@ -89,6 +95,7 @@ export default function TemplatesPage() {
   return (
     <div className="mx-auto max-w-md px-6 py-8">
       <PageHeader title="Templates" backTo="/" />
+      {error && <p role="alert" className="mb-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
 
       <ul className="flex flex-col gap-4" data-testid="templates-list">
         {templates.map((template) => (
@@ -100,7 +107,7 @@ export default function TemplatesPage() {
               <div>
                 <p className="font-medium">{template.name}</p>
                 <p className="text-caption text-slate-500 dark:text-slate-400">
-                  {template.entries.length} items
+                  {template.entries.length} {template.entries.length === 1 ? 'item' : 'items'}
                 </p>
               </div>
               <button
@@ -126,7 +133,7 @@ export default function TemplatesPage() {
             </div>
             <button
               type="button"
-              disabled={logging === template.id}
+              disabled={logging !== null}
               onClick={() => handleLogNow(template)}
               className="mt-3 min-h-touch w-full rounded-card bg-brand-700 px-3 py-2 text-sm font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50"
             >

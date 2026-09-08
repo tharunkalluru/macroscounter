@@ -94,3 +94,34 @@ describe('LogRepo', () => {
     expect(recent).toEqual(['8901491101615', '8901063114074'])
   })
 })
+
+describe('LogRepo atomic saves', () => {
+  it('rolls back a partially written meal when a later row fails', async () => {
+    const { vi } = await import('vitest')
+    const original = db.logEntries.add.bind(db.logEntries)
+    let writes = 0
+    const add = vi.spyOn(db.logEntries, 'add').mockImplementation((...args) => {
+      writes++
+      if (writes === 2) throw new Error('Storage is full')
+      return original(...args)
+    })
+    try {
+      await expect(repo.addEntries([sampleEntry(), sampleEntry({ name: 'Sambar' })])).rejects.toThrow('Storage is full')
+      expect(await db.logEntries.count()).toBe(0)
+    } finally { add.mockRestore() }
+  })
+
+  it('rolls back both the visible edit and queue if tracking fails', async () => {
+    const { vi } = await import('vitest')
+    await db.syncMeta.add({ userId: 'user-a' } as never)
+    const id = await repo.addEntry(sampleEntry())
+    const before = await repo.getById(id)
+    const queueBefore = await db.syncOutbox.toArray()
+    const put = vi.spyOn(db.syncOutbox, 'put').mockImplementation(() => { throw new Error('Storage is full') })
+    try {
+      await expect(repo.updateEntry(id, { name: 'New name' })).rejects.toThrow('Storage is full')
+      expect(await repo.getById(id)).toEqual(before)
+      expect(await db.syncOutbox.toArray()).toEqual(queueBefore)
+    } finally { put.mockRestore() }
+  })
+})

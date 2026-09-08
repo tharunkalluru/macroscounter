@@ -14,14 +14,15 @@ interface Props {
  */
 export default function DateStrip({ selectedDate, onSelect, days = 7 }: Props) {
   const today = todayISO()
-  const dates = Array.from({ length: days }, (_, i) => addDaysISO(today, i - (days - 1)))
+  const end = selectedDate < addDaysISO(today, -(days - 1)) ? selectedDate : today
+  const dates = Array.from({ length: days }, (_, i) => addDaysISO(end, i - (days - 1)))
 
   return (
     <div className="flex gap-1.5 overflow-x-auto pb-1" role="tablist" aria-label="Select date">
       {dates.map((d) => {
         const selected = d === selectedDate
         const dt = new Date(d + 'T00:00:00')
-        const weekdayLetter = dt.toLocaleDateString('en-US', { weekday: 'short' })[0]
+        const weekdayLetter = dt.toLocaleDateString('en-US', { weekday: 'short' })
         const dayNum = dt.getDate()
         return (
           <button
@@ -29,12 +30,13 @@ export default function DateStrip({ selectedDate, onSelect, days = 7 }: Props) {
             type="button"
             role="tab"
             aria-selected={selected}
+            aria-label={dt.toLocaleDateString('en-US', { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' })}
             data-testid={`date-strip-${d}`}
             onClick={() => onSelect(d)}
             className={`flex min-h-touch min-w-touch flex-none flex-col items-center justify-center gap-0.5 rounded-lg px-2 py-1.5 transition-transform active:scale-95 ${
               selected
                 ? 'bg-brand-100 text-brand-700 dark:bg-slate-700 dark:text-brand-400'
-                : 'text-slate-500 dark:text-slate-400'
+                : 'text-slate-500 hover:bg-slate-100 dark:text-slate-400 dark:hover:bg-slate-800'
             }`}
           >
             <span className="text-[10px] font-mono uppercase tracking-wide">{weekdayLetter}</span>

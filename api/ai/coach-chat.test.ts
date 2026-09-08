@@ -14,6 +14,7 @@ function emptyChain() {
   const chain = {
     where: () => chain,
     limit: () => chain,
+    orderBy: () => chain,
     then: (resolve: (v: unknown[]) => void) => resolve([]),
   }
   return chain

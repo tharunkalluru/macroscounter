@@ -46,9 +46,11 @@ export default function SyncTriggers() {
       if (document.visibilityState === 'visible') runSync()
     }
     window.addEventListener('online', handleOnline)
+    window.addEventListener('offline', handleOnline)
     document.addEventListener('visibilitychange', handleVisibility)
     return () => {
       window.removeEventListener('online', handleOnline)
+      window.removeEventListener('offline', handleOnline)
       document.removeEventListener('visibilitychange', handleVisibility)
     }
   }, [])

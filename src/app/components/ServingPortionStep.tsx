@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import {
   computeMacrosForGrams,
   computeMacrosForServings,
@@ -45,11 +45,14 @@ export default function ServingPortionStep({
   onSwitchToGrams,
 }: Props) {
   const [servingsValue, setServingsValue] = useState(String(initialServings ?? 1))
+  const savingRef = useRef(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const servings = Number(servingsValue) || 0
   const grams = Math.round(servingSize * servings * 10) / 10
   const preview =
-    servings > 0
+    Number.isFinite(servings) && servings > 0 && Number.isFinite(grams) && grams > 0
       ? perServing
         ? {
             ...computeMacrosForServings(perServing, servings),
@@ -58,18 +61,25 @@ export default function ServingPortionStep({
             // only the primary four per serving) -- derive it from per100g
             // instead of silently dropping it when perServing.fiber is
             // absent, rather than only when perServing itself is unset.
-            fiber: perServing.fiber ?? computeMacrosForGrams(per100g, grams).fiber,
+            fiber: perServing.fiber !== undefined
+              ? computeMacrosForServings(perServing, servings).fiber
+              : computeMacrosForGrams(per100g, grams).fiber,
           }
         : computeMacrosForGrams(per100g, grams)
       : null
+  const valid = preview !== null && [preview.kcal, preview.p, preview.c, preview.f, preview.fiber ?? 0].every((n) => Number.isFinite(n) && n >= 0)
 
   async function handleSave() {
-    if (!preview || servings <= 0) return
-    await onSave({
+    if (!preview || !valid || savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
+    setError(null)
+    try {
+      await onSave({
       portionSummary: portionLabel
         ? formatPortion({ qty: servings, unit: 'portion', grams, portionLabel })
         : formatServings(servings),
-      qty: servings,
+      qty: portionLabel ? servings : grams,
       unit: portionLabel ? 'portion' : 'grams',
       portionLabel,
       grams,
@@ -78,7 +88,13 @@ export default function ServingPortionStep({
       c: preview.c,
       f: preview.f,
       fiber: preview.fiber,
-    })
+      })
+    } catch {
+      setError('Could not save this entry. Please try again.')
+    } finally {
+      savingRef.current = false
+      setSaving(false)
+    }
   }
 
   return (
@@ -127,14 +143,16 @@ export default function ServingPortionStep({
         </p>
       )}
 
+      {error && <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+
       <button
         type="button"
-        disabled={!preview || servings <= 0}
+        disabled={!valid || saving}
         onClick={handleSave}
         data-testid="log-entry-button"
         className="mt-4 min-h-touch w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
       >
-        {saveLabel ?? (preview ? `Add ${formatServings(servings)} · ${Math.round(preview.kcal)} kcal` : 'Add')}
+        {saving ? 'Saving…' : saveLabel ?? (valid && preview ? `Add ${formatServings(servings)} · ${Math.round(preview.kcal)} kcal` : 'Add')}
       </button>
 
       <button

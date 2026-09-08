@@ -6,43 +6,16 @@ async function onboard(page: Page) {
   await onboardHelper(page, { name: 'Drag Entry Persona' })
 }
 
-// dnd-kit's MouseSensor (used for non-touch input -- see LogPage.tsx's
-// separate Mouse/TouchSensor setup, split so touch gets a long-press
-// activation distinct from mouse's near-immediate one) listens for native
-// `mousedown`/`mousemove`/`mouseup`, not the HTML5 Drag and Drop API and not
-// Pointer Events either -- coordinate-based `dragTo()` proved unreliable in
-// this suite for the same reason framer-motion's own drag gesture needed
-// direct event dispatch (see swipeToDelete in logging.spec.ts). Mirrors that
-// same pattern with the event type MouseSensor actually listens for.
+// Use actual mouse movement so scrolling and hit testing match a person's drag.
 async function dragEntryToMeal(page: Page, handle: Locator, dropZone: Locator) {
-  const handleBox = await handle.boundingBox()
-  const dropBox = await dropZone.boundingBox()
-  if (!handleBox || !dropBox) throw new Error('drag handle or drop zone not found')
-
-  const startX = handleBox.x + handleBox.width / 2
-  const startY = handleBox.y + handleBox.height / 2
-  const endX = dropBox.x + dropBox.width / 2
-  const endY = dropBox.y + dropBox.height / 2
-
-  const mouseInit = (x: number, y: number) => ({
-    bubbles: true,
-    cancelable: true,
-    composed: true,
-    button: 0,
-    buttons: 1,
-    clientX: x,
-    clientY: y,
-  })
-
-  await handle.dispatchEvent('mousedown', mouseInit(startX, startY))
-  const steps = 10
-  for (let i = 1; i <= steps; i++) {
-    const x = startX + ((endX - startX) * i) / steps
-    const y = startY + ((endY - startY) * i) / steps
-    await handle.dispatchEvent('mousemove', mouseInit(x, y))
-    await page.waitForTimeout(16)
-  }
-  await handle.dispatchEvent('mouseup', { ...mouseInit(endX, endY), buttons: 0 })
+  await dropZone.scrollIntoViewIfNeeded()
+  const start = await handle.boundingBox()
+  const end = await dropZone.boundingBox()
+  if (!start || !end) throw new Error('Missing drag target')
+  await page.mouse.move(start.x + start.width / 2, start.y + start.height / 2)
+  await page.mouse.down()
+  await page.mouse.move(end.x + end.width / 2, end.y + end.height / 2, { steps: 20 })
+  await page.mouse.up()
 }
 
 test('dragging an entry by its handle moves it into the dropped-on meal section', async ({ page }) => {

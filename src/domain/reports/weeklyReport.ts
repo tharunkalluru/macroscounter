@@ -29,18 +29,21 @@ export function round2(n: number): number {
  */
 export function computeWeeklyReport(
   days: ReportDayTotal[],
-  target: { kcal: number; proteinG: number }
+  target: { kcal: number; proteinG: number },
+  targetForDate?: (date: string) => { kcal: number; proteinG: number } | undefined
 ): WeeklyReport {
   if (days.length === 0) {
     return { avgKcal: 0, proteinHitRate: 0, bestDay: null, worstDay: null, daysCounted: 0 }
   }
 
   const avgKcal = round1(days.reduce((sum, d) => sum + d.kcal, 0) / days.length)
-  const hitCount = days.filter((d) => d.p >= target.proteinG).length
-  const proteinHitRate = round2(hitCount / days.length)
+  const targetOf = (day: ReportDayTotal) => targetForDate ? targetForDate(day.date) : target
+  const comparableDays = days.filter((day) => targetOf(day) !== undefined)
+  const hitCount = comparableDays.filter((day) => day.p >= targetOf(day)!.proteinG).length
+  const proteinHitRate = comparableDays.length ? round2(hitCount / comparableDays.length) : 0
 
-  const byDeviation = [...days].sort(
-    (a, b) => Math.abs(a.kcal - target.kcal) - Math.abs(b.kcal - target.kcal)
+  const byDeviation = [...comparableDays].sort(
+    (a, b) => Math.abs(a.kcal - targetOf(a)!.kcal) - Math.abs(b.kcal - targetOf(b)!.kcal)
   )
   const best = byDeviation[0]
   const worst = byDeviation[byDeviation.length - 1]
@@ -48,8 +51,8 @@ export function computeWeeklyReport(
   return {
     avgKcal,
     proteinHitRate,
-    bestDay: { date: best.date, kcal: best.kcal },
-    worstDay: { date: worst.date, kcal: worst.kcal },
+    bestDay: best ? { date: best.date, kcal: best.kcal } : null,
+    worstDay: worst ? { date: worst.date, kcal: worst.kcal } : null,
     daysCounted: days.length,
   }
 }

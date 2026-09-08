@@ -25,7 +25,7 @@ test('guest mode is fully functional with the auth API entirely blocked', async 
 
   await page.getByTestId('avatar-link').click()
   await expect(page.getByTestId('account-sign-in-button')).toBeVisible()
-  await expect(page.getByTestId('sync-status')).toContainText('Not signed in')
+  await expect(page.getByTestId('sync-status')).toContainText('Saved on this device')
 })
 
 test('reload after skipping does not show the sign-in screen again', async ({ page }) => {

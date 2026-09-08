@@ -41,7 +41,7 @@ test('under target: the ring stays brand-colored and shows plain remaining kcal'
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-remaining')).toHaveText('1428') // 1628 - 200
-  await expect(page.getByTestId('calories-ring')).toHaveAccessibleName('200 of 1628 calories remaining')
+  await expect(page.getByTestId('calories-ring')).toHaveAccessibleName('200 calories eaten, 1428 remaining of 1628')
 
   const ringFillCircle = page.getByTestId('calories-ring').locator('circle').nth(1)
   await expect(ringFillCircle).toHaveAttribute('stroke', '#5340bf') // semantic.success[600]

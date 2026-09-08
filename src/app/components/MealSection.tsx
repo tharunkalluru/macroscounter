@@ -1,6 +1,6 @@
 import { useDroppable } from '@dnd-kit/core'
 import { AnimatePresence } from 'framer-motion'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LogEntry, Meal, MealTemplate } from '../../data/models'
 import { FoodRepo } from '../../data/repos/FoodRepo'
@@ -52,6 +52,9 @@ export default function MealSection({
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
   const { setNodeRef: setDropRef, isOver } = useDroppable({ id: meal })
 
+  const savingRef = useRef(false)
+  useEffect(() => () => { if (undoTimerRef.current) clearTimeout(undoTimerRef.current) }, [])
+
   const effectiveDate = date ?? todayISO()
   const subtotalKcal = useCountUp(Math.round(entries.reduce((sum, e) => sum + e.kcal, 0)), 300)
 
@@ -69,12 +72,13 @@ export default function MealSection({
   function handleSwipeDelete(entry: LogEntry) {
     if (entry.id === undefined) return
     const { id: _id, ...snapshot } = entry
-    onDelete(entry.id)
+    Promise.resolve(onDelete(entry.id)).then(() => {
     showSnackbar(`Deleted ${entry.name}`, () => {
       vibrateTiny()
       new LogRepo().addEntry(snapshot).then(() => notifyDataChanged())
       setSnackbar(null)
     })
+    }).catch(() => showSnackbar('Could not delete this entry. Try again.'))
   }
 
   function handleAdd() {
@@ -92,19 +96,28 @@ export default function MealSection({
   }
 
   async function handleLogTemplate(template: MealTemplate) {
+    if (savingRef.current) return
+    savingRef.current = true
+    try {
     setOverflowOpen(false)
-    const foods = await new FoodRepo().getByIds(template.entries.map((e) => e.foodId))
+    const foods = await new FoodRepo().getByIds(template.entries.flatMap((e) => !e.snapshot && e.foodId ? [e.foodId] : []))
     const foodsById = new Map(foods.map((f) => [f.id, f]))
     const resolved = applyTemplate(template.entries, foodsById)
     const logRepo = new LogRepo()
-    for (const entry of resolved) {
-      await logRepo.addEntry({ date: effectiveDate, meal, ...entry })
-    }
+    await logRepo.addEntries(resolved.map((entry) => ({ date: effectiveDate, meal, ...entry })))
     vibrateTiny()
     notifyDataChanged()
+    } catch {
+      showSnackbar('Could not save your meal. Please try again.')
+    } finally {
+      savingRef.current = false
+    }
   }
 
   async function handleCopyFromYesterday() {
+    if (savingRef.current) return
+    savingRef.current = true
+    try {
     setOverflowOpen(false)
     const sourceDate = addDaysISO(effectiveDate, -1)
     const sourceEntries = (await new LogRepo().getEntriesForDate(sourceDate)).filter(
@@ -116,18 +129,29 @@ export default function MealSection({
     }
     const copies = buildCopiedEntries(sourceEntries, effectiveDate)
     const logRepo = new LogRepo()
-    for (const copy of copies) {
-      await logRepo.addEntry(copy)
-    }
+    await logRepo.addEntries(copies)
     vibrateTiny()
     notifyDataChanged()
     showSnackbar(`Copied ${copies.length} item${copies.length === 1 ? '' : 's'} from yesterday.`)
+    } catch {
+      showSnackbar('Could not save your meal. Please try again.')
+    } finally {
+      savingRef.current = false
+    }
   }
 
   async function handleSuggestionTap(chip: SuggestionChip) {
+    if (savingRef.current) return
+    savingRef.current = true
+    try {
     await logSuggestionChip(chip, meal, effectiveDate)
     vibrateTiny()
     notifyDataChanged()
+    } catch {
+      showSnackbar('Could not save your meal. Please try again.')
+    } finally {
+      savingRef.current = false
+    }
   }
 
   return (

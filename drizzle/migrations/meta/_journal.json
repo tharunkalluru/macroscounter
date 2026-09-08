@@ -64,6 +64,20 @@
       "when": 1788370135943,
       "tag": "0008_dry_the_spike",
       "breakpoints": true
+    },
+    {
+      "idx": 9,
+      "version": "7",
+      "when": 1788884457560,
+      "tag": "0009_shiny_hannibal_king",
+      "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1788884923891,
+      "tag": "0010_parched_sabra",
+      "breakpoints": true
     }
   ]
 }

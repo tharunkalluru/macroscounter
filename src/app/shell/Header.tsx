@@ -13,6 +13,7 @@ import {
   markStreakMilestoneCelebrated,
 } from '../../lib/logging/streakMilestoneCelebration'
 import GoalCelebration from '../components/GoalCelebration'
+import SyncStatusDot from '../components/SyncStatusDot'
 import { FlameIcon } from './icons'
 import { useUIState } from './UIStateContext'
 
@@ -63,14 +64,16 @@ export default function Header() {
   const showAvatarImage = avatarUrl && !avatarFailed
 
   return (
-    <header className="mx-auto flex max-w-md items-center justify-between px-6 pb-2 pt-6">
+    <header className="mx-auto flex max-w-5xl items-center justify-between px-5 pb-4 pt-6 lg:px-8">
       <div>
-        <p className="text-title text-brand-700 dark:text-brand-400">Bitewise</p>
+        <p className="text-title text-brand-700 dark:text-brand-400 lg:hidden">Bitewise</p>
+        <p className="hidden text-sm font-medium text-slate-600 dark:text-slate-300 lg:block">{profile?.name ? `Hello, ${profile.name}` : 'Your daily nutrition'}</p>
+        <div className="mt-1"><SyncStatusDot testId="header-sync-status" /></div>
         {streak > 0 && (
           <Link
             to="/trends"
             data-testid="streak-chip"
-            className="mt-1 inline-flex min-h-touch items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-caption font-medium text-brand-700 dark:bg-slate-800 dark:text-brand-400"
+            className="mt-2 inline-flex min-h-touch items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-caption font-medium text-brand-700 dark:bg-slate-800 dark:text-brand-400"
           >
             <FlameIcon className="text-brand-700 dark:text-brand-400" />
             <span>

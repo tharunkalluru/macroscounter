@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react'
-import { Navigate, Route, Routes } from 'react-router-dom'
+import { Link, Navigate, Route, Routes } from 'react-router-dom'
 import AddFoodPage from './app/AddFoodPage'
 import AiLogPage from './app/AiLogPage'
 import AiLogResultPage from './app/AiLogResultPage'
@@ -118,6 +118,7 @@ function App() {
               <Route path="/scan/product/:barcode" element={<ScanProductPage />} />
               <Route path="/scan/not-found/:barcode" element={<ScanNotFoundPage />} />
               <Route path="/templates/new" element={<TemplateNewPage />} />
+              <Route path="*" element={<div className="mx-auto max-w-md px-6 py-20"><h1 className="text-title">This page is not here</h1><p className="mt-2 text-sm text-slate-500 dark:text-slate-400">Your diary is still available.</p><Link to="/" className="mt-5 inline-flex min-h-touch items-center rounded-lg bg-brand-700 px-4 text-white">Go to your diary</Link></div>} />
             </Routes>
           </Suspense>
         </UIStateProvider>

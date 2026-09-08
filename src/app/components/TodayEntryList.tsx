@@ -1,5 +1,5 @@
 import { AnimatePresence } from 'framer-motion'
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LogEntry, Meal } from '../../data/models'
 import { LogRepo } from '../../data/repos/LogRepo'
@@ -36,6 +36,8 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
   const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
   const undoTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
 
+  useEffect(() => () => { if (undoTimerRef.current) clearTimeout(undoTimerRef.current) }, [])
+
   const sorted = useMemo(() => {
     return [...entries].sort((a, b) => {
       const mealDiff = MEAL_ORDER.indexOf(a.meal) - MEAL_ORDER.indexOf(b.meal)
@@ -55,12 +57,13 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
   function handleSwipeDelete(entry: LogEntry) {
     if (entry.id === undefined) return
     const { id: _id, ...snapshot } = entry
-    onDelete(entry.id)
+    Promise.resolve(onDelete(entry.id)).then(() => {
     showSnackbar(`Deleted ${entry.name}`, () => {
       vibrateTiny()
       new LogRepo().addEntry(snapshot).then(() => notifyDataChanged())
       setSnackbar(null)
     })
+    }).catch(() => showSnackbar('Could not delete this entry. Try again.'))
   }
 
   function handleAdd() {
@@ -73,14 +76,15 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
   }
 
   return (
-    <div className="mt-6" data-testid="today-entry-list">
+    <section className="rounded-card bg-white p-5 shadow-card dark:bg-surface-dark-card" data-testid="today-entry-list">
+      <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">{isToday ? "Today’s food" : "Food diary"}</h2><span className="text-caption text-slate-500 dark:text-slate-400">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span></div>
       {showUsuals && activeMeal && (
         <YourUsualsRow meal={activeMeal} date={date} historyEntries={historyEntries} onLogged={onLogged} />
       )}
 
       <div className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-lg bg-white shadow-sm dark:divide-slate-700 dark:bg-surface-dark-card">
         {entries.length === 0 && (
-          <p className="px-3 py-3 text-caption text-slate-500 dark:text-slate-400">Nothing logged yet today.</p>
+          <div className="rounded-lg bg-slate-50 px-4 py-6 text-center dark:bg-slate-800"><p className="text-sm font-medium">{isToday ? "Your first meal starts here." : "Nothing logged for this day."}</p><p className="mt-2 text-caption text-slate-500 dark:text-slate-400">{isToday ? "Search a favorite, scan a label, or add a meal in your own words." : "Forgot to log? You can still add or edit your meals."}</p></div>
         )}
         <AnimatePresence initial={false}>
           {sorted.map((entry) => (
@@ -95,7 +99,7 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
         data-testid="today-add-entry"
         className="mt-2 min-h-touch rounded-lg px-2 text-caption font-medium text-brand-700 dark:text-brand-400"
       >
-        + Add
+        + Add food
       </button>
 
       <Snackbar
@@ -103,6 +107,6 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
         actionLabel={snackbar?.onUndo ? 'Undo' : undefined}
         onAction={snackbar?.onUndo}
       />
-    </div>
+    </section>
   )
 }

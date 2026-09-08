@@ -7,7 +7,7 @@ import { getServingOptions } from '../domain/barcode/servingOptions'
 import { lookupProduct } from '../domain/barcode/lookupProduct'
 import { parseServingSize } from '../domain/barcode/servingSizeParser'
 import { activeMealWindow } from '../domain/mealPrompt/activeMealWindow'
-import { todayISO } from '../lib/date'
+import { diaryDate, diaryPath } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
 import { getFoodSourcePreferences } from '../lib/settings/foodSourcePreferences'
 import PageHeader from './components/PageHeader'
@@ -43,6 +43,7 @@ export default function ScanProductPage() {
   const { barcode } = useParams<{ barcode: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const entryDate = diaryDate(searchParams.get('date'))
   const requestedMeal = searchParams.get('meal') as Meal | null
   const [meal, setMeal] = useState<Meal>(requestedMeal || activeMealWindow(new Date()) || 'breakfast')
 
@@ -73,7 +74,7 @@ export default function ScanProductPage() {
         const size = parseServingSize(result.product.servingSizeText) ?? result.product.servingSize
         setMode(size !== undefined ? 'servings' : 'grams')
       } else {
-        navigate(`/scan/not-found/${barcode}?meal=${meal}`, { replace: true })
+        navigate(`/scan/not-found/${barcode}?meal=${meal}&date=${entryDate}`, { replace: true })
       }
     })()
     return () => {
@@ -85,19 +86,19 @@ export default function ScanProductPage() {
   async function handleSave(data: PortionSaveData) {
     if (!product || !barcode) return
     await new LogRepo().addEntry({
-      date: todayISO(),
+      date: entryDate,
       meal,
       barcode: product.barcode,
       name: product.name,
       ...data,
     })
     vibrateTiny()
-    navigate('/')
+    navigate(diaryPath(entryDate))
   }
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <PageHeader title="Scan result" backTo="/scan" backLabel="Back to scan" />
+      <PageHeader title="Scan result" backTo={`/scan?meal=${meal}&date=${entryDate}`} backLabel="Back to scan" />
 
       {product === undefined && <ProductCardSkeleton />}
 

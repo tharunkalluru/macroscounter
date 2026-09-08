@@ -205,8 +205,8 @@ test('AI logging can add a meal you forgot to log on a previous day', async ({ p
   await page.getByTestId('ai-log-all-button').click()
 
   // Lands back on that day, with the entry on that day -- not today.
-  await expect(page).toHaveURL(`/history/${yesterday}`)
-  await expect(page.getByTestId('day-total-kcal')).toContainText('520')
+  await expect(page).toHaveURL(`/log?date=${yesterday}`)
+  await expect(page.getByTestId('diary-day-total')).toContainText('520')
 
   await page.goto('/')
   await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('0')

@@ -1,107 +1,110 @@
-# Setup — Cloud Sync, Sign-In & Deployment (Phase 10)
+# Bitewise setup and launch runbook
 
-MacroDesi is a local-first PWA: everything works offline with no account,
-today, with zero setup. This doc covers the pieces that need *you*
-specifically — provisioning real accounts/credentials and deploying — since
-none of that can be done by an agent.
+Updated September 8, 2026. This change set is local. No push, deployment or live
+migration has been performed. Local verification is not a production certification.
 
-Status: the sync engine, database schema, Google sign-in (via Better Auth),
-the grams-first logging flow, the seamless barcode flow, and the
-native-app-feel PWA polish are all built and gated (`lint`, `tsc`, unit
-tests, `test:e2e`, bundle budget, axe/touch-target audits) — all green
-against mocks/fixtures. What's *not* verified, because it needs your own
-accounts, is listed at the end of each section below. Follow steps 1-4 to
-make it real, then §5 to actually deploy.
+## Environments
 
-## 1. Database — Neon via Vercel Marketplace
+Run Node 22.12+. Use `npm ci`, `npm run build` and `npm run preview` to review the
+frontend. Guest data is stored in that browser's IndexedDB. API tests use isolated
+fixtures; no real credentials are required for the local quality checks.
 
-Vercel's own "Vercel Postgres" product was sunset; the free Postgres path
-today is Neon through the Vercel Marketplace.
+For the complete application, use a Vercel project with the included API functions
+and a separate Neon PostgreSQL database for each release environment. Keep preview
+data separate from production. Set the following in the server environment; local
+API execution needs `vercel dev` and credentials. Plain Vite cannot perform OAuth.
 
-1. Push this repo to a GitHub repo, then import it in the [Vercel
-   dashboard](https://vercel.com/new).
-2. In the new Vercel project: **Storage → Marketplace Database Providers →
-   Neon** → create on the free plan.
-3. Vercel automatically adds a `DATABASE_URL` environment variable to the
-   project (Production + Preview + Development) pointing at the new Neon
-   database. You don't need to copy anything by hand — `vercel env pull
-   .env.local` will fetch it into your local checkout if you want to run
-   migrations from your machine.
-4. Migrations run automatically as part of the Vercel build (see
-   `vercel.json`'s `buildCommand`, which runs `npm run db:migrate` before
-   `npm run build`). To run them by hand against a database you've
-   connected locally:
-
-   ```bash
-   npm run db:generate   # regenerate drizzle/migrations/*.sql after schema.ts changes
-   npm run db:migrate    # apply pending migrations to $DATABASE_URL
-   ```
-
-## 2. Google OAuth
-
-1. [Google Cloud Console](https://console.cloud.google.com/) → create a
-   project (or reuse one) → **APIs & Services → OAuth consent screen** →
-   configure as "External", add your own email as a test user while the
-   app is unverified.
-2. **APIs & Services → Credentials → Create Credentials → OAuth client ID**
-   → Application type "Web application".
-3. Authorized JavaScript origins: your Vercel production domain (e.g.
-   `https://macrodesi.vercel.app`) and any Vercel preview domains you use.
-4. Authorized redirect URIs: `<origin>/api/auth/callback/google` for each
-   origin above (Better Auth's callback path — see `api/auth/[...all].ts`).
-5. Copy the generated **Client ID** and **Client secret** into
-   `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`.
-
-**Local testing note:** `npm run dev` / `npm run preview` (plain Vite)
-cannot run `/api/*.ts` at all — there's nothing to redirect back to, so
-Google sign-in only works against a real Vercel deployment (or `vercel dev`
-with the env vars below pulled locally via `vercel env pull`). This is why
-`http://localhost:*` isn't listed as an authorized origin above. Guest mode
-needs none of this and works fully in plain local dev — the app detects the
-missing `/api` routes and fails the session check fast instead of hanging
-(see the `apiNotFoundInDev` Vite plugin in `vite.config.ts`).
-
-## 3. Environment variables
-
-Copy `.env.example` to `.env.local` for local dev, and set the same keys
-in the Vercel project's **Settings → Environment Variables** for
-Production/Preview:
-
-| Variable | Where it comes from |
+| Setting | Purpose |
 |---|---|
-| `DATABASE_URL` | Auto-added by the Neon Marketplace integration (step 1) |
-| `GOOGLE_CLIENT_ID` | Google Cloud Console OAuth client (step 2) |
-| `GOOGLE_CLIENT_SECRET` | Google Cloud Console OAuth client (step 2) |
-| `AUTH_SECRET` | Any long random string — used to sign session cookies. Generate with `openssl rand -base64 32` |
-| `VITE_APP_URL` | The canonical deployed URL, e.g. `https://macrodesi.vercel.app` — used for OAuth redirect construction |
+| DATABASE_URL | Database for this environment |
+| GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET | Google OAuth web client |
+| AUTH_SECRET | Strong random session secret, kept server-side |
+| VITE_APP_URL | Canonical application origin, public by design |
+| ANTHROPIC_API_KEY | Optional server-side AI provider credential |
+| AI_DAILY_REQUEST_LIMIT | Combined per-account daily AI calls, default 100 |
+| LABEL_READER_ENDPOINT / LABEL_READER_API_KEY | Optional HTTPS label-reader service and server secret |
+| VITE_LABEL_READER_ENABLED | Public feature flag, false until provider verified |
+| VITE_FDC_API_KEY | Optional browser-visible USDA fallback key; restrict its use and quota |
 
-## 4. Icons (already generated, regenerate only if you change the logo)
+Do not place private credentials in VITE-prefixed variables. The label-reader
+credential has moved to the server. Rotate any previously shipped browser secret.
+Register each environment's exact `<origin>/api/auth/callback/google` URI in the
+Google OAuth client. Validate consent-screen readiness for your intended users.
 
-`public/icons/*.png` (app icons, maskable icons, apple-touch-icon, and a
-representative set of iOS splash screens) are committed, generated from
-`public/icons/icon.svg` by `npm run icons:generate` (uses `sharp`). The iOS
-splash screens cover a handful of current device classes, not Apple's full
-historical size matrix — extend `scripts/generate-icons.ts`'s
-`SPLASH_SCREENS` list and the `<link rel="apple-touch-startup-image">` tags
-in `index.html` if you need more.
+## Database rollout
 
-## 5. Deploying
+1. Create an isolated staging database; confirm the destination without printing credentials.
+2. Apply all pending checked-in migrations using `npm run db:migrate` with that
+   environment's DATABASE_URL. Do not regenerate migrations during deployment.
+3. Test upgrading a copy of existing data as well as an empty database. Migration
+   0009 adds server change timestamps, tenant indexes, account-specific barcode
+   keys and durable deletion records. Migration 0010 adds shared AI usage counts.
+4. Verify old clients can reconnect and obtain a full incremental catch-up. Keep
+   deletion records until a documented device-expiry/reset protocol exists.
+5. Before production, take a recoverable backup and rehearse a restore. Schedule
+   migration 0009 with an appropriate lock/statement timeout and maintenance plan
+   for the scanned-products primary-key change. Review database size and lock impact.
+6. Deploy only after staging acceptance and explicit release authorization.
+   `vercel.json` builds only; preview builds cannot automatically migrate production.
 
-```bash
-npm i -g vercel   # if you don't have the CLI
-vercel link       # connect this checkout to the Vercel project
-vercel            # deploy a preview
-vercel --prod     # promote to production
-```
+Prefer additive forward fixes for rollback. Rolling back application code does not
+roll back database state. Preserve backups and avoid deleting tombstones during rollback.
 
-The build runs `npm run db:migrate && npm run build` — migrations apply
-automatically on every deploy, so `drizzle/migrations/*.sql` files must be
-committed (they are not gitignored).
+## Capacity and concurrency
 
-**Smoke test after deploying** (either preview or prod): open the URL,
-confirm the `/welcome` sign-in screen loads, "Skip for now" reaches
-onboarding and the dashboard, then try "Continue with Google" for the real
-OAuth round trip. Check the Settings page's sync-status dot goes from
-"Not signed in" to "Synced" after signing in. None of this can be verified
-until you've completed §1-3 and deployed — see `PROGRESS.md`'s Phase 10
-summary for exactly what's been tested short of that.
+The app keeps API handlers stateless and puts account isolation, conflict checks,
+per-account write locking and AI quota enforcement in PostgreSQL. This supports
+multiple function instances without relying on process memory for correctness.
+Vercel Functions scale automatically within platform and plan limits; bursts can
+still be throttled. [Vercel concurrency scaling](https://vercel.com/docs/functions/concurrency-scaling).
+
+Configure database compute minimum/maximum and spending alerts in the selected
+Neon plan, co-locate functions and database, and monitor cold starts and database
+saturation. Verify actual autoscaling in that environment; no capacity number is
+certified by local tests. The driver uses HTTP batched transactions.
+[Neon serverless driver](https://neon.com/docs/serverless/serverless-driver).
+
+Suggested staging acceptance workload (targets, not measured results): 100 distinct
+accounts, ramp from 10 to 100 concurrently active clients over five minutes, hold
+15 minutes, with 80% incremental reads and 20% ten-mutation writes; then repeat at
+1,000 active clients only after the first run and budget review. Aim for sync p95
+below two seconds, under 1% unexpected errors, zero cross-account exposure and
+zero acknowledged mutation loss. Separately stress two devices editing one account,
+same-barcode different accounts, 10,000-row initial sync, dropped responses, slow
+transactions, deletes before inserts and a device reconnecting after a week.
+
+The client uses an overlap window for incremental pulls. Long transactions beyond
+that window and real multi-instance ordering still require staging fault injection;
+PGlite is a single embedded database and does not establish multiworker guarantees.
+Set appropriate database transaction timeouts and verify catch-up under failures.
+
+## Required launch evidence
+
+- Real Google round-trip for two unrelated accounts; new account, returning
+  account, expired session, denied consent, sign-out and switch-account checks.
+- Two separate browser/device stores: offline logging, edit during an in-flight
+  push, reconnect, reload, delete/undo and restored-backup checks with real Neon.
+- Real AI provider/model availability, quota exhaustion and provider outage;
+  real label images only if enabled. Camera permission denial and scans on physical
+  iOS Safari and Android Chrome; test speech input and installed PWA upgrades.
+- Configure operational alerts for API failures, sync lag, rejected mutations,
+  database saturation and AI spend. Do not record food photos, OAuth cookies,
+  credentials or whole diary payloads in logs. Add request-level tracing before
+  broad release; current local logs are not an operational monitoring service.
+- Establish tested backup retention/restoration, support contact and incident owner.
+  Define full account export/deletion and retention behavior before public launch;
+  current CSV diary export is not a complete account data-management workflow.
+- Confirm guest data/storage eviction wording, per-account preferences/favorites,
+  duplicate first-device profile reconciliation, and real-device accessibility.
+- Add edge abuse limits for unauthenticated auth endpoints and overall API bursts;
+  the daily AI account quota is a cost control, not comprehensive abuse protection.
+- Define cleanup retention for api_usage. Keep sync tombstones until an explicit
+  reset strategy protects long-offline devices. Validate large-data query plans.
+
+## Release sequence
+
+After all above evidence is accepted: release to a small invited group, observe
+backup failures and week-one logging retention, then expand gradually. Keep a
+known-good deployment and restore procedure ready. Track time to first food,
+repeat-log time, failed saves, sync recovery, and seven-day return rate using
+privacy-conscious events. Do not treat days with entries as complete diet records.

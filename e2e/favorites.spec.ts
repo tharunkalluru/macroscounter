@@ -18,7 +18,7 @@ test('marking a search result as a favorite surfaces it in the Favorites chip ro
   await sambarRow.getByRole('button', { name: 'Add Sambar to favorites' }).click()
 
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('')
-  await expect(page.getByText('FAVORITES')).toBeVisible()
+  await expect(page.getByText('Favorites', { exact: true })).toBeVisible()
   const favoriteChip = page.getByTestId(/favorite-toggle-/).first()
   await expect(favoriteChip).toHaveAttribute('aria-label', /Remove Sambar/)
 })
@@ -35,5 +35,5 @@ test('unfavoriting removes it from the Favorites chip row', async ({ page }) => 
 
   await sambarRow.getByRole('button', { name: 'Remove Sambar from favorites' }).click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('')
-  await expect(page.getByText('FAVORITES')).not.toBeVisible()
+  await expect(page.getByText('Favorites', { exact: true })).not.toBeVisible()
 })

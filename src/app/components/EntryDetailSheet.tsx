@@ -31,6 +31,7 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
   const [food, setFood] = useState<FoodRecord | null>(null)
   const [mode, setMode] = useState<EditMode>('grams')
   const [portionIdx, setPortionIdx] = useState(0)
+  const [servingChoiceChanged, setServingChoiceChanged] = useState(false)
 
   // Recipes have no discrete portions today, so only a real food-database
   // entry (foodId set) can offer a servings toggle here -- if the entry was
@@ -38,6 +39,7 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
   // meal templates produce this today), reopen it in servings mode against
   // the matching portion instead of always defaulting to grams.
   useEffect(() => {
+    setServingChoiceChanged(false)
     if (!open || !entry?.foodId) {
       setFood(null)
       setMode('grams')
@@ -45,6 +47,7 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
       return
     }
     let cancelled = false
+    setFood(null)
     setMode('grams')
     setPortionIdx(0)
     new FoodRepo().getById(entry.foodId).then((f) => {
@@ -77,12 +80,18 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
           p: (entry.p / entry.grams) * 100,
           c: (entry.c / entry.grams) * 100,
           f: (entry.f / entry.grams) * 100,
+          fiber: entry.fiber !== undefined ? (entry.fiber / entry.grams) * 100 : undefined,
         }
       : null
 
   async function handleSavePortion(data: PortionSaveData) {
     if (!entry || entry.id === undefined) return
-    await new LogRepo().updateEntry(entry.id, data)
+    await new LogRepo().updateEntry(entry.id, {
+      ...data,
+      ...(entry.customSnapshot ? {
+        customSnapshot: { name: entry.name, kcal: data.kcal, p: data.p, c: data.c, f: data.f, fiber: data.fiber },
+      } : {}),
+    })
     vibrateTiny()
     notifyDataChanged()
     onClose()
@@ -141,7 +150,7 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
                       key={p.label}
                       type="button"
                       aria-pressed={i === portionIdx}
-                      onClick={() => setPortionIdx(i)}
+                      onClick={() => { setPortionIdx(i); setServingChoiceChanged(true) }}
                       data-testid={`entry-servings-portion-${i}`}
                       className={`min-h-touch rounded-full border px-3 py-1 text-caption ${
                         i === portionIdx
@@ -160,7 +169,7 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
                 servingSize={selectedPortion.grams}
                 servingSizeText={selectedPortion.label}
                 portionLabel={selectedPortion.label}
-                initialServings={entry.unit === 'portion' && entry.portionLabel === selectedPortion.label ? entry.qty : 1}
+                initialServings={servingChoiceChanged ? 1 : entry.unit === 'portion' && entry.portionLabel === selectedPortion.label ? entry.qty : entry.grams / selectedPortion.grams}
                 saveLabel="Save changes"
                 onSave={handleSavePortion}
                 onSwitchToGrams={() => setMode('grams')}

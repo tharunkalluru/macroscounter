@@ -4,8 +4,9 @@ import type { FoodRecord, Meal, Recipe } from '../data/models'
 import { FoodRepo } from '../data/repos/FoodRepo'
 import { LogRepo } from '../data/repos/LogRepo'
 import { RecipeRepo } from '../data/repos/RecipeRepo'
-import { isFutureDate, todayISO } from '../lib/date'
+import { diaryDate, diaryPath } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
+import { useUIState } from './shell/UIStateContext'
 import { nameOf, per100gOf, portionsOf, type Selected } from './foodSelection'
 import { useFoodIndex } from './hooks/useFoodIndex'
 import FoodChipList from './components/FoodChipList'
@@ -26,12 +27,13 @@ export default function AddFoodPage() {
   const [searchParams] = useSearchParams()
   const { entryId } = useParams()
   const navigate = useNavigate()
+  const { notifyDataChanged } = useUIState()
   const { foods, service, loading } = useFoodIndex()
 
   const [meal, setMeal] = useState<Meal>((searchParams.get('meal') as Meal) || 'breakfast')
   const requestedDate = searchParams.get('date')
   const [entryDate, setEntryDate] = useState(
-    requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
+    diaryDate(requestedDate)
   )
   const [query, setQuery] = useState('')
   const [recents, setRecents] = useState<FoodRecord[]>([])
@@ -109,6 +111,7 @@ export default function AddFoodPage() {
       await logRepo.addEntry(entryData)
     }
     vibrateTiny()
+    notifyDataChanged()
     navigate(backTo)
   }
 
@@ -120,7 +123,7 @@ export default function AddFoodPage() {
     )
   }
 
-  const backTo = entryDate === todayISO() ? '/' : `/history/${entryDate}`
+  const backTo = diaryPath(entryDate)
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">

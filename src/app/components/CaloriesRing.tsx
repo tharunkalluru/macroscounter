@@ -40,9 +40,9 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
   const ringColor = finalState.band === 'over' ? semantic.over[600] : semantic.success[600]
 
   const ariaLabel =
-    finalState.band === 'over'
+    targetKcal <= 0 ? `${Math.round(consumedKcal)} calories logged; no target for this day` : finalState.band === 'over'
       ? `${Math.round(consumedKcal)} of ${targetKcal} calories, ${finalState.centerText} over`
-      : `${Math.round(consumedKcal)} of ${targetKcal} calories remaining`
+      : `${Math.round(consumedKcal)} calories eaten, ${Math.max(0, Math.round(targetKcal - consumedKcal))} remaining of ${targetKcal}`
 
   return (
     <div className="flex flex-col items-center">

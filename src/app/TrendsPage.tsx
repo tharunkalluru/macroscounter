@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useUIState } from './shell/UIStateContext'
+import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { LogRepo } from '../data/repos/LogRepo'
 import { WeighInRepo } from '../data/repos/WeighInRepo'
 import { groupEntriesByDate } from '../domain/history/averages'
@@ -28,7 +30,7 @@ const CARDS: HubCard[] = [
   {
     to: '/trends/expenditure',
     label: 'Expenditure',
-    description: 'Your measured TDEE, not a formula',
+    description: 'Your estimated energy needs over time',
     Icon: TargetIcon,
     testId: 'trends-card-expenditure',
   },
@@ -49,6 +51,7 @@ const CARDS: HubCard[] = [
 ]
 
 interface LivePreview {
+  weightUnit: string
   weightTrendLb: number | null
   weightDeltaLb: number | null
   streak: number
@@ -56,24 +59,28 @@ interface LivePreview {
 }
 
 export default function TrendsPage() {
+  const { dataVersion } = useUIState()
   const [preview, setPreview] = useState<LivePreview | null>(null)
 
   useEffect(() => {
     ;(async () => {
       const today = todayISO()
       const weekAgo = addDaysISO(today, -6)
-      const [weighIns, entries, streakEntries] = await Promise.all([
+      const [weighIns, entries, streakEntries, profile] = await Promise.all([
         new WeighInRepo().getInRange(addDaysISO(today, -29), today),
         new LogRepo().getEntriesForDateRange(weekAgo, today),
         new LogRepo().getEntriesForDateRange(addDaysISO(today, -179), today),
+        new ProfileRepo().get(),
       ])
 
       const ema = computeEMA(
         weighIns.map((w) => ({ date: w.date, weightKg: w.weightKg })),
         7
       )
-      const weightTrendLb = ema.length > 0 ? kgToLb(ema[ema.length - 1].ema) : null
-      const weightDeltaLb = ema.length >= 2 ? kgToLb(ema[ema.length - 1].ema) - kgToLb(ema[0].ema) : null
+      const weightUnit = profile?.weightUnit ?? 'kg'
+      const convert = (kg: number) => weightUnit === 'lb' ? kgToLb(kg) : kg
+      const weightTrendLb = ema.length > 0 ? convert(ema[ema.length - 1].ema) : null
+      const weightDeltaLb = ema.length >= 2 ? convert(ema[ema.length - 1].ema) - convert(ema[0].ema) : null
 
       const dayTotals = groupEntriesByDate(entries)
       const avgKcal = dayTotals.length > 0 ? Math.round(dayTotals.reduce((s, d) => s + d.kcal, 0) / dayTotals.length) : null
@@ -81,15 +88,15 @@ export default function TrendsPage() {
       const loggedDates = groupEntriesByDate(streakEntries).map((d) => d.date)
       const streak = computeStreak(loggedDates, today)
 
-      setPreview({ weightTrendLb, weightDeltaLb, streak, avgKcal })
+      setPreview({ weightUnit, weightTrendLb, weightDeltaLb, streak, avgKcal })
     })()
-  }, [])
+  }, [dataVersion])
 
   function subtitleFor(card: HubCard): string | null {
     if (!preview) return null
     if (card.testId === 'trends-card-weight' && preview.weightTrendLb !== null) {
       const delta = preview.weightDeltaLb
-      return delta !== null ? `${preview.weightTrendLb} lb · ${delta <= 0 ? '' : '+'}${delta.toFixed(1)} lb` : `${preview.weightTrendLb} lb`
+      return delta !== null ? `${preview.weightTrendLb.toFixed(1)} ${preview.weightUnit} · ${delta <= 0 ? '' : '+'}${delta.toFixed(1)} ${preview.weightUnit}` : `${preview.weightTrendLb.toFixed(1)} ${preview.weightUnit}`
     }
     if (card.testId === 'trends-card-expenditure' && preview.avgKcal !== null) {
       return `~${preview.avgKcal} kcal/day logged`
@@ -102,7 +109,8 @@ export default function TrendsPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 pb-24 pt-2">
-      <h1 className="sr-only">Trends</h1>
+      <h1 className="mb-2 text-display">Your progress</h1>
+      <p className="mb-5 text-sm text-slate-500 dark:text-slate-400">Look for patterns, one week at a time.</p>
 
       <div className="flex flex-col gap-3">
         {CARDS.map((card) => {
@@ -118,7 +126,7 @@ export default function TrendsPage() {
                 <card.Icon className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="flex items-baseline justify-between gap-2">
+                <span className="flex flex-wrap items-baseline justify-between gap-2">
                   <span className="block font-semibold text-slate-900 dark:text-slate-100">{card.label}</span>
                   {live && (
                     <span

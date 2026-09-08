@@ -1,6 +1,9 @@
 import { AnimatePresence } from 'framer-motion'
-import { useMemo } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { LogEntry, Meal } from '../../data/models'
+import { LogRepo } from '../../data/repos/LogRepo'
+import { useUIState } from '../shell/UIStateContext'
+import Snackbar from './Snackbar'
 import EntryRow from './EntryRow'
 
 interface Props {
@@ -27,6 +30,25 @@ function formatHour(hour: number): string {
 
 /** Hour-by-hour grouping of a day's entries (the design's Log-tab Timeline view, frame 12). */
 export default function TimelineView({ entries, onDelete }: Props) {
+  const { notifyDataChanged } = useUIState()
+  const [deleted, setDeleted] = useState<LogEntry | null>(null)
+  const timer = useRef<ReturnType<typeof setTimeout>>()
+  useEffect(() => () => { if (timer.current) clearTimeout(timer.current) }, [])
+  async function remove(entry: LogEntry) {
+    if (entry.id === undefined) return
+    await onDelete(entry.id)
+    setDeleted(entry)
+    if (timer.current) clearTimeout(timer.current)
+    timer.current = setTimeout(() => setDeleted(null), 5000)
+  }
+  async function undo() {
+    if (!deleted) return
+    const { id: _id, ...snapshot } = deleted
+    setDeleted(null)
+    await new LogRepo().addEntry(snapshot)
+    notifyDataChanged()
+  }
+  const notice = <Snackbar message={deleted ? `Deleted ${deleted.name}` : null} actionLabel="Undo" onAction={undo} />
   const byHour = useMemo(() => {
     const grouped = new Map<number, LogEntry[]>()
     for (const entry of entries) {
@@ -39,14 +61,15 @@ export default function TimelineView({ entries, onDelete }: Props) {
 
   if (byHour.length === 0) {
     return (
-      <p className="py-6 text-center text-caption text-slate-500 dark:text-slate-400" data-testid="timeline-view">
-        Nothing logged yet today.
-      </p>
+      <div><p className="py-6 text-center text-caption text-slate-500 dark:text-slate-400" data-testid="timeline-view">
+        Nothing logged for this day.
+      </p>{notice}</div>
     )
   }
 
   return (
     <div className="flex flex-col" data-testid="timeline-view">
+      {notice}
       {byHour.map(([hour, items]) => {
         const subtotal = Math.round(items.reduce((sum, e) => sum + e.kcal, 0))
         return (
@@ -60,7 +83,7 @@ export default function TimelineView({ entries, onDelete }: Props) {
                   <EntryRow
                     key={entry.id}
                     entry={entry}
-                    onSwipeDelete={(e) => e.id !== undefined && onDelete(e.id)}
+                    onSwipeDelete={remove}
                   />
                 ))}
               </AnimatePresence>

@@ -147,7 +147,7 @@ test('log offline, go online, entries appear from a fresh (cleared-IndexedDB) se
   // emulation lifts, but dispatch it explicitly too so the assertion below
   // isn't racing an event the browser may coalesce or delay.
   await page.evaluate(() => window.dispatchEvent(new Event('online')))
-  await expect(page.getByTestId('sync-status')).toContainText('Synced', { timeout: 10_000 })
+  await expect(page.getByTestId('sync-status')).toContainText('Backed up', { timeout: 10_000 })
   expect(server.rowCount('logEntries')).toBe(1)
 
   await page.evaluate(() => indexedDB.deleteDatabase('macrodesi'))

@@ -1,73 +1,51 @@
 import type { BitewiseDB } from '../../data/db'
-import { enqueueMutation } from '../../domain/sync/outbox'
 import type { OutboxEntry, SyncedTableName } from '../../domain/sync/types'
 
 export function newClientId(): string {
   return crypto.randomUUID()
 }
 
-/**
- * Call this right after a syncable row is written locally (add or update).
- * Stamps `clientId` (generating one on first write) and `updatedAt`, persists
- * those stamps back onto the row, and queues the mutation in the outbox for
- * the next push. A no-op for guest (signed-out) users — there's nothing to
- * sync until they sign in, and the outbox would just grow unbounded.
- *
- * Takes the same `BitewiseDB` instance the calling repo was constructed
- * with (not a module-level singleton), so repos stay testable against an
- * isolated, per-test database exactly as before.
- */
+/** Stamp and coalesce inside one transaction so concurrent tabs cannot lose edits. */
 export async function trackUpsert<T extends object>(
   db: BitewiseDB,
   table: SyncedTableName,
   localId: number | string,
-  row: T
+  _row: T
 ): Promise<void> {
-  if (!(await isSignedIn(db))) return
-
-  const record = row as Record<string, unknown>
-  const now = Date.now()
-  const clientId = (record.clientId as string | undefined) ?? newClientId()
-  const stamped = { ...record, clientId, updatedAt: now, deletedAt: null }
-
-  await (db.table(table) as unknown as { update: (id: unknown, changes: unknown) => Promise<number> }).update(
-    localId,
-    { clientId, updatedAt: now }
-  )
-
-  const outbox = await db.syncOutbox.toArray()
-  const next = enqueueMutation(outbox, { table, clientId, operation: 'upsert', payload: stamped, updatedAt: now })
-  await writeOutbox(db, outbox, next)
+  await db.transaction('rw', [db.table(table), db.syncMeta, db.syncOutbox], async () => {
+    const meta = await db.syncMeta.toCollection().first()
+    if (!meta?.userId) return
+    // Re-read: a later edit (or deletion) may have happened before tracking started.
+    const current = await db.table(table).get(localId) as Record<string, unknown> | undefined
+    if (!current) return
+    const clientId = table === 'scannedProducts' ? String(current.barcode) : (current.clientId as string | undefined) ?? newClientId()
+    const queued = await db.syncOutbox.where('[table+clientId]').equals([table, clientId]).toArray()
+    const updatedAt = Math.max(Date.now(), Number(current.updatedAt ?? 0) + 1, ...queued.map((row) => row.updatedAt + 1))
+    const stamped = { ...current, clientId, updatedAt, deletedAt: null }
+    await db.table(table).update(localId, { clientId, updatedAt, deletedAt: null })
+    await replaceQueued(db, queued, { table, clientId, operation: 'upsert', payload: stamped, updatedAt })
+  })
 }
 
-/** Call right after a syncable row is deleted locally. Queues a tombstone for the next push. */
+/** A deletion remains pending until this exact tombstone has been acknowledged. */
 export async function trackDelete(
   db: BitewiseDB,
   table: SyncedTableName,
-  clientId: string | undefined
+  clientId: string | undefined,
+  previousUpdatedAt = 0
 ): Promise<void> {
-  if (!clientId) return // never synced (e.g. created while signed out) — nothing to tell the server
-  if (!(await isSignedIn(db))) return
-
-  const now = Date.now()
-  const outbox = await db.syncOutbox.toArray()
-  const next = enqueueMutation(outbox, { table, clientId, operation: 'delete', payload: null, updatedAt: now })
-  await writeOutbox(db, outbox, next)
+  if (!clientId) return
+  await db.transaction('rw', [db.syncMeta, db.syncOutbox], async () => {
+    const meta = await db.syncMeta.toCollection().first()
+    if (!meta?.userId) return
+    const queued = await db.syncOutbox.where('[table+clientId]').equals([table, clientId]).toArray()
+    const updatedAt = Math.max(Date.now(), previousUpdatedAt + 1, ...queued.map((row) => row.updatedAt + 1))
+    await replaceQueued(db, queued, { table, clientId, operation: 'delete', payload: null, updatedAt })
+  })
 }
 
-async function isSignedIn(db: BitewiseDB): Promise<boolean> {
-  const meta = await db.syncMeta.toCollection().first()
-  return !!meta?.userId
-}
-
-async function writeOutbox(db: BitewiseDB, previous: OutboxEntry[], next: OutboxEntry[]): Promise<void> {
-  const previousIds = new Set(previous.map((e) => e.id))
-  for (const entry of next) {
-    if (entry.id !== undefined && previousIds.has(entry.id)) {
-      await db.syncOutbox.update(entry.id, entry)
-    } else {
-      const id = await db.syncOutbox.add(entry)
-      entry.id = id
-    }
-  }
+async function replaceQueued(db: BitewiseDB, queued: OutboxEntry[], entry: OutboxEntry): Promise<void> {
+  // Also repairs duplicate pending rows left by older clients' non-atomic writes.
+  if (queued.length > 0) await db.syncOutbox.bulkDelete(queued.map((row) => row.id!))
+  await db.syncOutbox.put({ ...entry, ...(queued[0]?.id !== undefined ? { id: queued[0].id } : {}) })
 }

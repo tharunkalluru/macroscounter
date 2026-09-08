@@ -2,6 +2,7 @@ import type { VercelRequest, VercelResponse } from '@vercel/node'
 import Anthropic from '@anthropic-ai/sdk'
 import { zodOutputFormat } from '@anthropic-ai/sdk/helpers/zod'
 import { z } from 'zod'
+import { allowAiRequest } from '../_aiBudget.js'
 import { getUserId } from '../_auth.js'
 
 const MAX_DESCRIPTION_CHARS = 1000
@@ -9,13 +10,13 @@ const MAX_DESCRIPTION_CHARS = 1000
 const MAX_IMAGE_BYTES = 4 * 1024 * 1024
 
 const FoodItemSchema = z.object({
-  name: z.string(),
-  gramsEstimate: z.number().nullable(),
-  kcal: z.number(),
-  proteinG: z.number(),
-  carbsG: z.number(),
-  fatG: z.number(),
-  fiberG: z.number(),
+  name: z.string().min(1).max(500),
+  gramsEstimate: z.number().finite().positive().max(100000).nullable(),
+  kcal: z.number().finite().min(0).max(100000),
+  proteinG: z.number().finite().min(0).max(100000),
+  carbsG: z.number().finite().min(0).max(100000),
+  fatG: z.number().finite().min(0).max(100000),
+  fiberG: z.number().finite().min(0).max(100000),
   confidence: z.enum(['high', 'low']),
 })
 
@@ -72,7 +73,7 @@ export function validateRequestBody(
     return { ok: false, error: 'Description is too long.' }
   }
   if (image) {
-    if (typeof image.data !== 'string' || typeof image.mediaType !== 'string') {
+    if (typeof image.data !== 'string' || typeof image.mediaType !== 'string' || !['image/jpeg', 'image/png', 'image/webp', 'image/gif'].includes(image.mediaType)) {
       return { ok: false, error: 'Invalid photo payload.' }
     }
     // base64 length -> decoded byte estimate (4 chars ~= 3 bytes).
@@ -96,6 +97,7 @@ export async function analyzeMeal(client: Anthropic, body: AnalyzeRequestBody): 
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader?.('Cache-Control', 'no-store')
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' })
     return
@@ -120,7 +122,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const client = new Anthropic({ apiKey })
+    if (!(await allowAiRequest(userId, res))) return
+    const client = new Anthropic({ apiKey, timeout: 45000, maxRetries: 1 })
     const items = await analyzeMeal(client, validated.value)
     if (!items) {
       res.status(502).json({ error: "Couldn't analyse that - try again.", code: 'upstream_error' })

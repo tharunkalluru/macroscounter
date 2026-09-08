@@ -98,7 +98,7 @@ export interface Recipe extends Syncable {
   name: string
   ingredients: RecipeIngredient[]
   servings: number
-  computedPer100g: { kcal: number; p: number; c: number; f: number }
+  computedPer100g: { kcal: number; p: number; c: number; f: number; fiber?: number }
 }
 
 export interface CustomSnapshot {
@@ -176,10 +176,16 @@ export interface ScannedProduct extends Syncable {
   firstScanned: string
 }
 
+/** A reusable portion, without the original day's identity or time. */
+export type MealTemplateSnapshot = Omit<LogEntry, 'id' | 'date' | 'meal' | 'clientId' | 'updatedAt' | 'deletedAt' | 'loggedAt' | 'recipeId'>
+
 export interface MealTemplateEntry {
-  foodId: string
+  /** Required only by legacy templates, which resolve against the food database. */
+  foodId?: string
   qty: number
   unit: Unit
+  /** Exact portion and nutrition, including custom, scanned, AI, and recipe entries. */
+  snapshot?: MealTemplateSnapshot
 }
 
 export interface MealTemplate extends Syncable {

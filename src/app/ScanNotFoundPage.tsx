@@ -2,7 +2,7 @@ import { useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { ScannedProductRepo } from '../data/repos/ScannedProductRepo'
 import { getLabelReader } from '../domain/barcode/labelReader'
-import { todayISO } from '../lib/date'
+import { diaryDate, todayISO } from '../lib/date'
 import PageHeader from './components/PageHeader'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
 import { CameraIcon } from './shell/icons'
@@ -11,6 +11,7 @@ export default function ScanNotFoundPage() {
   const { barcode } = useParams<{ barcode: string }>()
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const entryDate = diaryDate(searchParams.get('date'))
   const meal = searchParams.get('meal') || 'breakfast'
   const fileInputRef = useRef<HTMLInputElement>(null)
 
@@ -22,10 +23,13 @@ export default function ScanNotFoundPage() {
   const [f, setF] = useState('')
   const [servingSize, setServingSize] = useState('')
   const [error, setError] = useState<string | null>(null)
+  const savingRef = useRef(false)
+  const [saving, setSaving] = useState(false)
   const [readingLabel, setReadingLabel] = useState(false)
 
   async function handlePhotoSelected(file: File) {
     setReadingLabel(true)
+    setError(null)
     try {
       const label = await getLabelReader().readLabel(file)
       if (label) {
@@ -34,7 +38,9 @@ export default function ScanNotFoundPage() {
         if (label.per100g?.p !== undefined) setP(String(label.per100g.p))
         if (label.per100g?.c !== undefined) setC(String(label.per100g.c))
         if (label.per100g?.f !== undefined) setF(String(label.per100g.f))
-      }
+      } else setError('Label reading is not available. Please enter the label values below.')
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : 'The label could not be read. Please enter it manually.')
     } finally {
       setReadingLabel(false)
     }
@@ -42,18 +48,25 @@ export default function ScanNotFoundPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (savingRef.current) return
     setError(null)
     if (!barcode) return
 
     const kcalNum = Number(kcal)
-    const pNum = Number(p) || 0
-    const cNum = Number(c) || 0
-    const fNum = Number(f) || 0
+    const pNum = Number(p)
+    const cNum = Number(c)
+    const fNum = Number(f)
     const servingSizeNum = servingSize ? Number(servingSize) : undefined
 
     if (!name.trim()) return setError('Please enter a product name.')
     if (!Number.isFinite(kcalNum) || kcalNum < 0) return setError('Calories must be 0 or more.')
 
+    if (!kcal.trim()) return setError('Please enter calories per 100 g.')
+    if ([pNum, cNum, fNum].some((value) => !Number.isFinite(value) || value < 0)) return setError('Nutrients must be 0 or more.')
+    if (servingSizeNum !== undefined && (!Number.isFinite(servingSizeNum) || servingSizeNum <= 0)) return setError('Serving size must be greater than 0.')
+    savingRef.current = true
+    setSaving(true)
+    try {
     await new ScannedProductRepo().put({
       barcode,
       name: name.trim(),
@@ -64,12 +77,15 @@ export default function ScanNotFoundPage() {
       firstScanned: todayISO(),
     })
 
-    navigate(`/scan/product/${barcode}?meal=${meal}`)
+    navigate(`/scan/product/${barcode}?meal=${meal}&date=${entryDate}`)
+    } catch {
+      setError('The product could not be saved. Please try again.')
+    } finally { savingRef.current = false; setSaving(false) }
   }
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <PageHeader title="Product not found" backTo="/scan" backLabel="Back to scan" />
+      <PageHeader title="Product not found" backTo={`/scan?meal=${meal}&date=${entryDate}`} backLabel="Back to scan" />
       <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
         Barcode <span className="font-mono">{barcode}</span> isn't in our database yet. Add it once
         and it'll be remembered for next time.
@@ -78,10 +94,11 @@ export default function ScanNotFoundPage() {
       <button
         type="button"
         onClick={() => fileInputRef.current?.click()}
+        disabled={readingLabel || import.meta.env.VITE_LABEL_READER_ENABLED !== 'true'}
         className="flex min-h-touch w-full items-center justify-center gap-2 rounded-card border border-dashed border-slate-300 px-4 py-3 text-sm text-slate-600 transition-transform active:scale-[0.98] dark:border-slate-600 dark:text-slate-300"
       >
         <CameraIcon />
-        {readingLabel ? 'Reading label…' : 'Photo of nutrition label'}
+        {readingLabel ? 'Reading label…' : import.meta.env.VITE_LABEL_READER_ENABLED === 'true' ? 'Photo of nutrition label' : 'Enter the nutrition label below'}
       </button>
       <input
         ref={fileInputRef}
@@ -121,6 +138,8 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Calories</span>
             <input
               type="number"
+              min="0"
+              step="any"
               className={TEXT_INPUT_CLASS}
               value={kcal}
               onChange={(e) => setKcal(e.target.value)}
@@ -130,6 +149,8 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Serving size (g)</span>
             <input
               type="number"
+              min="0"
+              step="any"
               className={TEXT_INPUT_CLASS}
               value={servingSize}
               onChange={(e) => setServingSize(e.target.value)}
@@ -139,6 +160,8 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Protein (g)</span>
             <input
               type="number"
+              min="0"
+              step="any"
               className={TEXT_INPUT_CLASS}
               value={p}
               onChange={(e) => setP(e.target.value)}
@@ -148,6 +171,8 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Carbs (g)</span>
             <input
               type="number"
+              min="0"
+              step="any"
               className={TEXT_INPUT_CLASS}
               value={c}
               onChange={(e) => setC(e.target.value)}
@@ -157,6 +182,8 @@ export default function ScanNotFoundPage() {
             <span className="text-sm font-medium">Fat (g)</span>
             <input
               type="number"
+              min="0"
+              step="any"
               className={TEXT_INPUT_CLASS}
               value={f}
               onChange={(e) => setF(e.target.value)}
@@ -172,9 +199,10 @@ export default function ScanNotFoundPage() {
 
         <button
           type="submit"
+          disabled={saving}
           className="mt-2 min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
         >
-          Save & continue
+          {saving ? 'Saving…' : 'Save & continue'}
         </button>
       </form>
     </div>

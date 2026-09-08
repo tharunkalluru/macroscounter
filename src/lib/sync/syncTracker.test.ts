@@ -110,3 +110,30 @@ describe('syncTracker (via a repo write path), signed in', () => {
     expect(await db.syncOutbox.count()).toBe(0)
   })
 })
+
+describe('syncTracker concurrent writes', () => {
+  beforeEach(signIn)
+
+  it('retains every entry when several meals are saved together', async () => {
+    const ids = await Promise.all(Array.from({ length: 12 }, (_, index) => repo.addEntry(sampleEntry({ name: `Meal ${index}` }))))
+    const rows = await db.logEntries.bulkGet(ids)
+    const queued = await db.syncOutbox.toArray()
+    expect(new Set(rows.map((row) => row?.clientId)).size).toBe(12)
+    expect(queued).toHaveLength(12)
+    expect(new Set(queued.map((row) => row.clientId)).size).toBe(12)
+  })
+
+  it('gives same-millisecond edits strictly increasing versions', async () => {
+    const { vi } = await import('vitest')
+    const clock = vi.spyOn(Date, 'now').mockReturnValue(1000)
+    try {
+      const id = await repo.addEntry(sampleEntry())
+      const original = (await db.syncOutbox.toArray())[0]
+      await repo.updateEntry(id, { name: 'Updated meal' })
+      const updated = (await db.syncOutbox.toArray())[0]
+      expect(updated.updatedAt).toBeGreaterThan(original.updatedAt)
+      expect(updated.id).toBe(original.id)
+      expect(updated.payload?.name).toBe('Updated meal')
+    } finally { clock.mockRestore() }
+  })
+})

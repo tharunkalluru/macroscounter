@@ -17,7 +17,7 @@ afterEach(() => {
 describe('App', () => {
   it('redirects to onboarding and renders the Bitewise shell when no profile exists', async () => {
     render(
-      <BrowserRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+      <BrowserRouter>
         <App />
       </BrowserRouter>
     )

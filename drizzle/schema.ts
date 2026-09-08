@@ -1,4 +1,4 @@
-import { boolean, doublePrecision, integer, jsonb, pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core'
+import { boolean, doublePrecision, integer, jsonb, pgTable, text, timestamp, uuid, index, primaryKey } from 'drizzle-orm/pg-core'
 
 /**
  * Server-side mirror of the local Dexie schema (src/data/db.ts), plus Better
@@ -115,9 +115,12 @@ export const profiles = pgTable('profiles', {
   proteinPriority: text('protein_priority'),
   calorieFloorChoice: text('calorie_floor_choice'),
   goalRateLbPerWeek: doublePrecision('goal_rate_lb_per_week'),
+  serverChangedAt: timestamp('server_changed_at', { withTimezone: true, precision: 3 }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
-})
+}, (table) => [
+  index('profiles_user_sync_idx').on(table.userId, table.serverChangedAt, table.id),
+])
 
 export const targets = pgTable('targets', {
   id: uuid('id').primaryKey(),
@@ -131,9 +134,12 @@ export const targets = pgTable('targets', {
   // row; targets computed before this field existed have no fiber goal.
   fiberG: doublePrecision('fiber_g'),
   source: text('source').notNull(),
+  serverChangedAt: timestamp('server_changed_at', { withTimezone: true, precision: 3 }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
-})
+}, (table) => [
+  index('targets_user_sync_idx').on(table.userId, table.serverChangedAt, table.id),
+])
 
 export const logEntries = pgTable('log_entries', {
   id: uuid('id').primaryKey(),
@@ -160,18 +166,26 @@ export const logEntries = pgTable('log_entries', {
   // Phase F.3 -- nullable, no default, a no-op ADD COLUMN for every
   // existing row; new rows get it stamped by LogRepo.addEntry.
   loggedAt: timestamp('logged_at', { withTimezone: true }),
+  serverChangedAt: timestamp('server_changed_at', { withTimezone: true, precision: 3 }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
-})
+}, (table) => [
+  index('log_entries_user_sync_idx').on(table.userId, table.serverChangedAt, table.id),
+  index('log_entries_user_date_idx').on(table.userId, table.date),
+])
 
 export const weighIns = pgTable('weigh_ins', {
   id: uuid('id').primaryKey(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   date: text('date').notNull(),
   weightKg: doublePrecision('weight_kg').notNull(),
+  serverChangedAt: timestamp('server_changed_at', { withTimezone: true, precision: 3 }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
-})
+}, (table) => [
+  index('weigh_ins_user_sync_idx').on(table.userId, table.serverChangedAt, table.id),
+  index('weigh_ins_user_date_idx').on(table.userId, table.date),
+])
 
 export const recipes = pgTable('recipes', {
   id: uuid('id').primaryKey(),
@@ -180,25 +194,31 @@ export const recipes = pgTable('recipes', {
   ingredients: jsonb('ingredients').notNull(),
   servings: doublePrecision('servings').notNull(),
   computedPer100g: jsonb('computed_per100g').notNull(),
+  serverChangedAt: timestamp('server_changed_at', { withTimezone: true, precision: 3 }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
-})
+}, (table) => [
+  index('recipes_user_sync_idx').on(table.userId, table.serverChangedAt, table.id),
+])
 
 export const mealTemplates = pgTable('meal_templates', {
   id: uuid('id').primaryKey(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   name: text('name').notNull(),
   entries: jsonb('entries').notNull(),
+  serverChangedAt: timestamp('server_changed_at', { withTimezone: true, precision: 3 }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
-})
+}, (table) => [
+  index('meal_templates_user_sync_idx').on(table.userId, table.serverChangedAt, table.id),
+])
 
 export const scannedProducts = pgTable('scanned_products', {
   // text, not uuid: the client deliberately uses the barcode itself as this
   // row's clientId/id (see ScannedProductRepo.put) so two devices scanning
   // the same product converge on one row instead of two -- a barcode is
   // never a valid uuid, so this column must accept arbitrary text.
-  id: text('id').primaryKey(),
+  id: text('id').notNull(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   barcode: text('barcode').notNull(),
   name: text('name').notNull(),
@@ -211,9 +231,13 @@ export const scannedProducts = pgTable('scanned_products', {
   quantity: doublePrecision('quantity'),
   source: text('source').notNull(),
   firstScanned: text('first_scanned').notNull(),
+  serverChangedAt: timestamp('server_changed_at', { withTimezone: true, precision: 3 }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),
   deletedAt: timestamp('deleted_at', { withTimezone: true }),
-})
+}, (table) => [
+  index('scanned_products_user_sync_idx').on(table.userId, table.serverChangedAt, table.id),
+  primaryKey({ columns: [table.userId, table.id] }),
+])
 
 export const SYNCED_TABLES = [
   'profiles',
@@ -226,3 +250,23 @@ export const SYNCED_TABLES = [
 ] as const
 
 export type SyncedTableName = (typeof SYNCED_TABLES)[number]
+
+/** Tombstones survive deletes that arrive before another device's older insert. */
+export const syncTombstones = pgTable('sync_tombstones', {
+  id: text('id').notNull(),
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  tableName: text('table_name').notNull(),
+  clientId: text('client_id').notNull(),
+  updatedAt: timestamp('updated_at', { withTimezone: true }).notNull(),
+  serverChangedAt: timestamp('server_changed_at', { withTimezone: true, precision: 3 }).notNull().defaultNow(),
+}, (table) => [
+  primaryKey({ columns: [table.userId, table.id] }),
+  index('sync_tombstones_user_sync_idx').on(table.userId, table.serverChangedAt, table.id),
+])
+
+/** Shared, bounded AI budgets across all serverless instances. */
+export const apiUsage = pgTable('api_usage', {
+  userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
+  bucket: timestamp('bucket', { withTimezone: true }).notNull(),
+  count: integer('count').notNull().default(1),
+}, (table) => [primaryKey({ columns: [table.userId, table.bucket] }), index('api_usage_bucket_idx').on(table.bucket)])

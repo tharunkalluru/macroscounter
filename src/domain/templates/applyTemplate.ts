@@ -1,36 +1,48 @@
-import type { FoodRecord, Unit } from '../../data/models'
-import { computeMacrosForGrams, gramsForPortion, type MacroTotals } from '../logging/portionMath'
+import type { FoodRecord, LogEntry, MealTemplateEntry, MealTemplateSnapshot } from '../../data/models'
+import { computeMacrosForGrams, gramsForPortion } from '../logging/portionMath'
 
-export interface TemplateEntryInput {
-  foodId: string
-  qty: number
-  unit: Unit
-}
+export type TemplateEntryInput = MealTemplateEntry
+export type AppliedTemplateEntry = MealTemplateSnapshot
 
-export interface AppliedTemplateEntry extends MacroTotals {
-  foodId: string
-  name: string
-  portionSummary: string
-  portionLabel?: string
-  qty: number
-  unit: Unit
-  grams: number
+/** Keep nutrition and the selected portion; never copy a log's identity. */
+export function buildTemplateEntries(entries: LogEntry[]): MealTemplateEntry[] {
+  return entries.map((entry) => ({
+    foodId: entry.foodId,
+    qty: entry.qty,
+    unit: entry.unit,
+    snapshot: {
+      foodId: entry.foodId,
+      barcode: entry.barcode,
+      customSnapshot: entry.customSnapshot ? { ...entry.customSnapshot } : undefined,
+      name: entry.name,
+      portionSummary: entry.portionSummary,
+      portionLabel: entry.portionLabel,
+      qty: entry.qty,
+      unit: entry.unit,
+      grams: entry.grams,
+      kcal: entry.kcal,
+      p: entry.p,
+      c: entry.c,
+      f: entry.f,
+      fiber: entry.fiber,
+    },
+  }))
 }
 
 /**
- * Resolves a saved template's {foodId, qty, unit} entries into full log-entry
- * data using each food's *current* per-100g values (a template just remembers
- * what to log, not stale macro snapshots — if the food DB changes, applying
- * an old template reflects the update). A 'portion' unit always refers to the
- * food's first/primary portion, since MealTemplateEntry (per the schema)
- * doesn't record which portion index was originally picked.
+ * New templates preserve the complete saved meal, including custom foods,
+ * recipes and label nutrition. Legacy {foodId, qty, unit} templates continue
+ * resolving against current foods with their original primary-portion rule.
  */
 export function applyTemplate(
   entries: TemplateEntryInput[],
   foodsById: Map<string, FoodRecord>
 ): AppliedTemplateEntry[] {
   return entries.map((entry) => {
-    const food = foodsById.get(entry.foodId)
+    if (entry.snapshot) {
+      return { ...entry.snapshot, customSnapshot: entry.snapshot.customSnapshot ? { ...entry.snapshot.customSnapshot } : undefined }
+    }
+    const food = entry.foodId ? foodsById.get(entry.foodId) : undefined
     if (!food) throw new Error(`Unknown food id in template: ${entry.foodId}`)
 
     let grams: number
@@ -41,6 +53,7 @@ export function applyTemplate(
       portionSummary = `${grams} g`
     } else {
       const portion = food.portions[0]
+      if (!portion) throw new Error(`No serving size is available for ${food.name}`)
       grams = gramsForPortion(entry.qty, portion.grams)
       portionSummary = `${entry.qty} x ${portion.label}`
       portionLabel = portion.label

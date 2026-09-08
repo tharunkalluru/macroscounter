@@ -2,7 +2,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { TargetRepo } from '../data/repos/TargetRepo'
 import { deriveCurrentProgram } from '../domain/programs/program'
-import { addDaysISO, isFutureDate, todayISO } from '../lib/date'
+import { addDaysISO, diaryDate, isFutureDate, todayISO } from '../lib/date'
 import InsightsSection from './components/InsightsSection'
 import PageHeader from './components/PageHeader'
 import ReportSection from './components/ReportSection'
@@ -22,7 +22,7 @@ export default function TrendsReportPage() {
   const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const today = todayISO()
-  const weekEndDate = searchParams.get('week') ?? today
+  const weekEndDate = diaryDate(searchParams.get('week'))
   const isCurrentWeek = weekEndDate === today
   const [weekNumber, setWeekNumber] = useState<number | null>(null)
 
@@ -55,7 +55,7 @@ export default function TrendsReportPage() {
         </button>
         <div className="text-center">
           <p className="font-medium text-slate-900 dark:text-slate-100">
-            {weekNumber !== null ? `Week ${weekNumber}` : 'This week'}
+            {weekNumber !== null ? `Week ${weekNumber}` : isCurrentWeek ? 'This week' : 'Weekly review'}
           </p>
           <p className="text-caption text-slate-500 dark:text-slate-400">{formatRange(weekEndDate)}</p>
         </div>

@@ -11,14 +11,16 @@ export class ScannedProductRepo {
   }
 
   async put(product: ScannedProduct): Promise<string> {
-    // The barcode is already a globally stable identifier, so it doubles as
-    // this table's sync clientId — no separate uuid needed, and it means
-    // two devices scanning the same product converge on one cached row
-    // instead of two.
-    const barcode = await this.db.scannedProducts.put({ ...product, clientId: product.barcode })
-    const saved = await this.db.scannedProducts.get(barcode)
-    if (saved) await trackUpsert(this.db, 'scannedProducts', barcode, saved)
-    return barcode
+    return this.db.transaction('rw', [this.db.scannedProducts, this.db.syncMeta, this.db.syncOutbox], async () => {
+      // The barcode is already a globally stable identifier, so it doubles as
+      // this table's sync clientId — no separate uuid needed, and it means
+      // two devices scanning the same product converge on one cached row
+      // instead of two.
+      const barcode = await this.db.scannedProducts.put({ ...product, clientId: product.barcode })
+      const saved = await this.db.scannedProducts.get(barcode)
+      if (saved) await trackUpsert(this.db, 'scannedProducts', barcode, saved)
+      return barcode
+    })
   }
 
   async getMany(barcodes: string[]): Promise<ScannedProduct[]> {

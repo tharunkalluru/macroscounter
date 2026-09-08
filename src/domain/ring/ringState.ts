@@ -5,13 +5,14 @@ export interface RingState {
   /** Text for the ring's center number — "1587" when under/at target, "+41" when over. */
   centerText: string
   /** Sub-label under the center number. */
-  subLabel: 'kcal remaining' | 'over'
+  subLabel: 'kcal remaining' | 'over' | 'kcal logged'
   /** 0..1, clamped — how much of the ring's circumference to fill. */
   fillPct: number
 }
 
 /** >100% of target consumed flips the ring to the over-budget (amber) band. */
 export function computeRingState(consumedKcal: number, targetKcal: number): RingState {
+  if (targetKcal <= 0) return { band: 'normal', centerText: String(Math.round(consumedKcal)), subLabel: 'kcal logged', fillPct: 0 }
   const remaining = targetKcal - consumedKcal
   const over = remaining < 0
 

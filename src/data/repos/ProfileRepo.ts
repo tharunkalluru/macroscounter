@@ -6,22 +6,25 @@ import type { Profile } from '../models'
 export class ProfileRepo {
   constructor(private db: BitewiseDB = defaultDb) {}
 
-  /** Single-user app: at most one profile row ever exists. */
+  /** Resolve concurrent first-device setup deterministically on every device. */
   async get(): Promise<Profile | undefined> {
-    return this.db.profiles.toCollection().first()
+    const rows = await this.db.profiles.toArray()
+    return rows.sort((a, b) => (b.updatedAt ?? 0) - (a.updatedAt ?? 0) || (b.clientId ?? '').localeCompare(a.clientId ?? '') || (b.id ?? 0) - (a.id ?? 0))[0]
   }
 
   async save(profile: Profile): Promise<number> {
-    const existing = await this.get()
-    let id: number
-    if (existing?.id !== undefined) {
-      await this.db.profiles.update(existing.id, profile)
-      id = existing.id
-    } else {
-      id = await this.db.profiles.add(profile)
-    }
-    const saved = await this.db.profiles.get(id)
-    if (saved) await trackUpsert(this.db, 'profiles', id, saved)
-    return id
+    return this.db.transaction('rw', [this.db.profiles, this.db.syncMeta, this.db.syncOutbox], async () => {
+      const existing = await this.get()
+      let id: number
+      if (existing?.id !== undefined) {
+        await this.db.profiles.update(existing.id, profile)
+        id = existing.id
+      } else {
+        id = await this.db.profiles.add({ ...profile })
+      }
+      const saved = await this.db.profiles.get(id)
+      if (saved) await trackUpsert(this.db, 'profiles', id, saved)
+      return id
+    })
   }
 }

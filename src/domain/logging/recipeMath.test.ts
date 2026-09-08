@@ -5,6 +5,22 @@ const IDLI_PER_100G = { kcal: 102.5, p: 4.5, c: 20, f: 0.5 }
 const SAMBAR_PER_100G = { kcal: 62, p: 3, c: 8, f: 2 }
 
 describe('computeRecipe', () => {
+  it('includes known ingredient fiber in the recipe nutrition', () => {
+    const result = computeRecipe([{ foodId: 'beans', grams: 200 }, { foodId: 'rice', grams: 100 }], new Map([
+      ['beans', { kcal: 100, p: 8, c: 18, f: 1, fiber: 6 }],
+      ['rice', { kcal: 130, p: 3, c: 28, f: 0.3, fiber: 0.5 }],
+    ]), 2)
+    expect(result.computedPer100g.fiber).toBe(4.2)
+    expect(result.gramsPerServing).toBe(150)
+  })
+
+  it('rejects zero or invalid ingredient weights before they create NaN nutrition', () => {
+    const foods = new Map([['rice', { kcal: 130, p: 3, c: 28, f: 0.3 }]])
+    for (const grams of [0, -1, Number.NaN, Number.POSITIVE_INFINITY]) {
+      expect(() => computeRecipe([{ foodId: 'rice', grams }], foods, 1)).toThrow(/positive gram weight/)
+    }
+    expect(() => computeRecipe([{ foodId: 'rice', grams: 100 }], foods, Infinity)).toThrow(/at least one serving/)
+  })
   it('combines 2 idli (80g) + 1 katori sambar (150g) into a per-100g profile', () => {
     const foodsById = new Map([
       ['idli', IDLI_PER_100G],

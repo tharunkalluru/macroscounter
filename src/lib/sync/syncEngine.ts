@@ -1,214 +1,276 @@
 import type { BitewiseDB } from '../../data/db'
 import { db as defaultDb } from '../../data/db'
-import { reconcileAfterPush } from '../../domain/sync/outbox'
-import { SYNCED_TABLES, type SyncRow, type SyncedTableName } from '../../domain/sync/types'
+import { SYNCED_TABLES, type OutboxEntry, type SyncRow, type SyncedTableName } from '../../domain/sync/types'
 
 export type SyncStatus = 'signed-out' | 'synced' | 'syncing' | 'offline' | 'error'
-
-/** Clock-skew tolerance re-pulled on every sync (see runSync's watermark). */
 const PULL_OVERLAP_MS = 5 * 60 * 1000
-
-type Listener = (status: SyncStatus) => void
-const listeners = new Set<Listener>()
+const PUSH_BATCH_SIZE = 100
+const PUSH_BATCH_BYTES = 900_000
+const listeners = new Set<(status: SyncStatus) => void>()
+const dataListeners = new Set<() => void>()
 let currentStatus: SyncStatus = 'signed-out'
-let syncing = false
+let currentError: string | null = null
 
-function setStatus(status: SyncStatus) {
+type SyncState = { active?: Promise<SyncStatus>; rerun: boolean; epoch: number; paused: number }
+const states = new WeakMap<BitewiseDB, SyncState>()
+function stateFor(db: BitewiseDB): SyncState {
+  let state = states.get(db)
+  if (!state) {
+    state = { rerun: false, epoch: 0, paused: 0 }
+    states.set(db, state)
+  }
+  return state
+}
+
+function setStatus(status: SyncStatus, error: string | null = null) {
   currentStatus = status
+  currentError = error
   listeners.forEach((fn) => fn(status))
 }
-
-export function getSyncStatus(): SyncStatus {
-  return currentStatus
-}
-
-export function onSyncStatusChange(listener: Listener): () => void {
+export function getSyncStatus(): SyncStatus { return currentStatus }
+export function getSyncError(): string | null { return currentError }
+export function onSyncStatusChange(listener: (status: SyncStatus) => void): () => void {
   listeners.add(listener)
   return () => listeners.delete(listener)
 }
-
-/**
- * Fires when a pull actually wrote rows into local tables. Without this a
- * background pull lands in IndexedDB but nothing on screen re-reads it, so
- * a second device would show stale numbers until the user navigated.
- */
-const dataListeners = new Set<() => void>()
-
 export function onSyncDataChanged(listener: () => void): () => void {
   dataListeners.add(listener)
   return () => dataListeners.delete(listener)
 }
 
-async function getMeta(db: BitewiseDB) {
-  return db.syncMeta.toCollection().first()
-}
-
-/**
- * Pushes the outbox, then pulls everything the server has changed since our
- * last sync, merging pulled rows into local tables with last-write-wins.
- * Safe to call opportunistically (app open, regaining connectivity, after
- * each log) — it no-ops for guests and is not reentrant.
- */
-export async function runSync(db: BitewiseDB = defaultDb): Promise<void> {
-  if (syncing) return
-  const meta = await getMeta(db)
-  if (!meta?.userId) {
-    setStatus('signed-out')
-    return
-  }
-  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
-    setStatus('offline')
-    return
-  }
-
-  syncing = true
-  setStatus('syncing')
+/** Fence outstanding responses before changing accounts or clearing private rows. */
+export async function withSyncPaused<T>(db: BitewiseDB, action: () => Promise<T>): Promise<T> {
+  const state = stateFor(db)
+  state.paused++
+  state.epoch++
   try {
-    await pushOutbox(db)
-    const pulledAt = await pullChanges(db, meta.lastSyncedAt ?? 0)
-    // Watermark the *server's* clock, not this device's, and rewind it by a
-    // safety window before storing. Rows are stamped with whichever device
-    // wrote them, so with a hairline watermark a second device whose clock
-    // runs a little behind can write rows stamped earlier than our last
-    // sync and never be pulled at all. Re-pulling a few minutes of overlap
-    // is free -- the merge is idempotent last-write-wins.
-    const nextWatermark = Math.max(0, (pulledAt ?? Date.now()) - PULL_OVERLAP_MS)
-    await db.syncMeta.update(meta.id!, { lastSyncedAt: nextWatermark })
-    setStatus('synced')
-  } catch {
-    setStatus('error')
+    await state.active
+    return await action()
   } finally {
-    syncing = false
+    state.paused--
+    const meta = await db.syncMeta.toCollection().first()
+    if (!meta?.userId) setStatus('signed-out')
   }
 }
 
-async function pushOutbox(db: BitewiseDB): Promise<void> {
+class AccountChangedError extends Error {}
+async function assertAccount(db: BitewiseDB, userId: string, epoch: number): Promise<void> {
+  const meta = await db.syncMeta.toCollection().first()
+  if (stateFor(db).epoch !== epoch || meta?.userId !== userId) throw new AccountChangedError()
+}
+
+/** Coalesces overlapping triggers, including writes made during an in-flight request. */
+export function runSync(db: BitewiseDB = defaultDb): Promise<SyncStatus> {
+  const state = stateFor(db)
+  if (state.paused) return Promise.resolve(currentStatus)
+  if (state.active) {
+    state.rerun = true
+    return state.active
+  }
+  state.active = Promise.resolve().then(async () => {
+    let result: SyncStatus = currentStatus
+    do {
+      state.rerun = false
+      result = await syncOnce(db, state.epoch)
+    } while (state.rerun && !state.paused && result === 'synced')
+    return result
+  }).finally(() => { state.active = undefined })
+  return state.active
+}
+
+async function syncOnce(db: BitewiseDB, epoch: number): Promise<SyncStatus> {
+  try {
+    const meta = await db.syncMeta.toCollection().first()
+    if (!meta?.userId) { setStatus('signed-out'); return 'signed-out' }
+    if (typeof navigator !== 'undefined' && !navigator.onLine) { setStatus('offline'); return 'offline' }
+    setStatus('syncing')
+    const pushError = await pushOutbox(db, meta.userId, epoch)
+    const pulledAt = await pullChanges(db, meta.userId, meta.lastSyncedAt ?? 0, epoch)
+    let pendingCount = 0
+    await db.transaction('rw', [db.syncMeta, db.syncOutbox], async () => {
+      await assertAccount(db, meta.userId!, epoch)
+      if (pulledAt !== undefined) {
+        await db.syncMeta.update(meta.id!, { lastSyncedAt: Math.max(0, pulledAt - PULL_OVERLAP_MS) })
+      }
+      if (pushError) throw new Error(pushError)
+      pendingCount = await db.syncOutbox.count()
+      if (pendingCount > 0) {
+        // These are edits made while a request was in flight. The next cycle pushes them.
+        stateFor(db).rerun = true
+      }
+    })
+    if (pendingCount === 0) setStatus('synced')
+    return 'synced'
+  } catch (error) {
+    if (error instanceof AccountChangedError && stateFor(db).epoch !== epoch) return currentStatus
+    if (error instanceof AccountChangedError) {
+      setStatus('error', 'The account changed. Sign in again to continue safely.')
+      return 'error'
+    }
+    const message = error instanceof Error ? error.message : 'Your changes are saved on this device. Try syncing again.'
+    setStatus('error', message)
+    return 'error'
+  }
+}
+
+async function fetchSync(url: string, userId: string, init: RequestInit = {}): Promise<Response> {
+  const controller = new AbortController()
+  const timeout = setTimeout(() => controller.abort(), 20_000)
+  try {
+    const res = await fetch(url, {
+      ...init, credentials: 'include', signal: controller.signal,
+      headers: { ...init.headers, 'X-Sync-User-Id': userId },
+    })
+    if (!res.ok) {
+      if (res.status === 401 || res.status === 409) throw new Error('Please sign in to the same account again to sync your saved changes.')
+      if (res.status === 429) throw new Error('Sync is busy. Your changes are saved here; please try again shortly.')
+      throw new Error('Your changes are saved on this device, but the backup could not finish. Please retry.')
+    }
+    return res
+  } finally { clearTimeout(timeout) }
+}
+
+async function wirePayload(db: BitewiseDB, entry: OutboxEntry): Promise<Record<string, unknown> | null> {
+  if (!entry.payload) return null
+  const payload = { ...entry.payload }
+  delete payload.id
+  if (entry.table === 'logEntries' && typeof payload.recipeId === 'number') {
+    const recipe = await db.recipes.get(payload.recipeId)
+    payload.recipeId = recipe?.clientId ?? null
+  }
+  return payload
+}
+
+async function pushOutbox(db: BitewiseDB, userId: string, epoch: number): Promise<string | null> {
   const outbox = await db.syncOutbox.toArray()
-  if (outbox.length === 0) return
-
-  const res = await fetch('/api/sync/push', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    credentials: 'include',
-    body: JSON.stringify({
-      mutations: outbox.map((e) => ({
-        table: e.table,
-        clientId: e.clientId,
-        operation: e.operation,
-        payload: e.payload,
-        updatedAt: e.updatedAt,
-      })),
-    }),
-  })
-  if (!res.ok) throw new Error(`push failed: ${res.status}`)
-
-  const { flushed } = (await res.json()) as {
-    flushed: { table: string; clientId: string; updatedAt: number }[]
+  // Recipes need their stable identity on the server before dependent log entries.
+  outbox.sort((a, b) => Number(b.table === 'recipes') - Number(a.table === 'recipes'))
+  let rejected = false
+  const batches: { entries: OutboxEntry[]; mutations: Record<string, unknown>[] }[] = []
+  let nextBatch = { entries: [] as OutboxEntry[], mutations: [] as Record<string, unknown>[] }
+  let bytes = 32
+  for (const entry of outbox) {
+    const mutation = {
+      table: entry.table, clientId: entry.clientId, operation: entry.operation,
+      payload: await wirePayload(db, entry), updatedAt: entry.updatedAt,
+    }
+    const size = new TextEncoder().encode(JSON.stringify(mutation)).length + 1
+    if (size > PUSH_BATCH_BYTES) { rejected = true; continue }
+    if (nextBatch.entries.length >= PUSH_BATCH_SIZE || bytes + size > PUSH_BATCH_BYTES) {
+      batches.push(nextBatch)
+      nextBatch = { entries: [], mutations: [] }
+      bytes = 32
+    }
+    nextBatch.entries.push(entry)
+    nextBatch.mutations.push(mutation)
+    bytes += size
   }
-  const remaining = reconcileAfterPush(outbox, flushed)
-  const flushedIds = new Set(outbox.filter((e) => !remaining.includes(e)).map((e) => e.id))
-  for (const id of flushedIds) {
-    if (id !== undefined) await db.syncOutbox.delete(id)
+  if (nextBatch.entries.length) batches.push(nextBatch)
+  for (const { entries: batch, mutations } of batches) {
+    await assertAccount(db, userId, epoch)
+    const res = await fetchSync('/api/sync/push', userId, {
+      method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ mutations }),
+    })
+    const { flushed } = await res.json() as { flushed?: { table: string; clientId: string; updatedAt: number }[] }
+    if (!Array.isArray(flushed)) throw new Error('The backup response was incomplete. Your changes are still saved here.')
+    await db.transaction('rw', [db.syncMeta, db.syncOutbox], async () => {
+      await assertAccount(db, userId, epoch)
+      for (const sent of batch) {
+        const acknowledged = flushed.some((ack) => ack.table === sent.table && ack.clientId === sent.clientId && ack.updatedAt === sent.updatedAt)
+        if (!acknowledged) { rejected = true; continue }
+        const current = sent.id === undefined ? undefined : await db.syncOutbox.get(sent.id)
+        // Compare the CURRENT outbox against the EXACT request, never delete by old id alone.
+        if (current && current.updatedAt === sent.updatedAt && current.operation === sent.operation && JSON.stringify(current.payload) === JSON.stringify(sent.payload)) {
+          await db.syncOutbox.delete(sent.id!)
+        }
+      }
+    })
   }
+  return rejected ? 'Some changes could not be backed up. They are still saved on this device. Please retry.' : null
 }
 
-/**
- * Raw, unmerged pull used only to answer "does this account already have a
- * profile on the server?" (see resolveAfterSignIn's pull-vs-migrate branch)
- * — deliberately doesn't touch local tables, since a normal `runSync()`
- * pull is what actually merges data down once that decision is made.
- */
-export async function serverHasProfile(): Promise<boolean> {
-  const res = await fetch('/api/sync/pull?since=0', { credentials: 'include' })
-  if (!res.ok) throw new Error(`pull failed: ${res.status}`)
-  const { tables } = (await res.json()) as { tables: Record<string, SyncRow[]> }
-  return (tables.profiles?.length ?? 0) > 0
+type PullResponse = { tables: Record<string, SyncRow[]>; pulledAt?: number; nextCursor?: string | null }
+async function fetchPull(userId: string, since: number, cursor?: string): Promise<PullResponse> {
+  const query = new URLSearchParams({ since: String(since) })
+  if (cursor) query.set('cursor', cursor)
+  const res = await fetchSync(`/api/sync/pull?${query}`, userId)
+  const data = await res.json() as PullResponse
+  if (!data.tables || typeof data.tables !== 'object') throw new Error('Your backup could not be read. Please retry.')
+  return data
 }
 
-async function pullChanges(db: BitewiseDB, since: number): Promise<number | undefined> {
-  const res = await fetch(`/api/sync/pull?since=${since}`, { credentials: 'include' })
-  if (!res.ok) throw new Error(`pull failed: ${res.status}`)
+/** Profile detection follows pagination and ignores tombstones. */
+export async function serverHasProfile(userId: string): Promise<boolean> {
+  let cursor: string | undefined
+  const seen = new Set<string>()
+  do {
+    const data = await fetchPull(userId, 0, cursor)
+    if (data.tables.profiles?.some((row) => !row.deletedAt)) return true
+    cursor = data.nextCursor ?? undefined
+    if (cursor && seen.has(cursor)) throw new Error('The backup response repeated a page. Please retry.')
+    if (cursor) seen.add(cursor)
+  } while (cursor)
+  return false
+}
 
-  const { tables, pulledAt } = (await res.json()) as {
-    tables: Record<string, SyncRow[]>
-    pulledAt?: number
-  }
+async function pullChanges(db: BitewiseDB, userId: string, since: number, epoch: number): Promise<number | undefined> {
+  const rows: Record<string, SyncRow[]> = {}
+  let cursor: string | undefined
+  let pulledAt: number | undefined
+  const seen = new Set<string>()
+  do {
+    await assertAccount(db, userId, epoch)
+    const data = await fetchPull(userId, since, cursor)
+    if (pulledAt !== undefined && data.pulledAt !== pulledAt) throw new Error('The backup changed while loading. Please retry.')
+    pulledAt = data.pulledAt
+    for (const name of SYNCED_TABLES) (rows[name] ??= []).push(...(data.tables[name] ?? []))
+    cursor = data.nextCursor ?? undefined
+    if (cursor && seen.has(cursor)) throw new Error('The backup response repeated a page. Please retry.')
+    if (cursor) seen.add(cursor)
+  } while (cursor)
 
   let writes = 0
-  for (const tableName of SYNCED_TABLES) {
-    const remoteRows = tables[tableName] ?? []
-    if (remoteRows.length === 0) continue
-    writes += await mergeTable(db, tableName, remoteRows)
-  }
+  await db.transaction('rw', [...SYNCED_TABLES.map((name) => db.table(name)), db.syncMeta, db.syncOutbox], async () => {
+    await assertAccount(db, userId, epoch)
+    const pending = new Set((await db.syncOutbox.toArray()).map((row) => `${row.table}:${row.clientId}`))
+    const mergeOrder = ['recipes', ...SYNCED_TABLES.filter((name) => name !== 'recipes')] as SyncedTableName[]
+    for (const name of mergeOrder) writes += await mergeTable(db, name, rows[name] ?? [], pending, userId)
+  })
   if (writes > 0) dataListeners.forEach((fn) => fn())
-
   return pulledAt
 }
 
-/**
- * Strips the fields that belong to the *server's* copy of a row before it's
- * written locally. `id` on the wire is the Postgres primary key (the row's
- * uuid); every local table except `scannedProducts` keys off an
- * auto-incrementing number instead. Writing the uuid straight through -- the
- * previous behavior -- silently replaced the local numeric primary key with a
- * string, so anything addressing a row by its local id afterwards (editing or
- * deleting an entry, `ProfileRepo.save`'s update-by-id) quietly stopped
- * matching. `userId` is likewise server bookkeeping with no local column.
- */
-function toLocalRow(row: SyncRow): Record<string, unknown> {
-  const { id: _serverId, userId: _userId, ...rest } = row as Record<string, unknown>
+async function toLocalRow(db: BitewiseDB, table: SyncedTableName, row: SyncRow): Promise<Record<string, unknown>> {
+  const { id: _serverId, userId: _userId, serverChangedAt: _serverChangedAt, ...rest } = row
+  if (table === 'logEntries') {
+    if (typeof rest.recipeId === 'string') {
+      rest.recipeId = (await db.recipes.where('clientId').equals(rest.recipeId).first())?.id
+    } else if (rest.recipeId !== undefined) {
+      // Device-local numeric keys from old servers must never point at an unrelated recipe.
+      rest.recipeId = undefined
+    }
+    if (rest.loggedAt instanceof Date) rest.loggedAt = rest.loggedAt.toISOString()
+  }
   return rest
 }
 
-/**
- * Applies one table's worth of pulled rows, returning how many local rows
- * actually changed.
- *
- * Only rows the server has genuinely newer copies of are written. The
- * previous version iterated `mergeRemoteRows`'s output, which is *every*
- * local row (remote winners merged over the full local set) — so each pull
- * rewrote the entire table, and there was no way to tell whether anything
- * had really changed. That matters now that a real change notifies the UI:
- * an unconditional rewrite would report "changed" on every pull and spin
- * pull → notify → pull forever.
- *
- * The comparison is strictly newer rather than `resolveLWW`'s newer-or-equal
- * for the same reason: pulls deliberately overlap (see PULL_OVERLAP_MS), so
- * the same unchanged rows come back every time and must be recognised as
- * no-ops. The only behavior this gives up is the tie-break for two devices
- * writing the same row in the same millisecond, where local now stays put.
- */
-async function mergeTable(
-  db: BitewiseDB,
-  tableName: SyncedTableName,
-  remoteRows: SyncRow[]
-): Promise<number> {
+async function mergeTable(db: BitewiseDB, tableName: SyncedTableName, remoteRows: SyncRow[], pending: Set<string>, userId: string): Promise<number> {
   const table = db.table(tableName)
-  const localRows = (await table.toArray()) as unknown as SyncRow[]
-  const localByClientId = new Map(localRows.map((row) => [row.clientId, row]))
   let writes = 0
-
   for (const remote of remoteRows) {
-    const local = localByClientId.get(remote.clientId)
-    if (local && remote.updatedAt <= local.updatedAt) continue
-
-    const localKey = (local as unknown as { id?: number; barcode?: string } | undefined)?.id
-
+    if (remote.userId !== undefined && remote.userId !== userId) throw new Error('The account changed. Sign in again to continue safely.')
+    if (pending.has(`${tableName}:${remote.clientId}`)) continue
+    const local = await table.where('clientId').equals(remote.clientId).first() as SyncRow | undefined
+    if (local && remote.updatedAt < Number(local.updatedAt ?? 0)) continue
+    const key = (local?.id ?? local?.barcode) as number | string | undefined
     if (remote.deletedAt) {
-      if (local) {
-        await table.delete(localKey ?? (remote.barcode as string))
-        writes++
-      }
+      if (key !== undefined) { await table.delete(key); writes++ }
       continue
     }
-
-    if (local) {
-      await table.update(localKey ?? (remote.barcode as string), toLocalRow(remote) as never)
-    } else if (tableName === 'scannedProducts') {
-      await table.put(toLocalRow(remote) as never)
-    } else {
-      await table.add(toLocalRow(remote) as never)
-    }
+    const record = await toLocalRow(db, tableName, remote)
+    if (local && Object.entries(record).every(([field, value]) => JSON.stringify(local[field]) === JSON.stringify(value))) continue
+    if (key !== undefined) await table.update(key, record)
+    else await table.put(record)
     writes++
   }
   return writes

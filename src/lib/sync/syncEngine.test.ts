@@ -200,3 +200,137 @@ describe('runSync — pulling rows onto this device', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })
+
+async function queueLog(db: BitewiseDB, updatedAt = 1000) {
+  return db.syncOutbox.add({ table: 'logEntries', clientId: 'uuid-a', operation: 'upsert', payload: remoteLogEntry({ updatedAt }), updatedAt })
+}
+
+function response(body: unknown) {
+  return new Response(JSON.stringify(body), { status: 200 })
+}
+
+describe('runSync — offline and concurrent editing safety', () => {
+  it('keeps a newer in-flight edit, then backs it up before reporting success', async () => {
+    const db = await signedInDb()
+    const id = await queueLog(db)
+    let pushes = 0
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.includes('/push')) {
+        const { mutations } = JSON.parse(init!.body as string)
+        pushes++
+        if (pushes === 1) await db.syncOutbox.update(id, { updatedAt: 2000, payload: remoteLogEntry({ name: 'Newer edit', updatedAt: 2000 }) })
+        else expect(mutations[0].payload.name).toBe('Newer edit')
+        return response({ flushed: mutations.map((m: Record<string, unknown>) => ({ table: m.table, clientId: m.clientId, updatedAt: m.updatedAt })) })
+      }
+      return response({ tables: {} })
+    }))
+    expect(await runSync(db)).toBe('synced')
+    expect(pushes).toBe(2)
+    expect(await db.syncOutbox.count()).toBe(0)
+  })
+
+  it('never claims success or resurrects a locally deleted row when its tombstone is rejected', async () => {
+    const db = await signedInDb()
+    await db.syncOutbox.add({ table: 'logEntries', clientId: 'uuid-a', operation: 'delete', payload: null, updatedAt: 1000 })
+    stubFetch({ tables: { logEntries: [remoteLogEntry({ updatedAt: 5000 })] } })
+    expect(await runSync(db)).toBe('error')
+    expect(await db.logEntries.count()).toBe(0)
+    expect(await db.syncOutbox.count()).toBe(1)
+  })
+
+  it('shields a pending local edit from a newer server row until it is acknowledged', async () => {
+    const db = await signedInDb()
+    await db.logEntries.add({ ...remoteLogEntry({ name: 'Unsynced local edit', updatedAt: 1000 }), id: undefined } as never)
+    await queueLog(db)
+    stubFetch({ tables: { logEntries: [remoteLogEntry({ name: 'Server edit', updatedAt: 9000 })] } })
+    expect(await runSync(db)).toBe('error')
+    expect((await db.logEntries.toArray())[0].name).toBe('Unsynced local edit')
+  })
+
+  it('chunks a long offline diary into at most 100 writes per request', async () => {
+    const db = await signedInDb()
+    await db.syncOutbox.bulkAdd(Array.from({ length: 205 }, (_, i) => ({ table: 'logEntries' as const, clientId: `entry-${i}`, operation: 'delete' as const, payload: null, updatedAt: i + 1 })))
+    const sizes: number[] = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.includes('/push')) {
+        const { mutations } = JSON.parse(init!.body as string)
+        expect((init!.headers as Record<string, string>)['X-Sync-User-Id']).toBe('user-1')
+        sizes.push(mutations.length)
+        return response({ flushed: mutations })
+      }
+      return response({ tables: {} })
+    }))
+    expect(await runSync(db)).toBe('synced')
+    expect(sizes).toEqual([100, 100, 5])
+    expect(await db.syncOutbox.count()).toBe(0)
+  })
+
+  it('pulls every page before advancing the receipt watermark', async () => {
+    const db = await signedInDb()
+    const urls: string[] = []
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => {
+      urls.push(url)
+      if (!url.includes('cursor=')) return response({ tables: { logEntries: [remoteLogEntry()] }, pulledAt: 900000, nextCursor: 'page two/+' })
+      return response({ tables: { logEntries: [remoteLogEntry({ clientId: 'uuid-b' })] }, pulledAt: 900000, nextCursor: null })
+    }))
+    expect(await runSync(db)).toBe('synced')
+    expect(urls).toHaveLength(2)
+    expect(new URL(urls[1], 'http://localhost').searchParams.get('cursor')).toBe('page two/+')
+    expect(await db.logEntries.count()).toBe(2)
+    expect((await db.syncMeta.toCollection().first())?.lastSyncedAt).toBe(600000)
+  })
+
+  it('leaves the previous watermark and diary intact if a later page fails', async () => {
+    const db = await signedInDb()
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => url.includes('cursor=')
+      ? new Response('', { status: 503 })
+      : response({ tables: { logEntries: [remoteLogEntry()] }, pulledAt: 900000, nextCursor: 'next' })))
+    expect(await runSync(db)).toBe('error')
+    expect((await db.syncMeta.toCollection().first())?.lastSyncedAt).toBe(1)
+    expect(await db.logEntries.count()).toBe(0)
+  })
+
+  it('ignores an old account response after local account ownership changes', async () => {
+    const db = await signedInDb()
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      const meta = await db.syncMeta.toCollection().first()
+      await db.syncMeta.update(meta!.id!, { userId: 'user-2', linkedUserId: 'user-2' })
+      return response({ tables: { logEntries: [remoteLogEntry()] }, pulledAt: 900000 })
+    }))
+    await runSync(db)
+    expect(await db.logEntries.count()).toBe(0)
+    expect((await db.syncMeta.toCollection().first())?.lastSyncedAt).toBe(1)
+  })
+
+  it('converges to the server winner for equal timestamps without repeated refreshes', async () => {
+    const db = await signedInDb()
+    await db.logEntries.add({ ...remoteLogEntry({ name: 'Local tie' }), id: undefined } as never)
+    stubFetch({ tables: { logEntries: [remoteLogEntry({ name: 'Server tie' })] } })
+    await runSync(db)
+    expect((await db.logEntries.toArray())[0].name).toBe('Server tie')
+    const changed = vi.fn()
+    const unsubscribe = onSyncDataChanged(changed)
+    await runSync(db)
+    unsubscribe()
+    expect(changed).not.toHaveBeenCalled()
+  })
+
+  it('translates recipe identity both ways rather than sharing device-local primary keys', async () => {
+    const db = await signedInDb()
+    const localRecipeId = await db.recipes.add({ clientId: 'recipe-uuid', name: 'My curry', updatedAt: 1000 } as never)
+    await db.syncOutbox.add({ table: 'logEntries', clientId: 'uuid-a', operation: 'upsert', payload: remoteLogEntry({ recipeId: localRecipeId }), updatedAt: 1000 })
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => {
+      if (url.includes('/push')) {
+        const { mutations } = JSON.parse(init!.body as string)
+        expect(mutations[0].payload.recipeId).toBe('recipe-uuid')
+        expect(mutations[0].payload.id).toBeUndefined()
+        return response({ flushed: mutations })
+      }
+      return response({ tables: { logEntries: [remoteLogEntry({ recipeId: 'recipe-uuid', loggedAt: '2026-09-08T12:00:00.000Z' })] } })
+    }))
+    await runSync(db)
+    const log = (await db.logEntries.toArray())[0]
+    expect(log.recipeId).toBe(localRecipeId)
+    expect(log.loggedAt).toBe('2026-09-08T12:00:00.000Z')
+  })
+})

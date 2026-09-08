@@ -1,9 +1,9 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import type { FoodItemResult } from '../../api/ai/analyze'
 import { LogRepo } from '../data/repos/LogRepo'
-import { isFutureDate, todayISO } from '../lib/date'
+import { diaryDate, diaryPath } from '../lib/date'
 import { vibrateSuccess } from '../lib/haptics'
 import PageHeader from './components/PageHeader'
 import { useUIState } from './shell/UIStateContext'
@@ -23,6 +23,8 @@ export default function AiLogResultPage() {
   const navigate = useNavigate()
   const location = useLocation()
   const { notifyDataChanged } = useUIState()
+  const savingRef = useRef(false)
+  const [error, setError] = useState<string | null>(null)
   const [saving, setSaving] = useState(false)
 
   const valid = isLocationState(location.state)
@@ -31,7 +33,7 @@ export default function AiLogResultPage() {
   // A forgotten meal is usually logged the *next* day, so this flow has to
   // be able to write to a past date rather than always stamping today.
   const requestedDate = valid ? location.state.date : undefined
-  const entryDate = requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
+  const entryDate = diaryDate(requestedDate)
   const [checked, setChecked] = useState<boolean[]>(() => items.map(() => true))
 
   if (!valid) {
@@ -46,13 +48,13 @@ export default function AiLogResultPage() {
   }
 
   async function handleLogAll() {
+    if (savingRef.current) return
+    savingRef.current = true
     setSaving(true)
+    setError(null)
     try {
       const logRepo = new LogRepo()
-      for (let i = 0; i < items.length; i++) {
-        if (!checked[i]) continue
-        const item = items[i]
-        await logRepo.addEntry({
+      await logRepo.addEntries(items.filter((_, index) => checked[index]).map((item) => ({
           date: entryDate,
           meal,
           customSnapshot: {
@@ -66,19 +68,21 @@ export default function AiLogResultPage() {
           name: item.name,
           portionSummary: item.gramsEstimate ? `${item.gramsEstimate} g (AI estimate)` : 'AI estimate',
           qty: 1,
-          unit: 'portion',
+          unit: 'portion' as const,
           grams: item.gramsEstimate ?? 0,
           kcal: item.kcal,
           p: item.proteinG,
           c: item.carbsG,
           f: item.fatG,
           fiber: item.fiberG,
-        })
-      }
+        })))
       vibrateSuccess()
       notifyDataChanged()
-      navigate(entryDate === todayISO() ? '/' : `/history/${entryDate}`)
+      navigate(diaryPath(entryDate))
+    } catch {
+      setError('Could not save this meal. Nothing was added; please try again.')
     } finally {
+      savingRef.current = false
       setSaving(false)
     }
   }
@@ -87,7 +91,7 @@ export default function AiLogResultPage() {
     <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-6">
       <PageHeader
         title={items.length === 0 ? 'No items found' : `${items.length} item${items.length === 1 ? '' : 's'} found`}
-        backTo="/log/ai"
+        backTo={`/log/ai?meal=${meal}&date=${entryDate}`}
       />
 
       {items.length === 0 ? (
@@ -143,6 +147,7 @@ export default function AiLogResultPage() {
         </>
       )}
 
+      {error && <p role="alert" className="my-3 text-sm text-danger-700 dark:text-danger-300">{error}</p>}
       <button
         type="button"
         onClick={handleLogAll}

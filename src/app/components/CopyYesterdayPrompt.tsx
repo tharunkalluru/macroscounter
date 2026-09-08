@@ -19,6 +19,7 @@ interface Props {
 export default function CopyYesterdayPrompt({ date, todayEntryCount, historyEntries, onCopied }: Props) {
   const [dismissed, setDismissed] = useState(false)
   const [copying, setCopying] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const yesterday = addDaysISO(date, -1)
   const previousDayEntries = historyEntries.filter((e) => e.date === yesterday)
@@ -28,15 +29,17 @@ export default function CopyYesterdayPrompt({ date, todayEntryCount, historyEntr
   const { count, kcal } = summarizeDayCopy(previousDayEntries)
 
   async function handleCopy() {
+    if (copying) return
     setCopying(true)
+    setError(null)
     try {
       const copies = buildCopiedEntries(previousDayEntries, date)
       const logRepo = new LogRepo()
-      for (const copy of copies) {
-        await logRepo.addEntry(copy)
-      }
+      await logRepo.addEntries(copies)
       vibrateTiny()
       onCopied()
+    } catch {
+      setError('Could not copy your meals. Nothing was added; please try again.')
     } finally {
       setCopying(false)
     }
@@ -52,13 +55,14 @@ export default function CopyYesterdayPrompt({ date, todayEntryCount, historyEntr
         Copy yesterday&apos;s log ({count} item{count === 1 ? '' : 's'}, {kcal} kcal) to get a quick
         start?
       </p>
+      {error && <p role="alert" className="mt-2 text-danger-700 dark:text-danger-300">{error}</p>}
       <div className="mt-3 flex gap-3">
         <button
           type="button"
           disabled={copying}
           onClick={handleCopy}
           data-testid="copy-yesterday-confirm"
-          className="rounded bg-brand-700 px-3 py-1 font-medium text-white disabled:opacity-50"
+          className="min-h-touch rounded bg-brand-700 px-3 py-1 font-medium text-white disabled:opacity-50"
         >
           Copy yesterday
         </button>
@@ -66,7 +70,7 @@ export default function CopyYesterdayPrompt({ date, todayEntryCount, historyEntr
           type="button"
           onClick={() => setDismissed(true)}
           data-testid="copy-yesterday-dismiss"
-          className="rounded px-3 py-1 text-slate-500 underline dark:text-slate-400"
+          className="min-h-touch rounded px-3 py-1 text-slate-500 underline dark:text-slate-400"
         >
           Dismiss
         </button>

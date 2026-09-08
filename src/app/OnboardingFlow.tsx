@@ -422,7 +422,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
                   <div className="flex items-baseline justify-between">
                     <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Target weight</span>
                     <span className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-                      {goalWeightLb} lb
+                      {(weightUnit === 'kg' ? lbToKg(goalWeightLb) : goalWeightLb).toFixed(1)} {weightUnit}
                     </span>
                   </div>
                   <input
@@ -432,13 +432,15 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
                     step={1}
                     value={goalWeightLb}
                     onChange={(e) => setGoalWeightLb(Number(e.target.value))}
-                    aria-label="Target weight, lb"
+                    aria-label={`Target weight, ${weightUnit}`}
+                    aria-valuetext={`${(weightUnit === 'kg' ? lbToKg(goalWeightLb) : goalWeightLb).toFixed(1)} ${weightUnit}`}
                     data-testid="goal-weight-slider"
                     className="h-2 min-h-touch w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-600 dark:bg-slate-700"
                   />
                 </div>
               )}
               <GoalRateSlider
+                unit={weightUnit}
                 direction={goal === 'gain' ? 'gain' : 'cut'}
                 valueLbPerWeek={goalRateLbPerWeek}
                 onChange={setGoalRateLbPerWeek}

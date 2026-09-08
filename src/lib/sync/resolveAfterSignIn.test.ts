@@ -258,3 +258,39 @@ describe('resolveAfterSignIn', () => {
     expect(profiles[0].name).toBe('Person B')
   })
 })
+
+describe('sign-in recovery and data preservation', () => {
+  it('leaves ownership and data untouched if the server check fails', async () => {
+    await db.syncMeta.add({ userId: null, linkedUserId: 'original', lastSyncedAt: 123 } as never)
+    await db.logEntries.add({ name: 'Existing diary' } as never)
+    mockGetSession.mockResolvedValue({ data: { user: { id: 'new-user', email: 'new@example.com', name: 'New' } } })
+    vi.stubGlobal('fetch', vi.fn(async () => new Response('', { status: 503 })))
+    await expect(resolveAfterSignIn(db)).rejects.toThrow()
+    expect((await db.syncMeta.toCollection().first())?.linkedUserId).toBe('original')
+    expect(await db.logEntries.count()).toBe(1)
+  })
+
+  it('does not discard pending changes when another account signs in', async () => {
+    await db.syncMeta.add({ userId: null, linkedUserId: 'original' } as never)
+    await db.logEntries.add({ name: 'Unsynced diary' } as never)
+    await db.syncOutbox.add({ table: 'logEntries', clientId: 'pending', operation: 'delete', payload: null, updatedAt: 1 })
+    mockGetSession.mockResolvedValue({ data: { user: { id: 'new-user', email: 'new@example.com', name: 'New' } } })
+    await expect(resolveAfterSignIn(db)).rejects.toThrow('changes waiting to sync')
+    expect((await db.syncMeta.toCollection().first())?.linkedUserId).toBe('original')
+    expect(await db.logEntries.count()).toBe(1)
+    expect(await db.syncOutbox.count()).toBe(1)
+  })
+
+  it('preserves a guest diary when signing into an account with existing goals', async () => {
+    await db.profiles.add({ name: 'Guest profile' } as never)
+    await db.logEntries.add({ name: 'Guest lunch', kcal: 250 } as never)
+    server.rows.set('profiles:cloud-profile', { clientId: 'cloud-profile', name: 'Cloud profile', updatedAt: 1000, deletedAt: null })
+    mockGetSession.mockResolvedValue({ data: { user: { id: 'returning', email: 'returning@example.com', name: 'Returning' } } })
+    expect(await resolveAfterSignIn(db)).toBe('ready')
+    const profiles = await db.profiles.toArray()
+    expect(profiles).toHaveLength(1)
+    expect(profiles[0].name).toBe('Cloud profile')
+    expect((await db.logEntries.toArray())[0].name).toBe('Guest lunch')
+    expect([...server.rows.keys()].filter((key) => key.startsWith('logEntries:'))).toHaveLength(1)
+  })
+})

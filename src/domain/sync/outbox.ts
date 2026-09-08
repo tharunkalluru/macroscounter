@@ -32,6 +32,6 @@ export function reconcileAfterPush(
   return outbox.filter((entry) => {
     const match = flushed.find((f) => f.table === entry.table && f.clientId === entry.clientId)
     if (!match) return true
-    return entry.updatedAt > match.updatedAt
+    return entry.updatedAt !== match.updatedAt
   })
 }

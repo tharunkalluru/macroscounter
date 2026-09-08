@@ -31,7 +31,7 @@ export function computeRecipe(
   if (ingredients.length === 0) {
     throw new Error('Recipe must have at least one ingredient')
   }
-  if (servings <= 0) {
+  if (!Number.isFinite(servings) || servings <= 0) {
     throw new Error('Recipe must have at least one serving')
   }
 
@@ -40,8 +40,13 @@ export function computeRecipe(
   let totalP = 0
   let totalC = 0
   let totalF = 0
+  let totalFiber = 0
+  let hasFiber = false
 
   for (const ingredient of ingredients) {
+    if (!Number.isFinite(ingredient.grams) || ingredient.grams <= 0) {
+      throw new Error('Each ingredient must have a positive gram weight')
+    }
     const per100g = foodsById.get(ingredient.foodId)
     if (!per100g) {
       throw new Error(`Unknown ingredient food id: ${ingredient.foodId}`)
@@ -52,6 +57,10 @@ export function computeRecipe(
     totalP += per100g.p * factor
     totalC += per100g.c * factor
     totalF += per100g.f * factor
+    if (per100g.fiber !== undefined) {
+      hasFiber = true
+      totalFiber += per100g.fiber * factor
+    }
   }
 
   const scaleTo100g = 100 / totalGrams
@@ -61,6 +70,7 @@ export function computeRecipe(
       p: round1(totalP * scaleTo100g),
       c: round1(totalC * scaleTo100g),
       f: round1(totalF * scaleTo100g),
+      ...(hasFiber ? { fiber: round1(totalFiber * scaleTo100g) } : {}),
     },
     totalGrams,
     gramsPerServing: round1(totalGrams / servings),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import type { FoodRecord } from '../../data/models'
-import { applyTemplate } from './applyTemplate'
+import type { FoodRecord, LogEntry } from '../../data/models'
+import { applyTemplate, buildTemplateEntries } from './applyTemplate'
 
 const idli: FoodRecord = {
   id: 'idli',
@@ -59,5 +59,27 @@ describe('applyTemplate', () => {
     expect(() => applyTemplate([{ foodId: 'ghost', qty: 1, unit: 'portion' }], foodsById)).toThrow(
       /Unknown food id/
     )
+  })
+
+  it('preserves a complete mixed meal and alternate serving even without its original foods or recipes', () => {
+    const base: LogEntry = { id: 1, clientId: 'original', updatedAt: 123, date: '2026-08-17', meal: 'lunch', name: 'Idli', foodId: 'idli', portionSummary: '2 x 2 idli', portionLabel: '2 idli', qty: 2, unit: 'portion', grams: 160, kcal: 164, p: 7.2, c: 32, f: 0.8, fiber: 1.4, loggedAt: '2026-08-17T12:00:00Z' }
+    const source: LogEntry[] = [
+      base,
+      { ...base, id: 2, foodId: undefined, recipeId: 5, name: 'Homemade curry' },
+      { ...base, id: 3, foodId: undefined, barcode: '1234567890123', name: 'Yogurt' },
+      { ...base, id: 4, foodId: undefined, name: 'Restaurant meal', grams: 0, customSnapshot: { name: 'Restaurant meal', kcal: 164, p: 7.2, c: 32, f: 0.8, fiber: 1.4 } },
+    ]
+    const saved = buildTemplateEntries(source)
+    const resolved = applyTemplate(saved, new Map())
+    expect(resolved).toHaveLength(4)
+    expect(resolved.map((e) => e.name)).toEqual(source.map((e) => e.name))
+    expect(resolved[0]).toMatchObject({ qty: 2, grams: 160, kcal: 164, fiber: 1.4, portionLabel: '2 idli' })
+    for (const entry of resolved) {
+      for (const field of ['id', 'clientId', 'date', 'meal', 'updatedAt', 'deletedAt', 'loggedAt', 'recipeId']) {
+        expect(entry).not.toHaveProperty(field)
+      }
+    }
+    expect(resolved[3].customSnapshot).toEqual(source[3].customSnapshot)
+    expect(resolved[3].customSnapshot).not.toBe(source[3].customSnapshot)
   })
 })

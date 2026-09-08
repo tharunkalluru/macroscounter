@@ -1,109 +1,63 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { eq, and } from 'drizzle-orm'
 import { getUserId } from '../_auth.js'
-import { getDb, schema } from '../_db.js'
+import { getDb } from '../_db.js'
+import { accountWriteLock, mutationQueries } from './_queries.js'
+import { MAX_MUTATIONS, MAX_PUSH_BYTES, validateMutation } from './_validation.js'
 
-const TABLES = {
-  profiles: schema.profiles,
-  targets: schema.targets,
-  logEntries: schema.logEntries,
-  weighIns: schema.weighIns,
-  recipes: schema.recipes,
-  mealTemplates: schema.mealTemplates,
-  scannedProducts: schema.scannedProducts,
-} as const
-
-type TableKey = keyof typeof TABLES
-
-interface PushMutation {
-  table: string
-  clientId: string
-  operation: 'upsert' | 'delete'
-  payload: Record<string, unknown> | null
-  updatedAt: number
-}
-
-function isKnownTable(name: string): name is TableKey {
-  return Object.prototype.hasOwnProperty.call(TABLES, name)
-}
-
-/**
- * POST /api/sync/push — accepts a batch of queued local mutations (the
- * client's outbox) and applies them with last-write-wins: a mutation is
- * only applied if it's newer than (or equal to — first-write case) whatever
- * the server currently has for that row. Returns which mutations were
- * accepted so the client can safely drop them from its own outbox.
- */
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  res.setHeader?.('Cache-Control', 'no-store')
   if (req.method !== 'POST') {
     res.status(405).json({ error: 'Method not allowed' })
     return
   }
-
-  const userId = await getUserId(req)
-  if (!userId) {
-    res.status(401).json({ error: 'Not signed in' })
-    return
-  }
-
-  const mutations = (req.body?.mutations ?? []) as PushMutation[]
-  if (!Array.isArray(mutations)) {
-    res.status(400).json({ error: 'mutations must be an array' })
-    return
-  }
-
-  const db = getDb()
-  const flushed: { table: string; clientId: string; updatedAt: number }[] = []
-
-  for (const mutation of mutations) {
-    if (!isKnownTable(mutation.table)) continue
-    const table = TABLES[mutation.table]
-
-    // Each mutation is isolated: one malformed or rejected row (a bad
-    // clientId shape, an unexpected constraint) must never abort the whole
-    // batch and block every other pending mutation from syncing along with
-    // it. A skipped mutation simply stays queued in the client's outbox and
-    // is retried on the next sync — it is not added to `flushed` below.
-    try {
-      const existing = await db
-        .select({ updatedAt: table.updatedAt })
-        .from(table)
-        .where(and(eq(table.id, mutation.clientId), eq(table.userId, userId)))
-        .limit(1)
-
-      const serverUpdatedAt = existing[0]?.updatedAt?.getTime()
-      if (serverUpdatedAt !== undefined && serverUpdatedAt > mutation.updatedAt) {
-        // Server already has something newer (a race with another device) —
-        // skip; the client will pick up the winner on its next pull.
-        continue
-      }
-
-      if (mutation.operation === 'delete') {
-        await db
-          .update(table)
-          .set({ deletedAt: new Date(mutation.updatedAt), updatedAt: new Date(mutation.updatedAt) })
-          .where(and(eq(table.id, mutation.clientId), eq(table.userId, userId)))
-      } else if (mutation.payload) {
-        const { id: _clientPayloadId, updatedAt: _clientUpdatedAt, deletedAt: _clientDeletedAt, ...rest } =
-          mutation.payload
-        const row = {
-          ...rest,
-          id: mutation.clientId,
-          userId,
-          updatedAt: new Date(mutation.updatedAt),
-          deletedAt: null,
-        }
-        await db
-          .insert(table)
-          .values(row as never)
-          .onConflictDoUpdate({ target: table.id, set: row as never })
-      }
-
-      flushed.push({ table: mutation.table, clientId: mutation.clientId, updatedAt: mutation.updatedAt })
-    } catch (err) {
-      console.error(`sync push: skipping ${mutation.table}/${mutation.clientId} —`, err)
+  try {
+    const userId = await getUserId(req)
+    if (!userId) {
+      res.status(401).json({ error: 'Not signed in' })
+      return
     }
+    const expectedUser = req.headers['x-sync-user-id']
+    if (expectedUser && expectedUser !== userId) {
+      res.status(409).json({ error: 'Account changed. Sign in again.', code: 'account_changed' })
+      return
+    }
+    const contentType = req.headers['content-type']
+    if (contentType && !contentType.includes('application/json')) {
+      res.status(415).json({ error: 'Use application/json.' })
+      return
+    }
+    const raw: unknown = req.body?.mutations
+    if (!Array.isArray(raw) || raw.length > MAX_MUTATIONS) {
+      res.status(400).json({ error: `mutations must be an array of at most ${MAX_MUTATIONS} items` })
+      return
+    }
+    if (Buffer.byteLength(JSON.stringify(req.body), 'utf8') > MAX_PUSH_BYTES) {
+      res.status(413).json({ error: 'Sync batch is too large.' })
+      return
+    }
+    const rejected: { index: number; table?: unknown; clientId?: unknown; updatedAt?: unknown; code: string }[] = []
+    const mutations = raw.flatMap((value, index) => {
+      const valid = validateMutation(value)
+      if (valid) return [valid]
+      const row = value && typeof value === 'object' ? value : {}
+      rejected.push({ index, table: row.table, clientId: row.clientId, updatedAt: row.updatedAt, code: 'invalid_mutation' })
+      return []
+    })
+    if (mutations.length) {
+      const db = getDb()
+      // Neon HTTP batches execute as one transaction; the account lock and
+      // durable tombstones cover out-of-order requests as well as duplicates.
+      const queries = [accountWriteLock(userId), ...mutations.flatMap((mutation) => mutationQueries(userId, mutation))]
+      const operations = queries.map((query) => db.execute(query))
+      await db.batch(operations as [typeof operations[number], ...typeof operations[number][]])
+    }
+    // Stale/equal writes are consumed too: the following pull carries the
+    // server winner. Retrying a losing version forever cannot resolve it.
+    const flushed = mutations.map(({ table, clientId, updatedAt }) => ({ table, clientId, updatedAt }))
+    res.status(200).json({ flushed, rejected })
+  } catch (error) {
+    // Never log nutrition payloads, credentials, or database query parameters.
+    console.error('sync push failed', { name: error instanceof Error ? error.name : 'UnknownError' })
+    res.status(503).json({ error: 'Cloud sync is temporarily unavailable. Your changes stay on this device.', code: 'sync_unavailable' })
   }
-
-  res.status(200).json({ flushed })
 }

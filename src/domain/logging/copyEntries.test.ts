@@ -47,6 +47,15 @@ describe('buildCopiedEntries', () => {
     expect(copied.every((e) => !('id' in e))).toBe(true)
   })
 
+  it('drops cloud identity and tombstones so copying never updates the source on another device', () => {
+    const original = { ...source[0], clientId: 'source-cloud-id', updatedAt: 123, deletedAt: null }
+    const [copy] = buildCopiedEntries([original], '2026-08-18')
+    expect(copy).not.toHaveProperty('clientId')
+    expect(copy).not.toHaveProperty('updatedAt')
+    expect(copy).not.toHaveProperty('deletedAt')
+    expect(original.clientId).toBe('source-cloud-id')
+  })
+
   it('preserves macro, portion, and food-linkage data unchanged', () => {
     const [copiedIdli] = buildCopiedEntries(source, '2026-08-18')
     expect(copiedIdli).toMatchObject({

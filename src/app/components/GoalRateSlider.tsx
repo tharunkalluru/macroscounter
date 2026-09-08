@@ -1,5 +1,6 @@
 interface Props {
   /** 'cut' or 'gain' — direction changes the label text, not the mechanics. */
+  unit?: 'kg' | 'lb'
   direction: 'cut' | 'gain'
   valueLbPerWeek: number
   onChange: (value: number) => void
@@ -10,7 +11,8 @@ const MAX = 2
 const STEP = 0.25
 
 /** lb/week goal-rate slider — feeds goalEngine's goalRateLbPerWeek. */
-export default function GoalRateSlider({ direction, valueLbPerWeek, onChange }: Props) {
+export default function GoalRateSlider({ direction, valueLbPerWeek, onChange, unit = 'lb' }: Props) {
+  const displayRate = (unit === 'kg' ? (valueLbPerWeek * 0.45359237) : valueLbPerWeek).toFixed(2)
   const verb = direction === 'cut' ? 'lose' : 'gain'
   const kcalPerDay = Math.round((valueLbPerWeek * 3500) / 7)
 
@@ -18,10 +20,10 @@ export default function GoalRateSlider({ direction, valueLbPerWeek, onChange }: 
     <div className="flex flex-col gap-3">
       <div className="text-center">
         <p className="text-display tabular-nums text-brand-700 dark:text-brand-400" data-testid="goal-rate-value">
-          {valueLbPerWeek.toFixed(2)} lb/week
+          {displayRate} {unit}/week
         </p>
         <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-          Aim to {verb} {valueLbPerWeek.toFixed(2)} lb a week - about {kcalPerDay} kcal/day{' '}
+          Aim to {verb} {displayRate} {unit} a week - about {kcalPerDay} kcal/day{' '}
           {direction === 'cut' ? 'deficit' : 'surplus'}.
         </p>
       </div>
@@ -32,6 +34,7 @@ export default function GoalRateSlider({ direction, valueLbPerWeek, onChange }: 
         step={STEP}
         value={valueLbPerWeek}
         onChange={(e) => onChange(Number(e.target.value))}
+        aria-valuetext={`${displayRate} ${unit} per week`}
         aria-label={`Goal rate, ${verb} per week`}
         data-testid="goal-rate-slider"
         className="h-2 min-h-touch w-full cursor-pointer appearance-none rounded-full bg-slate-200 accent-brand-600 dark:bg-slate-700"

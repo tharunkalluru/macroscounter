@@ -1,11 +1,14 @@
-import { DndContext, DragOverlay, MouseSensor, TouchSensor, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
-import { useCallback, useEffect, useState } from 'react'
+import { DndContext, DragOverlay, pointerWithin, MouseSensor, TouchSensor, useSensor, useSensors, type DragEndEvent, type DragStartEvent } from '@dnd-kit/core'
+import { useCallback, useEffect, useRef, useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import type { LogEntry, Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
-import { addDaysISO, todayISO } from '../lib/date'
+import { addDaysISO, diaryDate, todayISO } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
 import { getDefaultLogView } from '../lib/settings/logViewPreference'
 import DateStrip from './components/DateStrip'
+import DateNav from './components/DateNav'
+import { sumMacros } from '../domain/logging/portionMath'
 import EntryRowVisual from './components/EntryRowVisual'
 import MealSection from './components/MealSection'
 import MonthView from './components/MonthView'
@@ -47,8 +50,12 @@ const TOUCH_ACTIVATION_CONSTRAINT = { delay: 200, tolerance: 8 }
  */
 export default function LogPage() {
   const [tab, setTab] = useState<Tab>(getDefaultLogView)
-  const [selectedDate, setSelectedDate] = useState(todayISO())
-  const { dataVersion } = useUIState()
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedDate = diaryDate(searchParams.get('date'))
+  const setSelectedDate = (date: string) => setSearchParams(date === todayISO() ? {} : { date })
+  const { dataVersion, notifyDataChanged } = useUIState()
+  const loadVersion = useRef(0)
+  const [loadedDate, setLoadedDate] = useState<string | null>(null)
   const [entries, setEntries] = useState<LogEntry[]>([])
   const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
   const [draggingEntry, setDraggingEntry] = useState<LogEntry | null>(null)
@@ -66,10 +73,13 @@ export default function LogPage() {
   )
 
   const loadEntries = useCallback(async () => {
+    const version = ++loadVersion.current
     const [dayEntries, historyRange] = await Promise.all([
       new LogRepo().getEntriesForDate(selectedDate),
       new LogRepo().getEntriesForDateRange(addDaysISO(selectedDate, -14), selectedDate),
     ])
+    if (version !== loadVersion.current) return
+    setLoadedDate(selectedDate)
     setEntries(dayEntries)
     setHistoryEntries(historyRange)
   }, [selectedDate])
@@ -77,15 +87,20 @@ export default function LogPage() {
   useEffect(() => {
     if (tab === 'month') return
     loadEntries()
+    // This counter intentionally invalidates asynchronous data requests, not a DOM ref.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    return () => { loadVersion.current++ }
   }, [tab, dataVersion, loadEntries])
 
   async function handleDelete(id: number) {
     await new LogRepo().deleteEntry(id)
+    notifyDataChanged()
     await loadEntries()
   }
 
   async function handleMoveEntry(id: number, meal: Meal) {
     await new LogRepo().updateEntry(id, { meal })
+    notifyDataChanged()
     await loadEntries()
   }
 
@@ -107,8 +122,9 @@ export default function LogPage() {
   const isToday = selectedDate === todayISO()
 
   return (
-    <div className="mx-auto max-w-md px-6 py-8">
-      <h1 className="sr-only">Log</h1>
+    <div className="mx-auto max-w-xl px-5 py-6">
+      <h1 className="text-display">Food diary</h1>
+      <p className="mb-5 mt-1 text-sm text-slate-500 dark:text-slate-400">Every meal, in one place. Choose a day to review or add food.</p>
 
       <div className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Log view">
         {TABS.map((t) => (
@@ -132,11 +148,13 @@ export default function LogPage() {
 
       {tab !== 'month' && (
         <div className="mt-3">
+          <DateNav date={selectedDate} onChange={setSelectedDate} />
           <DateStrip selectedDate={selectedDate} onSelect={setSelectedDate} />
         </div>
       )}
 
-      {tab === 'meals' && (
+      {tab !== 'month' && loadedDate !== selectedDate && <p role="status" className="py-6 text-center text-sm text-slate-500 dark:text-slate-400">Loading this day…</p>}
+      {tab === 'meals' && loadedDate === selectedDate && (
         <div className="mt-2" role="tabpanel">
           {!isToday && (
             <button
@@ -148,7 +166,11 @@ export default function LogPage() {
               Return to today
             </button>
           )}
-          <DndContext sensors={dragSensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+          <div className="mb-4 flex items-center justify-between rounded-card bg-white p-4 shadow-card dark:bg-surface-dark-card" data-testid="diary-day-total">
+            <span className="text-sm text-slate-500 dark:text-slate-400">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span>
+            <span className="font-semibold tabular-nums">{Math.round(sumMacros(entries).kcal)} kcal · {Math.round(sumMacros(entries).p)} g protein</span>
+          </div>
+          <DndContext collisionDetection={pointerWithin} sensors={dragSensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
             {MEALS.map(({ key, label }) => (
               <MealSection
                 key={key}
@@ -179,7 +201,7 @@ export default function LogPage() {
         </div>
       )}
 
-      {tab === 'timeline' && (
+      {tab === 'timeline' && loadedDate === selectedDate && (
         <div className="mt-4" role="tabpanel">
           <TimelineView entries={entries} onDelete={handleDelete} />
         </div>

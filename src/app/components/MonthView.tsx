@@ -6,6 +6,7 @@ import { TargetRepo } from '../../data/repos/TargetRepo'
 import { computeAverage, groupEntriesByDate } from '../../domain/history/averages'
 import { classifyDay, type DayColorBand } from '../../domain/history/colorBand'
 import { findApplicableTarget } from '../../domain/history/targetForDate'
+import { useUIState } from '../shell/UIStateContext'
 import { addDaysISO, getMonthGrid, isFutureDate, todayISO } from '../../lib/date'
 
 const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
@@ -19,6 +20,7 @@ const BAND_CLASSES: Record<DayColorBand, string> = {
 
 /** Calendar month grid + 7/30-day averages + a link into weight tracking — the "Month" view of the Log tab (Phase R.3), extracted from the original standalone HistoryPage so `/history` and `/log`'s Month tab share one implementation. */
 export default function MonthView() {
+  const { dataVersion } = useUIState()
   const today = new Date()
   const [year, setYear] = useState(today.getFullYear())
   const [monthIndex0, setMonthIndex0] = useState(today.getMonth())
@@ -42,7 +44,7 @@ export default function MonthView() {
       )
       setEntries(monthEntries)
     })()
-  }, [grid])
+  }, [grid, dataVersion])
 
   useEffect(() => {
     ;(async () => {
@@ -53,7 +55,7 @@ export default function MonthView() {
       setTargets(allTargets)
       setRecentEntries(last30)
     })()
-  }, [])
+  }, [dataVersion])
 
   const dayTotalsByDate = useMemo(() => {
     const totals = groupEntriesByDate(entries)
@@ -150,6 +152,7 @@ export default function MonthView() {
               <Link
                 key={date}
                 to={`/history/${date}`}
+                aria-label={`${new Date(`${date}T12:00:00`).toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })}: ${total ? `${Math.round(total.kcal)} calories logged` : 'no entries'}`}
                 className={cellClasses}
                 data-testid={`day-${date}`}
                 data-band={band}

@@ -25,11 +25,12 @@ export default function AppShell() {
   }
 
   return (
-    <div className="min-h-screen bg-surface dark:bg-surface-dark">
+    <div className="min-h-screen bg-surface dark:bg-surface-dark lg:pl-52">
+      <a href="#main-content" className="fixed -top-24 left-4 z-50 rounded-lg bg-white p-3 text-brand-700 focus:top-4">Skip to content</a>
       <InstallCoachMark />
       <GoalReachedTakeover />
       <Header />
-      <main className="pb-24">
+      <main id="main-content" className="pb-24 lg:pb-10">
         <PageTransition>
           <Outlet />
         </PageTransition>

@@ -11,6 +11,8 @@ import {
 } from '../../domain/reports/weeklyReport'
 import { computeConsistency, computeStreak } from '../../domain/streaks/streak'
 import { addDaysISO, todayISO } from '../../lib/date'
+import { findApplicableTarget } from '../../domain/history/targetForDate'
+import { useUIState } from '../shell/UIStateContext'
 import CalorieTrendChart from './CalorieTrendChart'
 
 interface Props {
@@ -19,6 +21,7 @@ interface Props {
 }
 
 export default function ReportSection({ weekEndDate }: Props) {
+  const { dataVersion } = useUIState()
   const [report, setReport] = useState<WeeklyReport | null>(null)
   const [comparison, setComparison] = useState<WeekComparison | null>(null)
   const [streak, setStreak] = useState(0)
@@ -29,6 +32,7 @@ export default function ReportSection({ weekEndDate }: Props) {
   const anchor = weekEndDate ?? todayISO()
 
   useEffect(() => {
+    let cancelled = false
     ;(async () => {
       const today = todayISO()
       // Streak/consistency always reflect the real present, even when
@@ -39,13 +43,14 @@ export default function ReportSection({ weekEndDate }: Props) {
         new LogRepo().getEntriesForDateRange(addDaysISO(anchor, -29), anchor),
         new LogRepo().getEntriesForDateRange(addDaysISO(today, -179), today),
       ])
+      if (cancelled) return
       const applicableTargets = targets.filter((t) => t.effectiveDate <= anchor)
       const latestTarget = applicableTargets[applicableTargets.length - 1]
       const dayTotals = groupEntriesByDate(windowEntries)
       const last7 = dayTotals.filter((d) => d.date >= addDaysISO(anchor, -6))
 
       if (latestTarget) {
-        const currentReport = computeWeeklyReport(last7, latestTarget)
+        const currentReport = computeWeeklyReport(last7, latestTarget, (date) => findApplicableTarget(date, targets))
         setReport(currentReport)
         setTargetKcal(latestTarget.kcal)
 
@@ -54,17 +59,29 @@ export default function ReportSection({ weekEndDate }: Props) {
         const previous7 = dayTotals.filter(
           (d) => d.date >= previousWeekStart && d.date <= previousWeekEnd
         )
-        const previousReport = computeWeeklyReport(previous7, latestTarget)
-        setComparison(compareWeeklyReports(currentReport, previousReport, latestTarget.kcal))
+        const previousReport = computeWeeklyReport(previous7, latestTarget, (date) => findApplicableTarget(date, targets))
+        const comparison = compareWeeklyReports(currentReport, previousReport, latestTarget.kcal)
+        const deviation = (days: DayTotal[]) => {
+          const known = days.filter((day) => findApplicableTarget(day.date, targets))
+          return known.length ? known.reduce((sum, day) => sum + Math.abs(day.kcal - findApplicableTarget(day.date, targets)!.kcal), 0) / known.length : null
+        }
+        const currentDeviation = deviation(last7)
+        const previousDeviation = deviation(previous7)
+        setComparison({ ...comparison, kcalCloserToTarget: currentDeviation !== null && previousDeviation !== null ? currentDeviation < previousDeviation : null })
+      } else {
+        setReport(null)
+        setComparison(null)
+        setTargetKcal(null)
       }
 
       setLast14(dayTotals.filter((d) => d.date >= addDaysISO(anchor, -13)))
 
-      const loggedDates = dayTotals.map((d) => d.date)
+      const loggedDates = groupEntriesByDate(streakEntries).map((day) => day.date)
       setStreak(computeStreak(groupEntriesByDate(streakEntries).map((d) => d.date), today))
       setConsistency(computeConsistency(loggedDates, today, 30))
     })()
-  }, [anchor])
+    return () => { cancelled = true }
+  }, [anchor, dataVersion])
 
   return (
     <div>
@@ -93,7 +110,7 @@ export default function ReportSection({ weekEndDate }: Props) {
         <div className="flex flex-col gap-3">
           <div className="rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card">
             <p className="text-caption text-slate-500 dark:text-slate-400">
-              Avg calories (last 7 logged days)
+              Avg calories (logged days in this week)
             </p>
             <p className="text-display tabular-nums" data-testid="report-avg-kcal">
               {report.avgKcal} kcal
@@ -128,7 +145,7 @@ export default function ReportSection({ weekEndDate }: Props) {
                   >
                     {comparison.avgKcalDelta > 0 ? '▲' : '▼'}{' '}
                     {Math.abs(comparison.avgKcalDelta)} kcal avg,{' '}
-                    {comparison.kcalCloserToTarget ? 'closer to target' : 'farther from target'}
+                    {comparison.kcalCloserToTarget === null ? 'target comparison unavailable' : comparison.kcalCloserToTarget ? 'closer to daily targets' : 'farther from daily targets'}
                   </span>
                 )}
               </p>
@@ -154,13 +171,13 @@ export default function ReportSection({ weekEndDate }: Props) {
             </div>
           )}
           <div className="rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card">
-            <p className="text-caption text-slate-500 dark:text-slate-400">Best day</p>
+            <p className="text-caption text-slate-500 dark:text-slate-400">Closest to calorie target</p>
             <p data-testid="report-best-day">
               {report.bestDay?.date} - {report.bestDay?.kcal} kcal
             </p>
           </div>
           <div className="rounded-card bg-white dark:bg-surface-dark-card p-4 shadow-card">
-            <p className="text-caption text-slate-500 dark:text-slate-400">Toughest day</p>
+            <p className="text-caption text-slate-500 dark:text-slate-400">Largest difference from calorie target</p>
             <p data-testid="report-worst-day">
               {report.worstDay?.date} - {report.worstDay?.kcal} kcal
             </p>

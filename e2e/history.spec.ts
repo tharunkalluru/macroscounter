@@ -41,7 +41,7 @@ test('navigate to a past day, edit an entry, verify the calendar color updates',
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('idli')
   await page.getByTestId('search-results').getByRole('button', { name: 'Idli', exact: true }).click()
   await page.getByTestId('log-entry-button').click()
-  await expect(page).toHaveURL('/history/2026-08-10')
+  await expect(page).toHaveURL('/log?date=2026-08-10')
 
   await page.goto('/history')
   await expect(page.getByTestId('day-2026-08-10')).toHaveAttribute('data-band', 'green')
@@ -55,8 +55,9 @@ test('navigate to a past day, edit an entry, verify the calendar color updates',
   await page.getByTestId('entry-detail-edit-button').click()
   await page.getByTestId('portion-grams-input').fill('2000') // 2000g -> 2050 kcal
   await page.getByTestId('log-entry-button').click()
-  await expect(page).toHaveURL('/history/2026-08-10')
-  await expect(page.getByTestId('day-total-kcal')).toHaveText('2050 / 1628 kcal')
+  await expect(page).toHaveURL('/log?date=2026-08-10')
+  await expect(page.getByTestId('diary-day-total')).toContainText('2050 kcal')
+  await page.goto('/history/2026-08-10')
 
   await page.getByRole('link', { name: 'Back to calendar' }).click()
   await expect(page).toHaveURL('/history')

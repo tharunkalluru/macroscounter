@@ -38,7 +38,7 @@ test('completing onboarding computes and shows the correct kcal target on the da
   await page.getByTestId('goal-cut').click()
   await page.getByTestId('onboarding-continue').click()
 
-  await expect(page.getByTestId('goal-rate-value')).toHaveText('1.00 lb/week')
+  await expect(page.getByTestId('goal-rate-value')).toHaveText('0.45 kg/week')
   await page.getByTestId('onboarding-continue').click() // goal-rate: default (1 lb/week = legacy 500 kcal deficit)
 
   await page.getByTestId('onboarding-continue').click() // diet-style/protein-priority/calorie-floor: defaults

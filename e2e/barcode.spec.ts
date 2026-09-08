@@ -29,7 +29,7 @@ test('manual barcode entry finds a product via Open Food Facts and logs it', asy
   await page.getByPlaceholder('Enter barcode number').fill('8901491101615')
   await page.getByRole('button', { name: 'Look up' }).click()
 
-  await expect(page).toHaveURL('/scan/product/8901491101615?meal=breakfast')
+  await expect(page).toHaveURL('/scan/product/8901491101615?meal=breakfast&date=2026-08-18')
   await expect(page.getByTestId('scanned-product-name')).toHaveText('Amul Butter')
   await expect(page.getByTestId('entry-preview')).toContainText('72 kcal') // 1 serving = 10g -> 71.7 -> rounds to 72
 
@@ -56,7 +56,7 @@ test('not-found flow: manual save persists the product, then a second scan hits 
   await page.getByPlaceholder('Enter barcode number').fill('9999999999999')
   await page.getByRole('button', { name: 'Look up' }).click()
 
-  await expect(page).toHaveURL('/scan/not-found/9999999999999?meal=lunch')
+  await expect(page).toHaveURL('/scan/not-found/9999999999999?meal=lunch&date=2026-08-18')
   await expect(page.getByText('9999999999999')).toBeVisible()
 
   await page.getByLabel('Product name').fill('Homemade Protein Bar')
@@ -66,7 +66,7 @@ test('not-found flow: manual save persists the product, then a second scan hits 
   await page.getByLabel('Fat (g)').fill('12')
   await page.getByRole('button', { name: 'Save & continue' }).click()
 
-  await expect(page).toHaveURL('/scan/product/9999999999999?meal=lunch')
+  await expect(page).toHaveURL('/scan/product/9999999999999?meal=lunch&date=2026-08-18')
   await expect(page.getByTestId('scanned-product-name')).toHaveText('Homemade Protein Bar')
   await page.getByTestId('log-entry-button').click()
   await expect(page).toHaveURL('/')
@@ -81,7 +81,7 @@ test('not-found flow: manual save persists the product, then a second scan hits 
   await page.getByPlaceholder('Enter barcode number').fill('9999999999999')
   await page.getByRole('button', { name: 'Look up' }).click()
 
-  await expect(page).toHaveURL('/scan/product/9999999999999?meal=dinner')
+  await expect(page).toHaveURL('/scan/product/9999999999999?meal=dinner&date=2026-08-18')
   await expect(page.getByTestId('scanned-product-name')).toHaveText('Homemade Protein Bar')
   expect(offCallCount).toBe(1) // still 1 -- no new network call was made
 

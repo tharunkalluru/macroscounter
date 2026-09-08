@@ -38,11 +38,20 @@ export class VisionApiLabelReader implements LabelReader {
   }
 }
 
-export function getLabelReader(): LabelReader {
-  const endpoint = import.meta.env.VITE_LABEL_READER_ENDPOINT
-  const apiKey = import.meta.env.VITE_LABEL_READER_API_KEY
-  if (endpoint && apiKey) {
-    return new VisionApiLabelReader(endpoint, apiKey)
+export class ServerLabelReader implements LabelReader {
+  async readLabel(image: Blob): Promise<ParsedLabel | null> {
+    const { compressImageFile } = await import('../../lib/ai/imageCompress')
+    const payload = await compressImageFile(image)
+    const response = await fetch('/api/ai/read-label', {
+      method: 'POST', credentials: 'include', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload), signal: AbortSignal.timeout(25000),
+    })
+    if (!response.ok) throw new Error('The label could not be read. Sign in and try again, or enter the values below.')
+    const json = await response.json() as { name?: string; kcal?: number; p?: number; c?: number; f?: number; fiber?: number }
+    return { name: json.name, per100g: { kcal: json.kcal, p: json.p, c: json.c, f: json.f, fiber: json.fiber } }
   }
-  return new NullLabelReader()
+}
+
+export function getLabelReader(): LabelReader {
+  return import.meta.env.VITE_LABEL_READER_ENABLED === 'true' ? new ServerLabelReader() : new NullLabelReader()
 }

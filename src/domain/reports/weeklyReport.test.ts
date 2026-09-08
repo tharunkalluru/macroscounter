@@ -95,3 +95,10 @@ describe('compareWeeklyReports', () => {
     expect(comparison.proteinHitRateDelta).toBe(-1)
   })
 })
+
+it('evaluates historical days against their own targets when a goal changes midweek', () => {
+  const days = [{ date: '2026-09-01', kcal: 2000, p: 100 }, { date: '2026-09-02', kcal: 1600, p: 120 }]
+  const report = computeWeeklyReport(days, { kcal: 1600, proteinG: 120 }, (date) => date === '2026-09-01' ? { kcal: 2000, proteinG: 100 } : { kcal: 1600, proteinG: 120 })
+  expect(report.proteinHitRate).toBe(1)
+  expect(report.avgKcal).toBe(1800)
+})

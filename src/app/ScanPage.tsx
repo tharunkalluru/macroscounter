@@ -2,6 +2,7 @@ import { BrowserMultiFormatReader } from '@zxing/browser'
 import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal } from '../data/models'
+import { diaryDate, diaryPath } from '../lib/date'
 import { activeMealWindow } from '../domain/mealPrompt/activeMealWindow'
 import PageHeader from './components/PageHeader'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
@@ -33,6 +34,7 @@ const SCAN_MODES = [
 export default function ScanPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const entryDate = diaryDate(searchParams.get('date'))
   const meal = (searchParams.get('meal') as Meal | null) || activeMealWindow(new Date()) || 'breakfast'
 
   const videoRef = useRef<HTMLVideoElement>(null)
@@ -57,7 +59,7 @@ export default function ScanPage() {
       // Navigate immediately — the product card owns its own lookup and
       // shows a skeleton while it's in flight, so the sheet slides up
       // perceptibly instantly instead of waiting on the network here.
-      navigate(`/scan/product/${barcode.trim()}?meal=${meal}`)
+      navigate(`/scan/product/${barcode.trim()}?meal=${meal}&date=${entryDate}`)
     }
 
     async function start() {
@@ -148,12 +150,12 @@ export default function ScanPage() {
 
   function handleManualSubmit(e: FormEvent) {
     e.preventDefault()
-    if (manualBarcode.trim()) navigate(`/scan/product/${manualBarcode.trim()}?meal=${meal}`)
+    if (manualBarcode.trim()) navigate(`/scan/product/${manualBarcode.trim()}?meal=${meal}&date=${entryDate}`)
   }
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
-      <PageHeader title={`Scan · ${MEAL_LABELS[meal]}`} backTo="/" />
+      <PageHeader title={`Scan · ${MEAL_LABELS[meal]}`} backTo={diaryPath(entryDate)} />
 
       <div className="mt-1 flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Scan mode">
         {SCAN_MODES.map((mode) => (

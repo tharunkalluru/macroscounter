@@ -54,7 +54,7 @@ describe('template integration: save template -> one-tap apply -> correct log en
 
     // One-tap log: load the template, resolve against current food data, write log entries.
     const template = await templateRepo.getById(templateId)
-    const foods = await foodRepo.getByIds(template!.entries.map((e) => e.foodId))
+    const foods = await foodRepo.getByIds(template!.entries.flatMap((e) => e.foodId ? [e.foodId] : []))
     const foodsById = new Map(foods.map((f) => [f.id, f]))
     const resolved = applyTemplate(template!.entries, foodsById)
 

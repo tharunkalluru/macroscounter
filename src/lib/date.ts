@@ -14,6 +14,21 @@ export function isFutureDate(dateISO: string): boolean {
   return dateISO > todayISO()
 }
 
+/** Reject impossible calendar dates rather than allowing Date to silently roll them forward. */
+export function isValidISODate(value: string): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(value)) return false
+  const parsed = new Date(`${value}T12:00:00`)
+  return Number.isFinite(parsed.getTime()) && toISODate(parsed) === value
+}
+
+export function diaryDate(value: string | null | undefined): string {
+  return value && isValidISODate(value) && !isFutureDate(value) ? value : todayISO()
+}
+
+export function diaryPath(date: string): string {
+  return date === todayISO() ? '/' : `/log?date=${diaryDate(date)}`
+}
+
 export function addDaysISO(dateISO: string, days: number): string {
   const [y, m, d] = dateISO.split('-').map(Number)
   const date = new Date(y, m - 1, d + days)

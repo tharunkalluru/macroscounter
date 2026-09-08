@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { computeMacrosForGrams, type Per100g } from '../../domain/logging/portionMath'
 import type { Portion } from '../../domain/fooddb/types'
 import type { Unit } from '../../data/models'
@@ -51,27 +51,42 @@ export default function PortionStep({
   const [gramsValue, setGramsValue] = useState(
     String(initialGrams ?? referencePortions[0]?.grams ?? 100)
   )
+  const savingRef = useRef(false)
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const grams = Number(gramsValue) || 0
-  const preview = grams > 0 ? computeMacrosForGrams(per100g, grams) : null
+  const preview = Number.isFinite(grams) && grams > 0 ? computeMacrosForGrams(per100g, grams) : null
+  const valid = preview !== null && [preview.kcal, preview.p, preview.c, preview.f, preview.fiber ?? 0].every((n) => Number.isFinite(n) && n >= 0)
 
   function step(delta: number) {
     setGramsValue(String(Math.max(0, grams + delta)))
   }
 
   async function handleSave() {
-    if (!preview || grams <= 0) return
-    await onSave({
+    if (!preview || !valid || savingRef.current) return
+    savingRef.current = true
+    setSaving(true)
+    setError(null)
+    try {
+      await onSave({
       portionSummary: `${grams} g`,
       qty: grams,
       unit: 'grams',
+      portionLabel: undefined,
       grams,
       kcal: preview.kcal,
       p: preview.p,
       c: preview.c,
       f: preview.f,
       fiber: preview.fiber,
-    })
+      })
+    } catch {
+      setError('Could not save this entry. Please try again.')
+    } finally {
+      savingRef.current = false
+      setSaving(false)
+    }
   }
 
   return (
@@ -145,14 +160,16 @@ export default function PortionStep({
         </p>
       )}
 
+      {error && <p role="alert" className="mt-3 text-sm text-red-600 dark:text-red-400">{error}</p>}
+
       <button
         type="button"
-        disabled={!preview || grams <= 0}
+        disabled={!valid || saving}
         onClick={handleSave}
         data-testid="log-entry-button"
         className="mt-4 min-h-touch w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
       >
-        {saveLabel ?? (preview ? `Add ${Math.round(grams)} g · ${Math.round(preview.kcal)} kcal` : 'Add')}
+        {saving ? 'Saving…' : saveLabel ?? (valid && preview ? `Add ${Math.round(grams)} g · ${Math.round(preview.kcal)} kcal` : 'Add')}
       </button>
     </div>
   )

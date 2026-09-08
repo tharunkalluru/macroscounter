@@ -1,9 +1,10 @@
-import { useEffect, useState, type FormEvent } from 'react'
+import { useEffect, useRef, useState, type FormEvent } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import { LogRepo } from '../data/repos/LogRepo'
-import { isFutureDate, todayISO } from '../lib/date'
+import { diaryDate, diaryPath } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
+import { useUIState } from './shell/UIStateContext'
 import PageHeader from './components/PageHeader'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
 
@@ -17,13 +18,14 @@ const MEAL_LABELS: Record<Meal, string> = {
 export default function QuickAddPage() {
   const [searchParams] = useSearchParams()
   const navigate = useNavigate()
+  const { notifyDataChanged } = useUIState()
   const entryIdParam = searchParams.get('entryId')
   const editingId = entryIdParam ? Number(entryIdParam) : null
 
   const [meal, setMeal] = useState<Meal>((searchParams.get('meal') as Meal) || 'breakfast')
   const requestedDate = searchParams.get('date')
   const [entryDate, setEntryDate] = useState(
-    requestedDate && !isFutureDate(requestedDate) ? requestedDate : todayISO()
+    diaryDate(requestedDate)
   )
   const [name, setName] = useState('')
   const [kcal, setKcal] = useState('')
@@ -31,6 +33,8 @@ export default function QuickAddPage() {
   const [c, setC] = useState('')
   const [f, setF] = useState('')
   const [fiber, setFiber] = useState('')
+  const savingRef = useRef(false)
+  const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
@@ -60,16 +64,19 @@ export default function QuickAddPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
+    if (savingRef.current) return
     setError(null)
 
     const kcalNum = Number(kcal)
-    const pNum = Number(p) || 0
-    const cNum = Number(c) || 0
-    const fNum = Number(f) || 0
-    const fiberNum = fiber.trim() ? Number(fiber) || 0 : undefined
+    const pNum = Number(p)
+    const cNum = Number(c)
+    const fNum = Number(f)
+    const fiberNum = fiber.trim() ? Number(fiber) : undefined
 
     if (!name.trim()) return setError('Please enter a name.')
-    if (!Number.isFinite(kcalNum) || kcalNum < 0) return setError('Calories must be 0 or more.')
+    if (!kcal.trim()) return setError('Please enter calories, even if the value is 0.')
+    if ([pNum, cNum, fNum, fiberNum ?? 0].some((value) => !Number.isFinite(value) || value < 0 || value > 10000)) return setError('Nutrients must be between 0 and 10,000 grams.')
+    if (!Number.isFinite(kcalNum) || kcalNum < 0 || kcalNum > 100000) return setError('Calories must be between 0 and 100,000.')
 
     const entryData = {
       date: entryDate,
@@ -87,6 +94,9 @@ export default function QuickAddPage() {
       fiber: fiberNum,
     }
 
+    savingRef.current = true
+    setSaving(true)
+    try {
     const logRepo = new LogRepo()
     if (editingId !== null) {
       await logRepo.updateEntry(editingId, entryData)
@@ -94,10 +104,17 @@ export default function QuickAddPage() {
       await logRepo.addEntry(entryData)
     }
     vibrateTiny()
+    notifyDataChanged()
     navigate(backTo)
+    } catch {
+      setError('Your entry could not be saved. Please try again.')
+    } finally {
+      savingRef.current = false
+      setSaving(false)
+    }
   }
 
-  const backTo = entryDate === todayISO() ? '/' : `/history/${entryDate}`
+  const backTo = diaryPath(entryDate)
 
   return (
     <div className="mx-auto max-w-md px-6 py-8">
@@ -106,6 +123,7 @@ export default function QuickAddPage() {
         backTo={backTo}
       />
 
+      <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">Logging for {entryDate}. Enter the nutrition for the whole portion.</p>
       <form onSubmit={handleSubmit} className="flex flex-col gap-4">
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium">Name</span>
@@ -121,6 +139,8 @@ export default function QuickAddPage() {
           <span className="text-sm font-medium">Calories (kcal)</span>
           <input
             type="number"
+            min="0"
+            step="any"
             className={TEXT_INPUT_CLASS}
             value={kcal}
             onChange={(e) => setKcal(e.target.value)}
@@ -132,6 +152,8 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Protein (g)</span>
             <input
               type="number"
+            min="0"
+            step="any"
               className={TEXT_INPUT_CLASS}
               value={p}
               onChange={(e) => setP(e.target.value)}
@@ -141,6 +163,8 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Carbs (g)</span>
             <input
               type="number"
+            min="0"
+            step="any"
               className={TEXT_INPUT_CLASS}
               value={c}
               onChange={(e) => setC(e.target.value)}
@@ -150,6 +174,8 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Fat (g)</span>
             <input
               type="number"
+            min="0"
+            step="any"
               className={TEXT_INPUT_CLASS}
               value={f}
               onChange={(e) => setF(e.target.value)}
@@ -159,6 +185,8 @@ export default function QuickAddPage() {
             <span className="text-sm font-medium">Fiber (g)</span>
             <input
               type="number"
+            min="0"
+            step="any"
               className={TEXT_INPUT_CLASS}
               value={fiber}
               onChange={(e) => setFiber(e.target.value)}
@@ -174,9 +202,10 @@ export default function QuickAddPage() {
 
         <button
           type="submit"
+          disabled={saving}
           className="min-h-touch rounded-card bg-brand-700 px-4 py-2.5 font-medium text-white transition-transform active:scale-[0.98]"
         >
-          {editingId !== null ? 'Save changes' : `Add to ${MEAL_LABELS[meal]}`}
+          {saving ? 'Saving…' : editingId !== null ? 'Save changes' : `Add to ${MEAL_LABELS[meal]}`}
         </button>
       </form>
     </div>
