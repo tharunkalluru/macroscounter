@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { brand, macros, semantic, surface, surfaceDark, touchTarget, typeScale } from './tokens'
+import { brand, contrastDark, macros, semantic, surface, surfaceDark, touchTarget, typeScale } from './tokens'
 
 describe('design tokens match the Nocturne redesign (Phase R.0) values', () => {
   it('brand-500 is the exact blurple used throughout the source design', () => {
@@ -23,8 +23,18 @@ describe('design tokens match the Nocturne redesign (Phase R.0) values', () => {
     expect(surface.bg).toBe('#f7f7fb')
     expect(surface.card).toBe('#ffffff')
     expect(surface.radiusCard).toBe('14px')
-    expect(surfaceDark.bg).toBe('#161826')
-    expect(surfaceDark.card).toBe('#1c1e2b')
+  })
+
+  it('dark surfaces are true OLED black, per direct request', () => {
+    expect(surfaceDark.bg).toBe('#000000')
+    // Card stays a hair above pure black -- enough to register as a
+    // distinct layer alongside the existing hairline border without
+    // meaningfully compromising the OLED-black goal.
+    expect(surfaceDark.card).toBe('#0a0a0d')
+    // Contrast is the maximal, fully uniform all-black tier: nothing left
+    // to darken beyond what base Dark already is.
+    expect(contrastDark.bg).toBe('#000000')
+    expect(contrastDark.card).toBe('#000000')
   })
 
   it('type scale is unchanged by the redesign (system font stack kept)', () => {

@@ -31,7 +31,8 @@
 /**
  * brand-500 #9184D9 — the exact blurple used everywhere in the source
  * design's mockups (rings, primary buttons, active states). 50->900.
- * 500 vs dark bg (#161826) = 5.45:1; 700 vs white = 11.92:1; 600 vs white =
+ * 500 vs dark bg (now true black, #000000) = 6.51:1 (was 5.45:1 against
+ * the original #161826); 700 vs white = 11.92:1; 600 vs white =
  * 7.36:1 (graphical-safe, not required to be full-text-safe).
  */
 export const brand = {
@@ -153,9 +154,10 @@ export const semantic = {
 
 /**
  * Cool blue-purple neutral (hue ~230°, matching Nocturne's "mono" system)
- * replacing the old slate ramp. 400 vs dark bg (#161826) = 7.64:1; 500 vs
- * white = 5.60:1; 700 vs white = 11.00:1 — same per-rung contract as the
- * old ramp (400 dark-safe, 500/700 light-safe), just recolored.
+ * replacing the old slate ramp. 400 vs dark bg (now true black, #000000) =
+ * 9.11:1 (was 7.64:1 against the original #161826); 500 vs white = 5.60:1;
+ * 700 vs white = 11.00:1 — same per-rung contract as the old ramp (400
+ * dark-safe, 500/700 light-safe), just recolored.
  */
 export const neutral = {
   50: '#f7f7fb',
@@ -184,13 +186,22 @@ export const surface = {
 
 /**
  * Dark-mode mirror of `surface` — applied via Tailwind's `dark:` variant.
- * `bg`/`card` are the exact values used throughout every screen in the
- * source design (phone-frame background and card background respectively).
+ * `bg` is true OLED black (requested directly: on an OLED panel this turns
+ * those pixels fully off rather than merely dark, both maximizing contrast
+ * and saving power) rather than the Nocturne source design's original
+ * navy-tinted `#161826`. `card` stays a hair above pure black — enough to
+ * register as a distinct layer alongside the existing hairline border
+ * (`shadowCard` below) without meaningfully compromising the OLED-black
+ * goal; collapsing it to identical-to-bg would remove the last bit of
+ * layering a card gives without a border. Every per-rung contrast ratio in
+ * this file's contract only *increases* against a darker background, so no
+ * existing text/brand ratio recheck was needed — see updated ratios in the
+ * comments above each ramp.
  */
 export const surfaceDark = {
-  bg: '#161826',
-  card: '#1c1e2b',
-  raised: '#232532',
+  bg: '#000000',
+  card: '#0a0a0d',
+  raised: '#121218',
   radiusCard: '14px',
   shadowCard: '0 0 0 1px rgb(233 233 237 / 0.16)',
 } as const
@@ -199,11 +210,16 @@ export const surfaceDark = {
  * Phase F.1: "Contrast" is the third of the design's Dark/Light/Contrast
  * theme picker (frame 36) — a distinct, always-dark, higher-legibility
  * appearance, not a "follow OS" option (that option is retired; see
- * `resolveTheme.ts`'s `migrateStoredPreference`). A deeper background and a
- * brighter accent than the base dark theme are the two changes that matter
- * visually; both are strictly lighter-on-darker than their base-dark
- * counterparts, so contrast against these surfaces is only ever *higher*
- * than the already-verified base-dark ratios above, never lower.
+ * `resolveTheme.ts`'s `migrateStoredPreference`). Originally "a deeper
+ * background than the base dark theme"; now that base Dark's own
+ * background is true OLED black (see `surfaceDark`'s comment), there's no
+ * background left to deepen — Contrast instead goes fully uniform (`bg`
+ * *and* `card` both pure black, card layering left entirely to the
+ * existing hairline border) alongside its brighter accent, making it the
+ * maximal all-off-pixels tier rather than merely "deeper." Both bg/card
+ * are strictly darker-or-equal to their base-dark counterparts, so
+ * contrast against these surfaces is only ever *higher* than the
+ * already-verified base-dark ratios above, never lower.
  *
  * These four values are also hand-copied into `src/index.css`'s
  * `:root.contrast` block as CSS custom properties (`tailwind.config.ts`
@@ -215,8 +231,8 @@ export const surfaceDark = {
  * if either changes.
  */
 export const contrastDark = {
-  bg: '#0a0b12',
-  card: '#141225',
+  bg: '#000000',
+  card: '#000000',
   brand400: '#c2b8fa',
   brand600: '#6c58e8',
 } as const
