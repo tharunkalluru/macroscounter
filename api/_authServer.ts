@@ -1,5 +1,7 @@
 import { betterAuth } from 'better-auth/minimal'
 import { drizzleAdapter } from 'better-auth/adapters/drizzle'
+import { emailOTP } from 'better-auth/plugins'
+import { sendOTPEmail, sendResetPasswordEmail } from './_email.js'
 import { getDb, schema } from './_db.js'
 
 // A plain `ReturnType<typeof betterAuth>` loses the concrete option types
@@ -17,6 +19,25 @@ function buildAuth() {
         clientSecret: process.env.GOOGLE_CLIENT_SECRET ?? '',
       },
     },
+    emailAndPassword: {
+      enabled: true,
+      // Not gating sign-in on it — there's no email-sending flow for it
+      // today beyond what's below, and the ask was password auth + reset +
+      // OTP, not a verification-gated account system.
+      requireEmailVerification: false,
+      minPasswordLength: 8,
+      sendResetPassword: async ({ user, url }) => sendResetPasswordEmail(user.email, url),
+    },
+    plugins: [
+      emailOTP({
+        // Same account either way (email/password or Google) can also sign
+        // in with a one-time code -- and a code alone can create a fresh
+        // account too, matching how Google sign-in already auto-creates on
+        // first use.
+        sendVerificationOTP: async ({ email, otp, type }) => sendOTPEmail(email, otp, type),
+        disableSignUp: false,
+      }),
+    ],
   })
 }
 

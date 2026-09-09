@@ -1,4 +1,5 @@
 import { useRef, useState } from 'react'
+import { Link } from 'react-router-dom'
 import { signIn, useSession } from '../lib/auth/authClient'
 import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { CoachMessage, CoachUserMessage } from './components/CoachBubble'
@@ -94,6 +95,9 @@ export default function CoachChatPage() {
           >
             Continue with Google
           </button>
+          <Link to="/welcome" data-testid="coach-chat-signin-other-options" className="min-h-touch inline-flex items-center text-sm text-brand-700 underline dark:text-brand-400">
+            Use a password or email code instead
+          </Link>
         </div>
       </div>
     )

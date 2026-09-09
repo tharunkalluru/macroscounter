@@ -20,7 +20,9 @@ import { boolean, doublePrecision, integer, jsonb, pgTable, text, timestamp, uui
  * here — it's identical for every user.
  */
 
-// --- Better Auth core schema (Google-only social provider, no email/password) ---
+// --- Better Auth core schema (Google, email/password, and email-OTP sign-in) ---
+// `account.password` (below) and `verification` (email-OTP codes, reset
+// tokens) already covered every method added here -- no migration needed.
 
 export const user = pgTable('user', {
   id: text('id').primaryKey(),
@@ -51,11 +53,14 @@ export const account = pgTable('account', {
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
   // Better Auth 1.7+ requires this to disambiguate accounts across OIDC
-  // issuers under the same providerId. For our Google-only OAuth setup it's
-  // always Better Auth's synthetic `local:oauth:google` (see
+  // issuers under the same providerId. For a `providerId = 'google'` row
+  // it's always Better Auth's synthetic `local:oauth:google` (see
   // createOAuthAccountIssuer in @better-auth/core's account schema) — never
   // the literal https://accounts.google.com issuer URL, since that's only
-  // used for id_token verification, not account lookup.
+  // used for id_token verification, not account lookup. Email/password and
+  // email-OTP rows (`providerId = 'credential'`) don't do OIDC issuer
+  // verification at all, so Better Auth sets this to a fixed sentinel value
+  // for them instead.
   issuer: text('issuer').notNull(),
   userId: text('user_id').notNull().references(() => user.id, { onDelete: 'cascade' }),
   accessToken: text('access_token'),
@@ -64,6 +69,8 @@ export const account = pgTable('account', {
   accessTokenExpiresAt: timestamp('access_token_expires_at', { withTimezone: true }),
   refreshTokenExpiresAt: timestamp('refresh_token_expires_at', { withTimezone: true }),
   scope: text('scope'),
+  // Scrypt-hashed by Better Auth's emailAndPassword provider — only present
+  // on `providerId = 'credential'` rows; null for Google OAuth accounts.
   password: text('password'),
   createdAt: timestamp('created_at', { withTimezone: true }).notNull().defaultNow(),
   updatedAt: timestamp('updated_at', { withTimezone: true }).notNull().defaultNow(),

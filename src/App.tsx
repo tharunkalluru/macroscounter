@@ -17,6 +17,7 @@ import LogPage from './app/LogPage'
 import OnboardingFlow from './app/OnboardingFlow'
 import QuickAddPage from './app/QuickAddPage'
 import RecipeBuilderPage from './app/RecipeBuilderPage'
+import ResetPasswordPage from './app/ResetPasswordPage'
 import AppBootScreen from './app/shell/AppBootScreen'
 import AppShell from './app/shell/AppShell'
 import SyncTriggers from './app/shell/SyncTriggers'
@@ -101,6 +102,7 @@ function App() {
 
               {/* Full-screen task flows: no shell chrome. */}
               <Route path="/welcome" element={<SignInScreen />} />
+              <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/onboarding" element={<OnboardingFlow />} />
               <Route path="/log/add" element={<AddFoodPage />} />
               <Route path="/log/edit/:entryId" element={<AddFoodPage />} />

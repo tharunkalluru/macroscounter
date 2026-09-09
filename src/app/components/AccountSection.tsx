@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { signIn, signOut, useSession } from '../../lib/auth/authClient'
 import { db } from '../../data/db'
 import { signOutLocally } from '../../lib/sync/guestMode'
@@ -58,8 +59,13 @@ export default function AccountSection() {
       ) : (
         <>
           <p className="text-sm text-slate-500 dark:text-slate-400">Your diary is saved only in this browser. Sign in to back it up and use another device.</p>
-          <button type="button" data-testid="account-sign-in-button" onClick={handleSignIn} disabled={busy}
-            className="min-h-touch self-start rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-brand-700 disabled:opacity-50 dark:border-slate-600 dark:text-brand-400">{busy ? 'Connecting…' : 'Sign in to back up'}</button>
+          <div className="flex flex-wrap items-center gap-3">
+            <button type="button" data-testid="account-sign-in-button" onClick={handleSignIn} disabled={busy}
+              className="min-h-touch self-start rounded-lg border border-slate-300 px-3 py-1.5 text-sm font-medium text-brand-700 disabled:opacity-50 dark:border-slate-600 dark:text-brand-400">{busy ? 'Connecting…' : 'Sign in with Google'}</button>
+            <Link to="/welcome" data-testid="account-sign-in-other-options" className="min-h-touch inline-flex items-center text-sm text-brand-700 underline dark:text-brand-400">
+              Or use a password / email code
+            </Link>
+          </div>
         </>
       )}
       {error ? <p role="alert" className="rounded-lg bg-danger-50 p-3 text-sm text-danger-700 dark:bg-danger-900/20 dark:text-danger-300">{error}</p> : null}

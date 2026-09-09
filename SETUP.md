@@ -20,6 +20,8 @@ API execution needs `vercel dev` and credentials. Plain Vite cannot perform OAut
 | GOOGLE_CLIENT_ID / GOOGLE_CLIENT_SECRET | Google OAuth web client |
 | AUTH_SECRET | Strong random session secret, kept server-side |
 | VITE_APP_URL | Canonical application origin, public by design |
+| RESEND_API_KEY | Optional; sends password-reset links and sign-in codes. Unset: those flows log and no-op, Google sign-in unaffected |
+| RESEND_FROM_EMAIL | Optional verified sending address; unset uses Resend's shared test address |
 | ANTHROPIC_API_KEY | Optional server-side AI provider credential |
 | AI_DAILY_REQUEST_LIMIT | Combined per-account daily AI calls, default 100 |
 | LABEL_READER_ENDPOINT / LABEL_READER_API_KEY | Optional HTTPS label-reader service and server secret |

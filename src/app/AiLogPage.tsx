@@ -1,5 +1,5 @@
 import { useRef, useState } from 'react'
-import { useNavigate, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import type { FoodItemResult } from '../../api/ai/analyze'
 import { signIn, useSession } from '../lib/auth/authClient'
@@ -99,6 +99,9 @@ export default function AiLogPage() {
           >
             Continue with Google
           </button>
+          <Link to="/welcome" data-testid="ai-signin-other-options" className="min-h-touch inline-flex items-center text-sm text-brand-700 underline dark:text-brand-400">
+            Use a password or email code instead
+          </Link>
         </div>
       </div>
     )
