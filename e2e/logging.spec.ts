@@ -59,7 +59,7 @@ test('full journey: onboard, search idli, log 3 idli + sambar for breakfast, rin
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-remaining')).toHaveText('1505') // 1628 - 123
-  await expect(page.getByTestId('protein-bar-value')).toHaveText('5 / 126 g')
+  await expect(page.getByTestId('protein-bar-value')).toHaveText('5 / 126 g · 121 left')
 
   await page.getByTestId('fab-scan').click()
   await page.getByPlaceholder('Search foods (e.g. idli, sambar)').fill('sambhar')
@@ -70,9 +70,9 @@ test('full journey: onboard, search idli, log 3 idli + sambar for breakfast, rin
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-remaining')).toHaveText('1412') // 1628 - 216
-  await expect(page.getByTestId('protein-bar-value')).toHaveText('10 / 126 g')
-  await expect(page.getByTestId('carbs-bar-value')).toHaveText('36 / 171 g')
-  await expect(page.getByTestId('fat-bar-value')).toHaveText('4 / 49 g')
+  await expect(page.getByTestId('protein-bar-value')).toHaveText('10 / 126 g · 116 left')
+  await expect(page.getByTestId('carbs-bar-value')).toHaveText('36 / 171 g · 135 left')
+  await expect(page.getByTestId('fat-bar-value')).toHaveText('4 / 49 g · 45 left')
 
   await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
   await expect(page.getByTestId('meal-subtotal-breakfast')).toHaveText('216 kcal')

@@ -89,4 +89,16 @@ test('CSV export downloads parseable files with the correct row counts', async (
   const weighInsLines = weighInsCsv.trim().split('\r\n')
   expect(weighInsLines).toHaveLength(2) // header + 1 weigh-in
   expect(weighInsLines[0]).toBe('date,weightKg')
+
+  const [fullDownload] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByTestId('export-all-xml').click(),
+  ])
+  expect(fullDownload.suggestedFilename()).toBe('bitewise-export.xml')
+  const fullXml = readFileSync((await fullDownload.path())!, 'utf-8')
+  expect(fullXml).toContain('<?xml version="1.0" encoding="UTF-8"?>')
+  expect(fullXml).toContain('<name>Idli</name>')
+  expect(fullXml).toContain('<name>Sambar</name>')
+  expect(fullXml).toContain('<weightKg>79.5</weightKg>')
+  expect(fullXml).toContain('<name>Template Persona</name>') // profile round-trips too, not just logs
 })

@@ -51,9 +51,9 @@ test('completing onboarding computes and shows the correct kcal target on the da
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-target')).toHaveText('1628 kcal target')
-  await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 126 g')
-  await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 171 g')
-  await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 49 g')
+  await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 126 g · 126 left')
+  await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 171 g · 171 left')
+  await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 49 g · 49 left')
 })
 
 // Same persona/formula as the cm/kg case above, entered via ft+in and lb
@@ -103,9 +103,9 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-target')).toHaveText('1759 kcal target')
-  await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 144 g')
-  await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 170 g')
-  await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 56 g')
+  await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 144 g · 144 left')
+  await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 170 g · 170 left')
+  await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 56 g · 56 left')
 
   // The preference persists to Settings, still showing ft+in/lb.
   await page.getByTestId('avatar-link').click()

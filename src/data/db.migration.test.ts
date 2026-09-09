@@ -8,7 +8,7 @@ afterEach(async () => {
   await Dexie.delete(DB_NAME)
 })
 
-describe('Dexie migration: v1 -> current (v3), data intact', () => {
+describe('Dexie migration: v1 -> current (v4), data intact', () => {
   it('preserves all v1 data and adds the new barcode/clientId indexes and sync tables on upgrade', async () => {
     // Simulate an existing v1 install (pre-Phase-5, before `barcode` had an index).
     const v1db = new Dexie(DB_NAME)
@@ -86,7 +86,7 @@ describe('Dexie migration: v1 -> current (v3), data intact', () => {
     const upgraded = new BitewiseDB(DB_NAME)
     await upgraded.open()
 
-    expect(upgraded.verno).toBe(3)
+    expect(upgraded.verno).toBe(4)
 
     const profiles = await upgraded.profiles.toArray()
     expect(profiles).toHaveLength(1)
@@ -122,6 +122,16 @@ describe('Dexie migration: v1 -> current (v3), data intact', () => {
     expect(byClientId).toHaveLength(0)
     expect(await upgraded.syncOutbox.count()).toBe(0)
     expect(await upgraded.syncMeta.count()).toBe(0)
+
+    // v4: the new local-only entryPhotos table exists and is usable.
+    expect(await upgraded.entryPhotos.count()).toBe(0)
+    await upgraded.entryPhotos.add({
+      entryId: logEntryId as number,
+      photo: new Blob(['x']),
+      mediaType: 'image/jpeg',
+      createdAt: '2026-08-18T00:00:00.000Z',
+    })
+    expect(await upgraded.entryPhotos.where('entryId').equals(logEntryId as number).count()).toBe(1)
 
     upgraded.close()
   })

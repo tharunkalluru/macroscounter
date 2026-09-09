@@ -1,6 +1,6 @@
 import { act, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { useSpeechRecognition } from './useSpeechRecognition'
+import { stripWordOverlap, useSpeechRecognition } from './useSpeechRecognition'
 
 interface FakeResult extends ArrayLike<{ transcript: string }> {
   isFinal: boolean
@@ -146,5 +146,51 @@ describe('useSpeechRecognition', () => {
     // The new instance's results build on the text from before the restart.
     act(() => lastInstance?.emit({ text: 'reduce belly fat', isFinal: true }))
     expect(onText).toHaveBeenLastCalledWith('how can i reduce belly fat')
+  })
+
+  it('ignores a silent/empty interim result instead of clearing what was already recognized', () => {
+    const onText = vi.fn()
+    render(<Probe onText={onText} />)
+    act(() => screen.getByText('start').click())
+
+    act(() => lastInstance?.emit({ text: 'grilled chicken breast', isFinal: false }))
+    expect(onText).toHaveBeenLastCalledWith('grilled chicken breast')
+
+    // A noise-only frame with an empty transcript used to trivially satisfy
+    // "does the previous text start with this" (every string starts with
+    // ''), wiping the in-progress utterance back to nothing.
+    act(() => lastInstance?.emit({ text: '', isFinal: false }))
+    expect(onText).toHaveBeenLastCalledWith('grilled chicken breast')
+
+    act(() => lastInstance?.emit({ text: 'grilled chicken breast with rice', isFinal: true }))
+    expect(onText).toHaveBeenLastCalledWith('grilled chicken breast with rice')
+  })
+
+  it('drops a word run re-heard across a restart instead of duplicating it', () => {
+    const onText = vi.fn()
+    render(<Probe onText={onText} />)
+    act(() => screen.getByText('start').click())
+    const firstInstance = lastInstance
+
+    act(() => firstInstance?.emit({ text: 'two idlis and', isFinal: true }))
+    act(() => firstInstance?.onend?.())
+
+    // The mic doesn't cut cleanly at the restart boundary -- the new engine
+    // instance re-hears the tail of what was already committed as part of
+    // its first result, which used to come through as a literal repeat.
+    act(() => lastInstance?.emit({ text: 'and sambar', isFinal: true }))
+    expect(onText).toHaveBeenLastCalledWith('two idlis and sambar')
+  })
+})
+
+describe('stripWordOverlap', () => {
+  it('removes a repeated trailing/leading word run, case-insensitively', () => {
+    expect(stripWordOverlap('two idlis and', 'AND sambar')).toBe('sambar')
+    expect(stripWordOverlap('reduce belly fat', 'belly fat is high')).toBe('is high')
+  })
+
+  it('leaves unrelated text alone', () => {
+    expect(stripWordOverlap('log a bowl of idli', 'also two eggs')).toBe('also two eggs')
+    expect(stripWordOverlap('', 'also two eggs')).toBe('also two eggs')
   })
 })

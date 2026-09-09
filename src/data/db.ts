@@ -1,5 +1,6 @@
 import Dexie, { type Table } from 'dexie'
 import type {
+  EntryPhoto,
   FoodRecord,
   LogEntry,
   MealTemplate,
@@ -21,6 +22,7 @@ export class BitewiseDB extends Dexie {
   weighIns!: Table<WeighIn, number>
   scannedProducts!: Table<ScannedProduct, string>
   mealTemplates!: Table<MealTemplate, number>
+  entryPhotos!: Table<EntryPhoto, number>
   syncOutbox!: Table<OutboxEntry, number>
   syncMeta!: Table<SyncMetaRow, number>
 
@@ -68,6 +70,13 @@ export class BitewiseDB extends Dexie {
       mealTemplates: '++id, name, clientId',
       syncOutbox: '++id, [table+clientId]',
       syncMeta: '++id',
+    })
+
+    // v4 — entryPhotos (AI-logging camera captures attached to their log
+    // entry). New table only, no changes to existing ones. Deliberately not
+    // added to Syncable/SYNCED_TABLES — see EntryPhoto's own doc comment.
+    this.version(4).stores({
+      entryPhotos: '++id, entryId',
     })
   }
 }

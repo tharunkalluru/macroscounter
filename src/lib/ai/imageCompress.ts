@@ -46,6 +46,14 @@ export async function compressImageFile(file: Blob): Promise<{ data: string; med
   }
 }
 
+/** Reconstitutes a Blob from the same base64 payload sent to `/api/ai/analyze`, for storing the photo alongside the entries it produced. */
+export function base64ToBlob(base64: string, mediaType: string): Blob {
+  const binary = atob(base64)
+  const bytes = new Uint8Array(binary.length)
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i)
+  return new Blob([bytes], { type: mediaType })
+}
+
 function loadImage(src: string): Promise<HTMLImageElement> {
   return new Promise((resolve, reject) => {
     const img = new Image()

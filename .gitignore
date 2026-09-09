@@ -34,3 +34,5 @@ test-results
 dev-dist
 screenshots
 
+.vercel
+.env*

@@ -131,7 +131,9 @@ export default function AiLogPage() {
         setError(errorMessageFor(json.code))
         return
       }
-      navigate('/log/ai/result', { state: { meal, date: entryDate, items: json.items ?? [] } })
+      // Carried through so the logged entries can keep the photo that was
+      // actually analysed, shown later in the entry detail sheet.
+      navigate('/log/ai/result', { state: { meal, date: entryDate, items: json.items ?? [], photo: image } })
     } catch {
       setError(errorMessageFor(undefined))
     } finally {

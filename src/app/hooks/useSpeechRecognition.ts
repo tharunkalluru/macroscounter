@@ -73,7 +73,52 @@ interface UseSpeechRecognitionResult {
  *    rather than appending to it; only when it looks unrelated (a genuine
  *    new utterance after a pause) does it get appended after what came
  *    before.
+ *
+ * Two further bugs fixed here (both reproduced in the field, not just
+ * theorized):
+ *  - Some engines occasionally fire an interim result with an *empty*
+ *    transcript (a silent/noise-only frame). The refinement check above,
+ *    `prev.startsWith(latestText)`, is trivially true when `latestText` is
+ *    `''` -- every string starts with the empty string -- so an empty
+ *    result was replacing whatever had already been recognized for the
+ *    current utterance with nothing, which read as "the mic just cleared
+ *    my text." Empty transcripts are now ignored outright before they can
+ *    touch either ref.
+ *  - On restart, the previous version left the in-progress utterance
+ *    sitting in `currentUtteranceRef` for the *next* recognition session's
+ *    first result to be compared against -- but that session starts its
+ *    own `results` array from index 0, recognizing audio that can
+ *    genuinely overlap the tail end of what was already heard (the mic
+ *    doesn't cut cleanly at the restart boundary). Comparing new audio
+ *    against a different session's stale text produced duplicated words
+ *    ("...belly fat fat" style repeats). The in-progress utterance is now
+ *    committed and cleared *before* restarting, and every newly-started
+ *    utterance is passed through `stripWordOverlap` against what's already
+ *    committed so a re-heard trailing phrase gets deduplicated instead of
+ *    doubled.
  */
+
+/**
+ * Removes a duplicated trailing/leading word run between two already-decided
+ * pieces of text -- e.g. `stripWordOverlap('...reduce belly fat', 'belly fat
+ * is high')` -> `'is high'`. Word-level and case-insensitive so it survives
+ * minor re-recognition differences; capped at a short lookback since a real
+ * overlap from a restart boundary is at most a couple of words, and a longer
+ * accidental match is more likely coincidence than a genuine repeat.
+ */
+export function stripWordOverlap(existing: string, incoming: string): string {
+  const existingWords = existing.trim().split(/\s+/).filter(Boolean)
+  const incomingWords = incoming.trim().split(/\s+/).filter(Boolean)
+  const maxOverlap = Math.min(existingWords.length, incomingWords.length, 6)
+  for (let n = maxOverlap; n > 0; n--) {
+    const tail = existingWords.slice(-n).join(' ').toLowerCase()
+    const head = incomingWords.slice(0, n).join(' ').toLowerCase()
+    if (tail === head) {
+      return incomingWords.slice(n).join(' ')
+    }
+  }
+  return incoming
+}
 export function useSpeechRecognition(onLiveTranscript: (sessionText: string) => void): UseSpeechRecognitionResult {
   const [isListening, setIsListening] = useState(false)
   const recognitionRef = useRef<MinimalSpeechRecognition | null>(null)
@@ -105,17 +150,27 @@ export function useSpeechRecognition(onLiveTranscript: (sessionText: string) => 
     recognition.onresult = (event) => {
       if (event.results.length === 0) return
       const latest = event.results[event.results.length - 1]
-      const latestText = latest[0]?.transcript ?? ''
+      const latestText = (latest[0]?.transcript ?? '').trim()
+      // A silent/noise-only frame carries no information -- letting it
+      // through would trivially satisfy the "is this a refinement" check
+      // below and wipe out whatever had already been recognized.
+      if (!latestText) return
       const prev = currentUtteranceRef.current
 
-      const isRefinement = prev === '' || latestText.startsWith(prev) || prev.startsWith(latestText)
-      if (!isRefinement) {
-        committedTextRef.current += (committedTextRef.current && prev ? ' ' : '') + prev
+      const isRefinement = prev !== '' && (latestText.startsWith(prev) || prev.startsWith(latestText))
+      if (isRefinement) {
+        currentUtteranceRef.current = latestText
+      } else {
+        if (prev) {
+          committedTextRef.current += (committedTextRef.current ? ' ' : '') + prev
+        }
+        currentUtteranceRef.current = stripWordOverlap(committedTextRef.current, latestText)
       }
-      currentUtteranceRef.current = latestText
 
       const sessionText =
-        committedTextRef.current + (committedTextRef.current && latestText ? ' ' : '') + latestText
+        committedTextRef.current +
+        (committedTextRef.current && currentUtteranceRef.current ? ' ' : '') +
+        currentUtteranceRef.current
       onLiveTranscriptRef.current(sessionText)
     }
     recognition.onerror = () => setIsListening(false)
@@ -125,15 +180,31 @@ export function useSpeechRecognition(onLiveTranscript: (sessionText: string) => 
         setIsListening(false)
         return
       }
-      // The engine ended the session on its own, not the caller -- restart
-      // transparently (accumulated text carries over via committedTextRef/
-      // currentUtteranceRef, neither reset here) so a mid-sentence pause
-      // doesn't surface as "the mic stopped."
+      // The engine ended the session on its own, not the caller. Finalize
+      // whatever was still mid-utterance into committed text *before*
+      // restarting -- the new session starts its own results array from
+      // scratch, so leaving it in currentUtteranceRef would compare newly
+      // (and sometimes redundantly) recognized audio against a different
+      // session's stale text instead of through the overlap check above.
+      if (currentUtteranceRef.current) {
+        committedTextRef.current += (committedTextRef.current ? ' ' : '') + currentUtteranceRef.current
+        currentUtteranceRef.current = ''
+      }
       beginRef.current()
     }
     recognitionRef.current = recognition
-    recognition.start()
-    setIsListening(true)
+    try {
+      recognition.start()
+      setIsListening(true)
+    } catch {
+      // Some engines throw InvalidStateError when start() is called again
+      // before the previous session has fully released -- surfacing as "the
+      // mic just doesn't work" with no recovery. Drop back to a clean
+      // stopped state instead of leaving isListening stuck true with a dead
+      // recognition object underneath it.
+      recognitionRef.current = null
+      setIsListening(false)
+    }
   }
 
   const start = useCallback(() => {

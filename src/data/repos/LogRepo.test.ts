@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { BitewiseDB } from '../db'
 import type { LogEntry } from '../models'
+import { EntryPhotoRepo } from './EntryPhotoRepo'
 import { LogRepo } from './LogRepo'
 
 const sampleEntry = (overrides: Partial<LogEntry> = {}): Omit<LogEntry, 'id'> => ({
@@ -51,6 +52,15 @@ describe('LogRepo', () => {
     expect(await repo.getById(id)).toBeUndefined()
   })
 
+  it('deleting an entry also removes its attached photo, leaving nothing orphaned', async () => {
+    const id = await repo.addEntry(sampleEntry())
+    await new EntryPhotoRepo(db).attach(id, new Blob(['x'], { type: 'image/jpeg' }), 'image/jpeg')
+
+    await repo.deleteEntry(id)
+
+    expect(await new EntryPhotoRepo(db).getForEntry(id)).toBeUndefined()
+  })
+
   it('fetches entries for a specific date', async () => {
     await repo.addEntry(sampleEntry({ date: '2026-08-18' }))
     await repo.addEntry(sampleEntry({ date: '2026-08-19' }))
@@ -92,6 +102,39 @@ describe('LogRepo', () => {
 
     const recent = await repo.getRecentBarcodes(10)
     expect(recent).toEqual(['8901491101615', '8901063114074'])
+  })
+})
+
+describe('LogRepo indexes logged items for reuse via search', () => {
+  it('indexes a barcode entry (no foodId) as a searchable food record', async () => {
+    await repo.addEntry(
+      sampleEntry({ foodId: undefined, barcode: '8901491101615', name: 'Maggi Noodles', grams: 70, kcal: 300 })
+    )
+    const food = await db.foods.get('logged-maggi-noodles')
+    expect(food?.name).toBe('Maggi Noodles')
+    expect(food?.source).toBe('logged')
+  })
+
+  it('does not index an entry that already references a real food', async () => {
+    await repo.addEntry(sampleEntry({ foodId: 'idli', name: 'Idli' }))
+    expect(await db.foods.get('logged-idli')).toBeUndefined()
+  })
+
+  it('does not index a fixed-value quick-add entry (grams: 0)', async () => {
+    await repo.addEntry(sampleEntry({ foodId: undefined, name: 'Restaurant meal', grams: 0 }))
+    expect(await db.foods.get('logged-restaurant-meal')).toBeUndefined()
+  })
+
+  it('relogging the same name updates the one record instead of duplicating it, keeping favorite status', async () => {
+    await repo.addEntry(sampleEntry({ foodId: undefined, name: 'Paneer Tikka', grams: 100, kcal: 200 }))
+    await db.foods.update('logged-paneer-tikka', { favorite: true })
+
+    await repo.addEntry(sampleEntry({ foodId: undefined, name: 'Paneer Tikka', grams: 100, kcal: 220 }))
+
+    expect(await db.foods.count()).toBe(1)
+    const food = await db.foods.get('logged-paneer-tikka')
+    expect(food?.per100g.kcal).toBe(220)
+    expect(food?.favorite).toBe(true)
   })
 })
 

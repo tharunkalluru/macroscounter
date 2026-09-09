@@ -211,3 +211,53 @@ test('AI logging can add a meal you forgot to log on a previous day', async ({ p
   await page.goto('/')
   await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('0')
 })
+
+test('a photo used for AI logging is attached to the entries it produces', async ({ page }) => {
+  await onboard(page)
+  await mockSignedIn(page)
+  await page.reload()
+  await openAiTab(page)
+
+  await page.route('**/api/ai/analyze', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items: [
+          {
+            name: 'Paneer butter masala',
+            gramsEstimate: 200,
+            kcal: 340,
+            proteinG: 14,
+            carbsG: 16,
+            fatG: 24,
+            fiberG: 3,
+            confidence: 'low',
+          },
+        ],
+      }),
+    })
+  )
+
+  // A genuinely decodable 1x1 PNG -- unlike the "preview only" fixture used
+  // elsewhere, this test goes through the real client-side canvas
+  // compression (compressImageFile), which needs actual image bytes to load.
+  await page.getByTestId('ai-photo-input').setInputFiles({
+    name: 'meal.png',
+    mimeType: 'image/png',
+    buffer: Buffer.from(
+      'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=',
+      'base64'
+    ),
+  })
+  await expect(page.getByTestId('ai-photo-preview')).toBeVisible()
+  await page.getByTestId('ai-analyse-button').click()
+
+  await expect(page).toHaveURL('/log/ai/result')
+  await page.getByTestId('ai-log-all-button').click()
+  await expect(page).toHaveURL('/')
+
+  await page.getByRole('button', { name: 'Edit Paneer butter masala' }).click()
+  await expect(page.getByTestId('bottom-sheet')).toBeVisible()
+  await expect(page.getByTestId('entry-detail-photo')).toBeVisible()
+})

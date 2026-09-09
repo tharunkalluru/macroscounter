@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import type { FoodRecord, LogEntry } from '../../data/models'
+import { EntryPhotoRepo } from '../../data/repos/EntryPhotoRepo'
 import { FoodRepo } from '../../data/repos/FoodRepo'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { vibrateTiny } from '../../lib/haptics'
@@ -32,6 +33,27 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
   const [mode, setMode] = useState<EditMode>('grams')
   const [portionIdx, setPortionIdx] = useState(0)
   const [servingChoiceChanged, setServingChoiceChanged] = useState(false)
+  const [photoUrl, setPhotoUrl] = useState<string | null>(null)
+
+  // The photo (if any) an AI-logged entry was actually recognized from.
+  useEffect(() => {
+    if (!open || entry?.id === undefined) {
+      setPhotoUrl(null)
+      return
+    }
+    let objectUrl: string | null = null
+    let cancelled = false
+    new EntryPhotoRepo().getForEntry(entry.id).then((record) => {
+      if (cancelled || !record) return
+      objectUrl = URL.createObjectURL(record.photo)
+      setPhotoUrl(objectUrl)
+    })
+    return () => {
+      cancelled = true
+      if (objectUrl) URL.revokeObjectURL(objectUrl)
+      setPhotoUrl(null)
+    }
+  }, [open, entry?.id])
 
   // Recipes have no discrete portions today, so only a real food-database
   // entry (foodId set) can offer a servings toggle here -- if the entry was
@@ -104,6 +126,14 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
     <BottomSheet open={open} onClose={onClose} title={entry?.name ?? ''}>
       {entry && (
         <div className="flex flex-col gap-4" data-testid="entry-detail-content">
+          {photoUrl && (
+            <img
+              src={photoUrl}
+              alt=""
+              data-testid="entry-detail-photo"
+              className="h-40 w-full rounded-card object-cover"
+            />
+          )}
           {hasServingsToggle && (
             <div
               className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800"

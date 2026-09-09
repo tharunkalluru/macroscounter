@@ -1,3 +1,4 @@
+import { deriveLoggedFoodRecord } from '../../domain/logging/loggedFoodIndex'
 import { trackDelete, trackUpsert } from '../../lib/sync/syncTracker'
 import type { BitewiseDB } from '../db'
 import { db as defaultDb } from '../db'
@@ -12,16 +13,31 @@ export class LogRepo {
 
   /** The visible diary and its backup queue commit together, including copied meals. */
   async addEntries(entries: Omit<LogEntry, 'id'>[]): Promise<number[]> {
-    return this.db.transaction('rw', [this.db.logEntries, this.db.syncMeta, this.db.syncOutbox], async () => {
-      const ids: number[] = []
-      for (const entry of entries) {
-        const withLoggedAt = { loggedAt: new Date().toISOString(), ...entry }
-        const id = await this.db.logEntries.add(withLoggedAt as LogEntry)
-        await trackUpsert(this.db, 'logEntries', id, { ...withLoggedAt, id })
-        ids.push(id)
+    return this.db.transaction(
+      'rw',
+      [this.db.logEntries, this.db.foods, this.db.syncMeta, this.db.syncOutbox],
+      async () => {
+        const ids: number[] = []
+        for (const entry of entries) {
+          const withLoggedAt = { loggedAt: new Date().toISOString(), ...entry }
+          const id = await this.db.logEntries.add(withLoggedAt as LogEntry)
+          await trackUpsert(this.db, 'logEntries', id, { ...withLoggedAt, id })
+          await this.indexLoggedFood(withLoggedAt as LogEntry)
+          ids.push(id)
+        }
+        return ids
       }
-      return ids
-    })
+    )
+  }
+
+  /** Makes a logged item reusable via the ordinary search box next time — see deriveLoggedFoodRecord. */
+  private async indexLoggedFood(entry: LogEntry): Promise<void> {
+    const record = deriveLoggedFoodRecord(entry)
+    if (!record) return
+    const existing = await this.db.foods.get(record.id)
+    // A previously-favorited logged item stays favorited when it's relogged
+    // and its record refreshes.
+    await this.db.foods.put(existing ? { ...record, favorite: existing.favorite } : record)
   }
 
   async updateEntry(id: number, changes: Partial<Omit<LogEntry, 'id'>>): Promise<void> {
@@ -33,11 +49,17 @@ export class LogRepo {
   }
 
   async deleteEntry(id: number): Promise<void> {
-    await this.db.transaction('rw', [this.db.logEntries, this.db.syncMeta, this.db.syncOutbox], async () => {
-      const existing = await this.db.logEntries.get(id)
-      await this.db.logEntries.delete(id)
-      if (existing) await trackDelete(this.db, 'logEntries', existing.clientId, existing.updatedAt)
-    })
+    await this.db.transaction(
+      'rw',
+      [this.db.logEntries, this.db.entryPhotos, this.db.syncMeta, this.db.syncOutbox],
+      async () => {
+        const existing = await this.db.logEntries.get(id)
+        await this.db.logEntries.delete(id)
+        // Local-only, so no sync bookkeeping needed — just avoid leaving an orphaned photo behind.
+        await this.db.entryPhotos.where('entryId').equals(id).delete()
+        if (existing) await trackDelete(this.db, 'logEntries', existing.clientId, existing.updatedAt)
+      }
+    )
   }
 
   async getById(id: number): Promise<LogEntry | undefined> {

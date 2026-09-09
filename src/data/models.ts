@@ -194,6 +194,30 @@ export interface MealTemplate extends Syncable {
   entries: MealTemplateEntry[]
 }
 
+/**
+ * A photo attached to a logged entry (currently only produced by AI
+ * logging's camera capture). Deliberately device-local, not part of
+ * `Syncable`/`SYNCED_TABLES` — there's no object-storage service
+ * provisioned for this app, and pushing a several-hundred-KB blob through
+ * the same JSON sync payload used for everything else would risk the
+ * push-batch size limits (`PUSH_BATCH_BYTES` in syncEngine.ts) for what's
+ * otherwise a handful of numbers per row. It stays on the device the photo
+ * was taken on until a real blob-storage backend is worth adding.
+ */
+export interface EntryPhoto {
+  id?: number
+  entryId: number
+  photo: Blob
+  /**
+   * Stored explicitly rather than trusted to survive purely as `photo.type`
+   * — real browsers preserve a Blob's type through IndexedDB's structured
+   * clone, but there's no reason to depend on that surviving every runtime
+   * when it's this cheap to just keep alongside it.
+   */
+  mediaType: string
+  createdAt: string
+}
+
 export type SyncStatus = 'signed-out' | 'synced' | 'syncing' | 'offline' | 'error'
 
 /** Single-row table: who's signed in (if anyone) and when we last pulled from the server. */

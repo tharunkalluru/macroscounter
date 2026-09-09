@@ -27,6 +27,7 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
   const withinPct = isOver ? (target / consumed) * 100 : 0
   const overPct = isOver ? ((consumed - target) / consumed) * 100 : 0
   const overAmount = isOver ? Math.round(consumed - target) : 0
+  const remaining = target > 0 && !isOver ? Math.round(target - consumed) : 0
 
   const content = (
     <>
@@ -34,9 +35,11 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
         <span>{label}</span>
         <span className="tabular-nums" data-testid={`${testId}-value`}>
           {Math.round(consumed)}{target > 0 ? ` / ${Math.round(target)}` : ''} g
-          {isOver && (
+          {isOver ? (
             <span className="text-over-700 dark:text-over-400"> · +{overAmount}</span>
-          )}
+          ) : target > 0 ? (
+            <span data-testid={`${testId}-remaining`}> · {remaining} left</span>
+          ) : null}
         </span>
       </div>
       <div className="mt-1 flex h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
@@ -69,7 +72,9 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
       onClick={onTap}
       data-testid={testId}
       className="min-h-touch w-full rounded-lg text-left"
-      aria-label={`${label}: ${Math.round(consumed)}${target > 0 ? ` of ${Math.round(target)}` : ''} grams - view breakdown`}
+      aria-label={`${label}: ${Math.round(consumed)}${target > 0 ? ` of ${Math.round(target)}` : ''} grams${
+        target > 0 && !isOver ? `, ${remaining} remaining` : ''
+      } - view breakdown`}
     >
       {content}
     </button>

@@ -87,7 +87,7 @@ export default function Header() {
         to="/settings"
         aria-label="Settings"
         data-testid="avatar-link"
-        className="flex min-h-touch min-w-touch items-center justify-center overflow-hidden rounded-full bg-brand-100 text-title text-brand-700 dark:bg-slate-800 dark:text-brand-400"
+        className="flex h-11 w-11 min-h-touch min-w-touch shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 text-base font-semibold text-brand-700 dark:bg-slate-800 dark:text-brand-400"
       >
         {showAvatarImage ? (
           <img

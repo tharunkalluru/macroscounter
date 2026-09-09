@@ -2,7 +2,9 @@ import { useRef, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router-dom'
 import type { Meal } from '../data/models'
 import type { FoodItemResult } from '../../api/ai/analyze'
+import { EntryPhotoRepo } from '../data/repos/EntryPhotoRepo'
 import { LogRepo } from '../data/repos/LogRepo'
+import { base64ToBlob } from '../lib/ai/imageCompress'
 import { diaryDate, diaryPath } from '../lib/date'
 import { vibrateSuccess } from '../lib/haptics'
 import PageHeader from './components/PageHeader'
@@ -13,6 +15,8 @@ interface LocationState {
   items: FoodItemResult[]
   /** ISO date these items belong to. Absent (older links) means today. */
   date?: string
+  /** The photo actually analysed, if this came from a camera capture rather than text/voice. */
+  photo?: { data: string; mediaType: string }
 }
 
 function isLocationState(state: unknown): state is LocationState {
@@ -34,6 +38,7 @@ export default function AiLogResultPage() {
   // be able to write to a past date rather than always stamping today.
   const requestedDate = valid ? location.state.date : undefined
   const entryDate = diaryDate(requestedDate)
+  const photo = valid ? location.state.photo : undefined
   const [checked, setChecked] = useState<boolean[]>(() => items.map(() => true))
 
   if (!valid) {
@@ -54,7 +59,7 @@ export default function AiLogResultPage() {
     setError(null)
     try {
       const logRepo = new LogRepo()
-      await logRepo.addEntries(items.filter((_, index) => checked[index]).map((item) => ({
+      const ids = await logRepo.addEntries(items.filter((_, index) => checked[index]).map((item) => ({
           date: entryDate,
           meal,
           customSnapshot: {
@@ -76,6 +81,13 @@ export default function AiLogResultPage() {
           f: item.fatG,
           fiber: item.fiberG,
         })))
+      if (photo) {
+        // One photo of a plate can produce several items -- attach it to
+        // each entry it produced, not just the first.
+        const blob = base64ToBlob(photo.data, photo.mediaType)
+        const photoRepo = new EntryPhotoRepo()
+        await Promise.all(ids.map((id) => photoRepo.attach(id, blob, photo.mediaType)))
+      }
       vibrateSuccess()
       notifyDataChanged()
       navigate(diaryPath(entryDate))

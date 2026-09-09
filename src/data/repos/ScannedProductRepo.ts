@@ -27,4 +27,8 @@ export class ScannedProductRepo {
     const results = await this.db.scannedProducts.bulkGet(barcodes)
     return results.filter((p): p is ScannedProduct => p !== undefined)
   }
+
+  async listAll(): Promise<ScannedProduct[]> {
+    return this.db.scannedProducts.toArray()
+  }
 }
