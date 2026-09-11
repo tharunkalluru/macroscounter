@@ -13,6 +13,18 @@ function buildAuth() {
     database: drizzleAdapter(getDb(), { provider: 'pg', schema: schema.authSchema }),
     secret: process.env.AUTH_SECRET,
     baseURL: process.env.VITE_APP_URL,
+    // Reported live: adding the bitewise.food custom domain broke sign-in
+    // and sign-up entirely on it (POST /api/auth/sign-in/email -> 403
+    // "Invalid origin", confirmed directly against production) -- Better
+    // Auth's CSRF/origin check trusts only baseURL's own origin unless told
+    // otherwise, and VITE_APP_URL still pointed at the old domain. Explicitly
+    // trusting every domain this app is actually served from means a stale
+    // VITE_APP_URL (or a future domain change before it's updated) degrades
+    // gracefully instead of taking down every account-based flow at once.
+    // baseURL itself still needs to be the one currently-canonical URL --
+    // it's what OAuth callback URIs and emailed reset links are built from,
+    // and only one absolute URL can be correct there.
+    trustedOrigins: ['https://bitewise.food', 'https://www.bitewise.food', 'https://*.vercel.app'],
     socialProviders: {
       google: {
         clientId: process.env.GOOGLE_CLIENT_ID ?? '',
