@@ -14,14 +14,19 @@ async function expectNoViolations(page: Page) {
   expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
 }
 
-test('sign-in (welcome) screen has no WCAG A/AA violations', async ({ page }) => {
+test('landing page has no WCAG A/AA violations', async ({ page }) => {
   await page.goto('/')
-  await expect(page).toHaveURL(/\/welcome$/)
+  await expect(page).toHaveURL(/\/landing$/)
+  await expectNoViolations(page)
+})
+
+test('sign-in (welcome) screen has no WCAG A/AA violations', async ({ page }) => {
+  await page.goto('/welcome')
   await expectNoViolations(page)
 })
 
 test('onboarding form has no WCAG A/AA violations', async ({ page }) => {
-  await page.goto('/')
+  await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
   await expectNoViolations(page)
 })

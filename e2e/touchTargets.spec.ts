@@ -65,14 +65,19 @@ async function auditTouchTargets(page: Page, pageName: string) {
 test.describe('touch-target audit (390x844, every visible interactive element >= 44x44)', () => {
   test.use({ viewport: { width: 390, height: 844 } })
 
-  test('sign-in (welcome) screen', async ({ page }) => {
+  test('landing page', async ({ page }) => {
     await page.goto('/')
-    await expect(page).toHaveURL(/\/welcome$/)
+    await expect(page).toHaveURL(/\/landing$/)
+    await auditTouchTargets(page, 'landing')
+  })
+
+  test('sign-in (welcome) screen', async ({ page }) => {
+    await page.goto('/welcome')
     await auditTouchTargets(page, 'welcome')
   })
 
   test('onboarding form', async ({ page }) => {
-    await page.goto('/')
+    await page.goto('/welcome')
     await page.getByTestId('signin-skip-button').click()
     await auditTouchTargets(page, 'onboarding')
   })

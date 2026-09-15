@@ -1,8 +1,13 @@
 import { expect, test } from '@playwright/test'
 import { onboard } from './helpers/onboard'
 
-test('first launch shows the sign-in screen with a Google option and a guest skip', async ({ page }) => {
+test('first launch shows the marketing landing page, which leads to sign-in', async ({ page }) => {
   await page.goto('/')
+  await expect(page).toHaveURL(/\/landing$/)
+  await expect(page.getByRole('heading', { name: /bitewise/i })).toBeVisible()
+  await expect(page.getByTestId('landing-cta-primary')).toBeVisible()
+
+  await page.getByTestId('landing-cta-primary').click()
   await expect(page).toHaveURL(/\/welcome$/)
   await expect(page.getByRole('heading', { name: 'Bitewise' })).toBeVisible()
   await expect(page.getByTestId('signin-google-button')).toBeVisible()

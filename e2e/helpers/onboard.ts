@@ -55,7 +55,10 @@ export async function onboard(page: Page, options: OnboardOptions = {}) {
   if (fixedTime !== false) {
     await page.clock.setFixedTime(fixedTime)
   }
-  await page.goto('/')
+  // Goes straight to the sign-in screen, not through the marketing landing
+  // page at "/" -- this helper's entire job is reaching a working session
+  // fast, not exercising the landing funnel (see e2e/landing.spec.ts for that).
+  await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
 
   await page.getByPlaceholder('Your name').fill(name)

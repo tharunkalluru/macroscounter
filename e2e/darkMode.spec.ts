@@ -68,10 +68,19 @@ test('a stored legacy "system" preference migrates once to a concrete choice', a
   await expect(page.getByTestId('theme-option-light')).toHaveAttribute('aria-checked', 'true')
 })
 
-test('sign-in (welcome) screen has no WCAG A/AA violations in dark mode', async ({ page }) => {
+test('landing page has no WCAG A/AA violations in dark mode', async ({ page }) => {
   await page.addInitScript(() => localStorage.setItem('macrodesi-theme', 'dark'))
   await page.goto('/')
-  await expect(page).toHaveURL(/\/welcome$/)
+  await expect(page).toHaveURL(/\/landing$/)
+  await expect(page.locator('html')).toHaveClass(/dark/)
+
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
+  expect(results.violations, JSON.stringify(results.violations, null, 2)).toEqual([])
+})
+
+test('sign-in (welcome) screen has no WCAG A/AA violations in dark mode', async ({ page }) => {
+  await page.addInitScript(() => localStorage.setItem('macrodesi-theme', 'dark'))
+  await page.goto('/welcome')
   await expect(page.locator('html')).toHaveClass(/dark/)
 
   const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()

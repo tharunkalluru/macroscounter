@@ -155,7 +155,12 @@ export default function Dashboard() {
   }
 
   if (state === 'welcome') {
-    return <Navigate to="/welcome" replace />
+    // A device that has never made a sign-in choice at all is a genuinely
+    // fresh visitor -- show the marketing landing page first, not the bare
+    // sign-in form. Once they've gone through /welcome once (real sign-in
+    // or "Skip for now"), hasMadeSignInChoice() is true and every future
+    // visit here skips straight past both screens.
+    return <Navigate to="/landing" replace />
   }
 
   if (state === 'no-profile') {

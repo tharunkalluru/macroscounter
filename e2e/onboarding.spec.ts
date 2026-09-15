@@ -8,8 +8,7 @@ test('completing onboarding computes and shows the correct kcal target on the da
   // Dead-zone hour (00:00-4:59) so the Phase 10.3 meal prompt never fires and
   // blocks this test's own dashboard interactions.
   await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
-  await page.goto('/')
-  await expect(page).toHaveURL(/\/welcome$/)
+  await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
   await expect(page).toHaveURL(/\/onboarding$/)
   await expect(page.getByRole('heading', { name: 'What should we call you?' })).toBeVisible()
@@ -64,7 +63,7 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
   page,
 }) => {
   await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
-  await page.goto('/')
+  await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
 
   await page.getByPlaceholder('Your name').fill('Imperial Persona')
@@ -121,7 +120,7 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
 
 test('data persists across a reload after onboarding', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
-  await page.goto('/')
+  await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
 
   await page.getByPlaceholder('Your name').fill('Reload Check')

@@ -68,7 +68,7 @@ async function seedPreExistingAccount(page: Page) {
 
 test('an account with pre-redesign data renders correctly with nothing dropped', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-08-18T09:00:00'))
-  await page.goto('/')
+  await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
   await expect(page).toHaveURL(/\/onboarding$/)
 

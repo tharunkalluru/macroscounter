@@ -93,7 +93,7 @@ test('weight tracking: log a weigh-in and see it plus the trend chart', async ({
 
 test('weight tracking respects a pounds preference set at onboarding', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
-  await page.goto('/')
+  await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
 
   await page.getByPlaceholder('Your name').fill('Pounds Persona')

@@ -12,6 +12,7 @@ import DayDetailPage from './app/DayDetailPage'
 import ErrorBoundary from './app/components/ErrorBoundary'
 import ExportPage from './app/ExportPage'
 import HistoryPage from './app/HistoryPage'
+import LandingPage from './app/LandingPage'
 import LibraryPage from './app/LibraryPage'
 import LogPage from './app/LogPage'
 import OnboardingFlow from './app/OnboardingFlow'
@@ -101,6 +102,7 @@ function App() {
               </Route>
 
               {/* Full-screen task flows: no shell chrome. */}
+              <Route path="/landing" element={<LandingPage />} />
               <Route path="/welcome" element={<SignInScreen />} />
               <Route path="/reset-password" element={<ResetPasswordPage />} />
               <Route path="/onboarding" element={<OnboardingFlow />} />
