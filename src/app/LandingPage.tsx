@@ -25,7 +25,7 @@ const FEATURES: Feature[] = [
   {
     Icon: SparkleIcon,
     title: 'AI-powered logging',
-    body: 'Type what you ate, snap a photo of your plate, or just say it out loud — Claude estimates calories and macros for you.',
+    body: 'Type what you ate, snap a photo of your plate, or just say it out loud - Claude estimates calories and macros for you.',
   },
   {
     Icon: BarcodeIcon,
@@ -35,12 +35,12 @@ const FEATURES: Feature[] = [
   {
     Icon: TargetIcon,
     title: 'Targets that adapt',
-    body: "Calorie, protein, carb, fat, and fiber targets computed from your own profile and goal — not a generic formula.",
+    body: "Calorie, protein, carb, fat, and fiber targets computed from your own profile and goal - not a generic formula.",
   },
   {
     Icon: CoachIcon,
     title: 'An AI coach that knows your data',
-    body: 'Ask questions and get answers grounded in your own logged history, weight trend, and program — not generic advice.',
+    body: 'Ask questions and get answers grounded in your own logged history, weight trend, and program - not generic advice.',
   },
   {
     Icon: TrendsIcon,
@@ -55,7 +55,7 @@ const FEATURES: Feature[] = [
   {
     Icon: HeartIcon,
     title: 'Sync across every device',
-    body: 'Sign in with Google, email and password, or a one-time email code — your diary follows you, and still works fully offline.',
+    body: 'Sign in with Google, email and password, or a one-time email code - your diary follows you, and still works fully offline.',
   },
   {
     Icon: InstallIcon,
@@ -65,9 +65,9 @@ const FEATURES: Feature[] = [
 ]
 
 const STEPS = [
-  { n: '1', title: 'Set your goal', body: 'Cut, maintain, or gain — tell it your stats and get real targets in under a minute.' },
+  { n: '1', title: 'Set your goal', body: 'Cut, maintain, or gain - tell it your stats and get real targets in under a minute.' },
   { n: '2', title: 'Log meals your way', body: 'Search, scan a barcode, describe it to AI, or reuse something you logged before.' },
-  { n: '3', title: 'See what’s working', body: 'Watch your rings, trends, and streaks build up — and ask your coach when something looks off.' },
+  { n: '3', title: 'See what’s working', body: 'Watch your rings, trends, and streaks build up - and ask your coach when something looks off.' },
 ]
 
 export default function LandingPage() {
@@ -112,7 +112,7 @@ export default function LandingPage() {
                 Bitewise makes tracking food actually stick.
               </h1>
               <p className="mt-5 max-w-md text-body leading-relaxed text-slate-600 dark:text-slate-300">
-                Log meals in seconds with AI, a barcode scan, or search — get calorie and macro
+                Log meals in seconds with AI, a barcode scan, or search - get calorie and macro
                 targets built for your goal, and see your progress sync across every device.
               </p>
               <div className="mt-8 flex flex-col gap-3 sm:flex-row">
@@ -121,7 +121,7 @@ export default function LandingPage() {
                   data-testid="landing-cta-primary"
                   className="min-h-touch inline-flex items-center justify-center rounded-card bg-brand-700 px-6 font-medium text-white transition-transform active:scale-[0.98]"
                 >
-                  Get started — it&apos;s free
+                  Get started - it&apos;s free
                 </Link>
                 <a
                   href="#features"
@@ -161,7 +161,7 @@ export default function LandingPage() {
             <div className="mx-auto max-w-2xl text-center">
               <h2 className="text-title font-bold text-slate-900 dark:text-slate-100">Everything you need, nothing you don&apos;t</h2>
               <p className="mt-3 text-body text-slate-600 dark:text-slate-300">
-                A complete food diary built around how people actually eat — not a spreadsheet.
+                A complete food diary built around how people actually eat - not a spreadsheet.
               </p>
             </div>
             <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
@@ -216,7 +216,7 @@ export default function LandingPage() {
           <div className="mx-auto max-w-2xl px-5">
             <h2 className="text-title font-bold text-slate-900 dark:text-slate-100">Start your diary today.</h2>
             <p className="mt-3 text-body text-slate-600 dark:text-slate-300">
-              Set up your targets in under a minute — sign in to sync across devices, or try it on this device first.
+              Set up your targets in under a minute - sign in to sync across devices, or try it on this device first.
             </p>
             <div className="mt-8 flex justify-center">
               <Link
@@ -224,7 +224,7 @@ export default function LandingPage() {
                 data-testid="landing-cta-final"
                 className="min-h-touch inline-flex items-center justify-center rounded-card bg-brand-700 px-8 font-medium text-white transition-transform active:scale-[0.98]"
               >
-                Get started — it&apos;s free
+                Get started - it&apos;s free
               </Link>
             </div>
           </div>

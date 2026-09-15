@@ -35,7 +35,7 @@ For each item:
 - Use a stated quantity when the user gives one (e.g. "100g grilled chicken breast"); otherwise estimate a reasonable portion size from visual cues (plate size, common serving sizes) or from typical serving conventions if there's no photo.
 - Compute kcal, protein (g), carbs (g), fat (g), and dietary fiber (g) for that specific quantity, using standard nutrition knowledge for that food and preparation method.
 - Set confidence to "high" when the user stated an exact quantity, "low" when the portion is your own visual/typical-serving estimate.
-- Only include items actually described or visible — never invent items that weren't mentioned or shown.
+- Only include items actually described or visible - never invent items that weren't mentioned or shown.
 - Return at most 10 items.`
 
 /** Pure, unit-testable: turns the request body into Claude message content — image block first (per the vision API's documented ordering), then the text. */

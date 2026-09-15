@@ -17,7 +17,7 @@ function apiNotFoundInDev(): Plugin {
   const respond: import('vite').Connect.SimpleHandleFunction = (_req, res) => {
     res.statusCode = 404
     res.setHeader('Content-Type', 'application/json')
-    res.end(JSON.stringify({ error: '/api routes only run on Vercel — see SETUP.md' }))
+    res.end(JSON.stringify({ error: '/api routes only run on Vercel - see SETUP.md' }))
   }
   return {
     name: 'api-not-found-in-dev',

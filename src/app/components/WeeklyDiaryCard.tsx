@@ -27,7 +27,7 @@ export default function WeeklyDiaryCard({ date, entries, onSelect }: {
             className={`flex min-h-touch flex-col items-center gap-2 rounded-xl py-3 text-caption transition-colors ${day.date === date ? 'bg-brand-50 text-brand-700 dark:bg-slate-800 dark:text-brand-400' : 'text-slate-500 hover:bg-slate-50 dark:text-slate-400 dark:hover:bg-slate-800'}`}>
             <span>{dt.toLocaleDateString('en-US', { weekday: 'short' }).slice(0, 2)}</span>
             <span className={`flex h-7 w-7 items-center justify-center rounded-full font-semibold ${day.count ? 'bg-brand-700 text-white' : 'border border-dashed border-slate-300 dark:border-slate-600'}`}>{dt.getDate()}</span>
-            <span className="text-[10px] tabular-nums">{day.count ? day.kcal : '—'}</span>
+            <span className="text-[10px] tabular-nums">{day.count ? day.kcal : '-'}</span>
           </button>
         })}
       </div>
