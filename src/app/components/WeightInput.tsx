@@ -60,6 +60,7 @@ export default function WeightInput({ valueKg, onChangeKg, unit, onUnitChange }:
           className={TEXT_INPUT_CLASS}
           value={valueKg}
           onChange={(e) => onChangeKg(e.target.value)}
+          aria-label="Weight in kilograms"
           placeholder="kg"
           data-testid="weight-input-kg"
         />
@@ -70,6 +71,7 @@ export default function WeightInput({ valueKg, onChangeKg, unit, onUnitChange }:
           className={TEXT_INPUT_CLASS}
           value={lbValue}
           onChange={(e) => handleLbChange(e.target.value)}
+          aria-label="Weight in pounds"
           placeholder="lb"
           data-testid="weight-input-lb"
         />

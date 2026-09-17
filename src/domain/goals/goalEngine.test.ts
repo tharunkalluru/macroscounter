@@ -227,9 +227,8 @@ describe('computeGoalTargets — property: macro sum vs kcal target, floors resp
       const result = computeGoalTargets(input)
       const macroKcal = result.proteinG * 4 + result.carbsG * 4 + result.fatG * 9
       const diff = Math.abs(macroKcal - result.kcal)
-      const tolerance = Math.max(result.kcal * 0.02, 4) // >=4 kcal absolute slack for integer rounding
-
-      expect(diff, JSON.stringify(input)).toBeLessThanOrEqual(tolerance)
+      // Only whole-gram carbohydrate rounding remains, at most 2 kcal.
+      expect(diff, JSON.stringify(input)).toBeLessThanOrEqual(2)
       expect(result.proteinG / input.weightKg, JSON.stringify(input)).toBeGreaterThanOrEqual(
         1.6 - 0.02
       )
@@ -355,3 +354,52 @@ describe('computeGoalTargets — floorKcalOverride ("Low" medical-supervision fl
 })
 
 const FEMALE_FLOOR = 1200
+
+describe('computeGoalTargets — energy and optional allocations agree', () => {
+  const base: GoalEngineInput = {
+    sex: 'female', age: 65, heightCm: 155, weightKg: 100,
+    activityLevel: 'sedentary', goal: 'cut', proteinGPerKg: 2.2, fatGPerKg: 1.5,
+  }
+
+  it('fits an optional high-fat preference into the existing calorie target', () => {
+    const result = computeGoalTargets({ ...base, goalRateLbPerWeek: 0.5 })
+    // 1529 kcal target - 880 protein kcal leaves 649 kcal: at most 72g fat.
+    expect(result).toMatchObject({ kcal: 1529, proteinG: 220, fatG: 72, carbsG: 0 })
+    expect(result.adjustments).toEqual({ fatReducedFrom: 150 })
+  })
+
+  it('raises energy when protein plus the established fat floor cannot fit', () => {
+    const result = computeGoalTargets(base)
+    // Original 1483 target cannot fit 220g protein + 70g minimum fat (1510 kcal).
+    expect(result).toMatchObject({ kcal: 1510, proteinG: 220, fatG: 70, carbsG: 0 })
+    expect(result.adjustments).toEqual({ caloriesRaisedFrom: 1483, fatReducedFrom: 150 })
+    expect(result.kcal).toBe(result.proteinG * 4 + result.fatG * 9)
+  })
+
+  it('does not annotate or change an ordinary balanced allocation', () => {
+    const result = computeGoalTargets({ sex: 'male', age: 28, heightCm: 170, weightKg: 70, activityLevel: 'sedentary', goal: 'cut' })
+    expect(result).toMatchObject({ kcal: 1628, proteinG: 126, fatG: 49, carbsG: 171 })
+    expect(result.adjustments).toBeUndefined()
+  })
+
+  it('keeps macros within 2 kcal across the accepted bounds and all allocation choices', () => {
+    const weights = [30, 45.5, 70, 100, 180, 300]
+    const ages = [18, 65, 100]
+    const fatChoices = [0.5, 0.7, 1.1, 1.5]
+    const proteinChoices = [1.4, 1.8, 2.2]
+    for (const weightKg of weights) for (const age of ages) {
+      for (const sex of ['female', 'male'] as const) for (const goal of ['cut', 'maintain', 'gain'] as const) {
+        for (const fatGPerKg of fatChoices) for (const proteinGPerKg of proteinChoices) {
+          const input: GoalEngineInput = { sex, age, heightCm: age === 65 ? 250 : 100, weightKg, goal, activityLevel: 'sedentary', fatGPerKg, proteinGPerKg }
+          const result = computeGoalTargets(input)
+          const macroEnergy = 4 * result.proteinG + 4 * result.carbsG + 9 * result.fatG
+          expect(Math.abs(macroEnergy - result.kcal), JSON.stringify(input)).toBeLessThanOrEqual(2)
+          expect(result.carbsG).toBeGreaterThanOrEqual(0)
+          expect(result.fatG).toBeGreaterThanOrEqual(Math.round(0.7 * weightKg))
+          expect(result.proteinG).toBeGreaterThanOrEqual(Math.round(1.6 * weightKg))
+          if (goal === 'cut') expect(result.kcal).toBeGreaterThanOrEqual(Math.round(computeKcalFloor(sex, weightKg, input.heightCm, age)))
+        }
+      }
+    }
+  })
+})

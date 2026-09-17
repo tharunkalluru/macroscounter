@@ -6,14 +6,14 @@ interface Props {
   entry: LogEntry
 }
 
-/** The glyph + name + portion/kcal caption shared by EntryRow's real row and LogPage's DragOverlay, so the floating drag preview looks identical to the row being dragged instead of a stripped-down substitute. */
+/** Shared with the drag preview so moving a meal preserves its appearance. */
 export default function EntryRowVisual({ entry }: Props) {
   return (
     <>
-      <FoodGlyph name={entry.name} size="small" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-body font-medium text-slate-800 dark:text-slate-100">{entry.name}</p>
-        <p className="text-caption text-slate-500 dark:text-slate-400">
+      <FoodGlyph name={entry.name} />
+      <div className="min-w-0 flex-1 py-1">
+        <p className="truncate text-body font-medium text-slate-900 dark:text-slate-100">{entry.name}</p>
+        <p className="mt-0.5 truncate text-caption text-slate-500 dark:text-slate-400">
           {formatPortion({
             qty: entry.qty,
             unit: entry.unit,
@@ -21,9 +21,11 @@ export default function EntryRowVisual({ entry }: Props) {
             portionLabel: entry.portionLabel,
             isCustom: !!entry.customSnapshot,
           })}
-          {' · '}
-          {Math.round(entry.kcal)} kcal
         </p>
+      </div>
+      <div className="shrink-0 text-right tabular-nums">
+        <p className="text-body font-semibold text-slate-900 dark:text-slate-100">{Math.round(entry.kcal)}</p>
+        <p className="mt-0.5 text-caption text-slate-500 dark:text-slate-400">kcal</p>
       </div>
     </>
   )

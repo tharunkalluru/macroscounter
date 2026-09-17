@@ -50,7 +50,7 @@ async function seedPlateauWeek(page: Page) {
   })
 }
 
-test('adaptive prompt appears with the correct suggestion and accepting updates the target', async ({
+test('adaptive prompt routes through review before a confirmed target update', async ({
   page,
 }) => {
   await onboard(page) // pins the clock to 2026-08-18T02:00 (see onboard())
@@ -59,11 +59,19 @@ test('adaptive prompt appears with the correct suggestion and accepting updates 
   await page.reload()
 
   await expect(page.getByTestId('adaptive-prompt')).toBeVisible()
-  await expect(page.getByTestId('adaptive-headline')).toContainText('decrease your target to 2686 kcal')
+  await expect(page.getByTestId('adaptive-headline')).toContainText('decrease to 2686 kcal')
   await expect(page.getByTestId('adaptive-reason')).toContainText('stayed about the same')
   await expect(page.getByTestId('adaptive-reason')).toContainText('lowering your target by 100 kcal')
 
-  await page.getByRole('button', { name: 'Accept' }).click()
+  await page.getByRole('link', { name: 'Review this week', exact: true }).click()
+  await expect(page).toHaveURL('/coach/check-in')
+  for (let step = 0; step < 3; step++) await page.getByTestId('checkin-continue').click()
+  await page.getByTestId('checkin-accept').click()
+  await expect(page.getByTestId('program-update-use-plan')).toBeDisabled()
+  await page.getByRole('checkbox', { name: /I reviewed my diary/ }).check()
+  await page.getByTestId('program-update-use-plan').click()
+  await expect(page).toHaveURL('/coach')
+  await page.goto('/')
 
   await expect(page.getByTestId('adaptive-prompt')).not.toBeVisible()
   await expect(page.getByTestId('kcal-target')).toHaveText('2686 kcal target')

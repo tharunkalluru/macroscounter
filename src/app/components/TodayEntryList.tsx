@@ -7,6 +7,8 @@ import { activeMealWindow } from '../../domain/mealPrompt/activeMealWindow'
 import { vibrateTiny } from '../../lib/haptics'
 import { useUIState } from '../shell/UIStateContext'
 import EntryRow from './EntryRow'
+import FoodDiaryIllustration from './FoodDiaryIllustration'
+import { PlusIcon } from '../shell/icons'
 import Snackbar from './Snackbar'
 import YourUsualsRow from './YourUsualsRow'
 
@@ -76,15 +78,15 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
   }
 
   return (
-    <section className="rounded-card bg-white p-5 shadow-card dark:bg-surface-dark-card" data-testid="today-entry-list">
+    <section className="rounded-card bg-white p-5 shadow-card dark:bg-surface-dark-card dark:shadow-card-dark" data-testid="today-entry-list">
       <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">{isToday ? "Today’s food" : "Food diary"}</h2><span className="text-caption text-slate-500 dark:text-slate-400">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span></div>
       {showUsuals && activeMeal && (
         <YourUsualsRow meal={activeMeal} date={date} historyEntries={historyEntries} onLogged={onLogged} />
       )}
 
-      <div className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-lg bg-white shadow-sm dark:divide-slate-700 dark:bg-surface-dark-card">
+      <div className="mt-2 divide-y divide-slate-100 overflow-hidden dark:divide-slate-800">
         {entries.length === 0 && (
-          <div className="rounded-lg bg-slate-50 px-4 py-6 text-center dark:bg-slate-800"><p className="text-sm font-medium">{isToday ? "Your first meal starts here." : "Nothing logged for this day."}</p><p className="mt-2 text-caption text-slate-500 dark:text-slate-400">{isToday ? "Search a favorite, scan a label, or add a meal in your own words." : "Forgot to log? You can still add or edit your meals."}</p></div>
+          <div className="px-4 pb-4 pt-1 text-center"><FoodDiaryIllustration className="mx-auto mb-2 h-24 w-40" /><p className="text-sm font-medium">{isToday ? "Your first meal starts here." : "Nothing logged for this day."}</p><p className="mt-2 text-caption text-slate-500 dark:text-slate-400">{isToday ? "Search a favorite, scan a label, or add a meal in your own words." : "Forgot to log? You can still add or edit your meals."}</p></div>
         )}
         <AnimatePresence initial={false}>
           {sorted.map((entry) => (
@@ -97,9 +99,9 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
         type="button"
         onClick={handleAdd}
         data-testid="today-add-entry"
-        className="mt-2 min-h-touch rounded-lg px-2 text-caption font-medium text-brand-700 dark:text-brand-400"
+        className="pressable mt-3 flex min-h-touch w-full items-center justify-center gap-2 rounded-xl bg-brand-50 px-3 text-sm font-medium text-brand-700 dark:bg-brand-900/30 dark:text-brand-400"
       >
-        + Add food
+        <PlusIcon className="h-4 w-4" /> Add food
       </button>
 
       <Snackbar

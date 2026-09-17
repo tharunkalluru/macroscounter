@@ -73,9 +73,22 @@ nav {
 
 @layer components {
   .quick-action {
-    @apply flex min-h-touch flex-col items-center justify-center gap-2 rounded-xl bg-slate-50 px-1 py-4 text-center text-caption font-medium text-slate-700 transition-colors hover:bg-brand-50 hover:text-brand-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 dark:hover:text-brand-400;
+    @apply flex min-h-touch flex-col items-center justify-center gap-1.5 rounded-xl bg-white px-1 py-2.5 text-center text-caption font-medium text-slate-600 shadow-card dark:bg-surface-dark-card dark:text-slate-300 dark:shadow-card-dark;
   }
 }
+
+/* A small press response ties feedback to an intentional action. Hover is
+   restricted to pointing devices so touch controls never get stuck hovered. */
+.pressable {
+  transition: transform 150ms cubic-bezier(0.22, 1, 0.36, 1), background-color 150ms ease, color 150ms ease;
+}
+.pressable:active:not(:disabled):not(:focus-visible) { transform: scale(0.98); }
+@media (hover: hover) and (pointer: fine) {
+  .quick-action:hover { @apply bg-brand-50 text-brand-700 dark:bg-slate-800 dark:text-brand-400; }
+  .pressable.bg-brand-700:hover { @apply bg-brand-600; }
+}
+html[data-reduce-motion='true'] .pressable { transition: none; }
+html[data-reduce-motion='true'] .pressable:active { transform: none; }
 
 button:not(:disabled), a, [role='tab'] { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
@@ -87,4 +100,6 @@ button:disabled { cursor: not-allowed; }
 label:has(input[type='date']:focus-visible) { outline: 2px solid var(--brand-400); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; }
+  .pressable { transition: none; }
+  .pressable:active { transform: none; }
 }

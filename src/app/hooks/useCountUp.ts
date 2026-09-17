@@ -1,14 +1,14 @@
-import { useReducedMotion } from 'framer-motion'
 import { useEffect, useRef, useState } from 'react'
+import { usePrefersReducedMotion } from './usePrefersReducedMotion'
 
 // Matches the ring-sweep easing (cubic-bezier(0.22, 1, 0.36, 1)).
 function easeOutQuint(t: number): number {
   return 1 - Math.pow(1 - t, 5)
 }
 
-/** Animates from the previous value to `target` over `durationMs`. Instant under prefers-reduced-motion. */
+/** Animates value changes, respecting both system and in-app reduced motion. */
 export function useCountUp(target: number, durationMs = 300): number {
-  const prefersReducedMotion = useReducedMotion()
+  const prefersReducedMotion = usePrefersReducedMotion()
   const [display, setDisplay] = useState(target)
   const fromRef = useRef(target)
   const rafRef = useRef<number | undefined>(undefined)

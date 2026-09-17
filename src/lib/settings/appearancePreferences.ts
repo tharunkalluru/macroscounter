@@ -21,4 +21,5 @@ export function getReduceMotionPreference(): boolean {
 
 export function setReduceMotionPreference(enabled: boolean): void {
   localStorage.setItem(REDUCE_MOTION_KEY, enabled ? '1' : '0')
+  document.documentElement.dataset.reduceMotion = String(enabled)
 }

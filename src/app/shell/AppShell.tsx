@@ -30,7 +30,7 @@ export default function AppShell() {
       <InstallCoachMark />
       <GoalReachedTakeover />
       <Header />
-      <main id="main-content" className="pb-24 lg:pb-10">
+      <main id="main-content" className="pb-[calc(6rem+env(safe-area-inset-bottom))] lg:pb-10">
         <PageTransition>
           <Outlet />
         </PageTransition>

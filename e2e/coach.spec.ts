@@ -15,8 +15,8 @@ async function onboard(page: Page) {
 }
 
 /** Same plateau-week fixture as adaptive.spec.ts — 7 days at target, flat weight. */
-async function seedPlateauWeek(page: Page) {
-  await page.evaluate(() => {
+async function seedPlateauWeek(page: Page, kcal = 2786) {
+  await page.evaluate((kcal) => {
     const dates = ['2026-08-12', '2026-08-13', '2026-08-14', '2026-08-15', '2026-08-16', '2026-08-17', '2026-08-18']
     return new Promise<void>((resolve, reject) => {
       const req = indexedDB.open('macrodesi')
@@ -33,7 +33,7 @@ async function seedPlateauWeek(page: Page) {
             qty: 1,
             unit: 'portion',
             grams: 100,
-            kcal: 2786,
+            kcal,
             p: 0,
             c: 0,
             f: 0,
@@ -47,7 +47,7 @@ async function seedPlateauWeek(page: Page) {
       }
       req.onerror = () => reject(req.error)
     })
-  })
+  }, kcal)
 }
 
 test('the strategy hub shows week 1 for a freshly onboarded program', async ({ page }) => {
@@ -79,7 +79,7 @@ test('walking through the weekly check-in wizard and accepting updates the targe
 
   await expect(page.getByTestId('checkin-step-your-week')).toBeVisible()
   await expect(page.getByTestId('checkin-avg-kcal')).toHaveText('2786 kcal')
-  await expect(page.getByTestId('checkin-weight-change')).toHaveText('0 kg')
+  await expect(page.getByTestId('checkin-weight-change')).toHaveText('0.0 kg')
   await page.getByTestId('checkin-continue').click()
 
   await expect(page.getByTestId('checkin-step-the-math')).toBeVisible()
@@ -99,6 +99,8 @@ test('walking through the weekly check-in wizard and accepting updates the targe
   await expect(page).toHaveURL('/coach/check-in/plan')
   await expect(page.getByTestId('program-update-grid')).toContainText('2686')
 
+  await expect(page.getByTestId('program-update-use-plan')).toBeDisabled()
+  await page.getByRole('checkbox', { name: /I reviewed my diary/ }).check()
   await page.getByTestId('program-update-use-plan').click()
   await expect(page).toHaveURL('/coach')
 
@@ -168,4 +170,39 @@ test('reaching a goal weight shows the full-screen takeover on the next app open
   // Doesn't reappear on the next open -- it's a one-shot per goal value.
   await page.goto('/coach')
   await expect(page.getByTestId('goal-reached-takeover')).not.toBeVisible()
+})
+
+
+test('the direct plan route still requires a diary review acknowledgement', async ({ page }) => {
+  await onboard(page)
+  await seedPlateauWeek(page)
+  await page.goto('/coach/check-in/plan')
+  await expect(page.getByTestId('program-update-use-plan')).toBeDisabled()
+  await page.getByRole('checkbox', { name: /I reviewed my diary/ }).check()
+  await expect(page.getByTestId('program-update-use-plan')).toBeEnabled()
+})
+
+
+test('a stable maintenance week gets a useful no-change review instead of a loss target', async ({ page }) => {
+  await onboardHelper(page, { name: 'Maintain Persona', age: '25', heightCm: '180', weightKg: '90', activityLevel: 'active', goal: 'maintain' })
+  await seedPlateauWeek(page, 3286)
+  await page.goto('/coach/check-in')
+  for (let step = 0; step < 3; step++) await page.getByTestId('checkin-continue').click()
+  await expect(page.getByTestId('checkin-new-target-message')).toContainText('Your target still fits')
+  await expect(page.getByTestId('checkin-suggested-kcal')).toHaveText('3286 kcal')
+  await expect(page.getByTestId('checkin-accept')).toHaveText('Keep this plan')
+  await page.getByTestId('checkin-accept').click()
+  await expect(page).toHaveURL('/coach')
+})
+
+
+test('coach week remains usable at 320px without page overflow', async ({ page }) => {
+  await onboard(page)
+  await page.setViewportSize({ width: 320, height: 780 })
+  await page.goto('/coach')
+  await expect(page.getByTestId('coach-week-brief')).toBeVisible()
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  const widths = await page.getByTestId('coach-week-brief').locator('a').evaluateAll((links) => links.map((link) => link.getBoundingClientRect().width))
+  expect(widths).toHaveLength(7)
+  expect(widths.every((width) => width >= 44)).toBe(true)
 })

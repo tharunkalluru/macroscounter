@@ -22,7 +22,7 @@ describe('design tokens match the Nocturne redesign (Phase R.0) values', () => {
   it('surface tokens match the spec', () => {
     expect(surface.bg).toBe('#f7f7fb')
     expect(surface.card).toBe('#ffffff')
-    expect(surface.radiusCard).toBe('14px')
+    expect(surface.radiusCard).toBe('20px')
   })
 
   it('dark surfaces are true OLED black, per direct request', () => {

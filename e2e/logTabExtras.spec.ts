@@ -64,7 +64,7 @@ test('the "See all" link on Your usuals opens the full screen, and a repeated co
   if (await notNow.isVisible().catch(() => false)) await notNow.click()
   await expect(page.getByTestId('your-usuals-row')).toBeVisible()
   await page.getByTestId('your-usuals-see-all').click()
-  await expect(page).toHaveURL('/log/usuals')
+  await expect(page).toHaveURL('/log/usuals?date=2026-08-18&meal=breakfast')
 
   await expect(page.getByTestId('usuals-item').first()).toContainText('logged 2×')
   await page.getByTestId('usuals-item').first().click()
@@ -85,4 +85,31 @@ test('a full-screen weigh-in save shows up in the weight trend chart', async ({ 
   await page.getByTestId('weighin-save').click()
   await expect(page).toHaveURL('/weight')
   await expect(page.getByTestId('weighin-list')).toContainText('79.5 kg')
+})
+
+
+test('repeating an AI meal preserves its portions and chosen historical destination', async ({ page }) => {
+  await onboard(page)
+  await page.evaluate(() => new Promise<void>((resolve, reject) => {
+    const request = indexedDB.open('macrodesi')
+    request.onsuccess = () => {
+      const tx = request.result.transaction('logEntries', 'readwrite')
+      tx.objectStore('logEntries').add({ date: '2026-08-15', meal: 'dinner', name: 'AI noodle bowl', portionSummary: '1 large bowl', qty: 1, unit: 'portion', grams: 420, kcal: 650, p: 30, c: 85, f: 20, fiber: 9 })
+      tx.oncomplete = () => resolve()
+      tx.onerror = () => reject(tx.error)
+    }
+    request.onerror = () => reject(request.error)
+  }))
+  await page.goto('/log/usuals?date=2026-08-17&meal=dinner')
+  await expect(page.getByTestId('usuals-filter-dinner')).toHaveAttribute('aria-pressed', 'true')
+  await expect(page.getByTestId('usuals-item')).toContainText('1 large bowl')
+  await page.getByTestId('usuals-item').click()
+  await expect(page.getByRole('status')).toContainText('Meal added')
+  await page.goto('/log?date=2026-08-17')
+  await expect(page.getByTestId('meal-section-dinner')).toContainText('AI noodle bowl')
+  await expect(page.getByTestId('diary-day-total')).toContainText('650 kcal')
+  await page.reload()
+  await expect(page.getByTestId('diary-day-total')).toContainText('650 kcal')
+  await page.goto('/')
+  await expect(page.getByTestId('figure-eaten')).toContainText('0')
 })

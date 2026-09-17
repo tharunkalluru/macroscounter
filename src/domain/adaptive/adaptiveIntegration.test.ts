@@ -65,7 +65,7 @@ describe('adaptive targets integration: 3-week seeded dataset produces the exact
     await weighInRepo.add({ date: '2026-08-05', weightKg: 79.0 })
     await weighInRepo.add({ date: '2026-08-11', weightKg: 79.0 }) // week 2: 0kg -> plateau
     await weighInRepo.add({ date: '2026-08-12', weightKg: 79.0 })
-    await weighInRepo.add({ date: '2026-08-18', weightKg: 78.5 }) // week 3: -0.5kg -> on track
+    await weighInRepo.add({ date: '2026-08-18', weightKg: 79 - 0.5 * 6 / 7 }) // week 3: -0.5kg -> on track
 
     const floorKcal = 1200
 

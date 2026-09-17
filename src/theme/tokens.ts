@@ -180,8 +180,8 @@ export const surface = {
    *  above `card`. New in the Nocturne redesign; existing code that only
    *  ever referenced `bg`/`card` is unaffected. */
   raised: '#eef0f7',
-  radiusCard: '14px',
-  shadowCard: '0 0 0 1px rgb(15 23 42 / 0.08)',
+  radiusCard: '20px',
+  shadowCard: '0 0 0 1px rgb(15 23 42 / 0.05), 0 2px 8px -4px rgb(15 23 42 / 0.1)',
 } as const
 
 /**
@@ -202,7 +202,7 @@ export const surfaceDark = {
   bg: '#000000',
   card: '#0a0a0d',
   raised: '#121218',
-  radiusCard: '14px',
+  radiusCard: '20px',
   shadowCard: '0 0 0 1px rgb(233 233 237 / 0.16)',
 } as const
 

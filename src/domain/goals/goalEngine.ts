@@ -79,7 +79,7 @@ export function computeGoalTargets(input: GoalEngineInput): GoalEngineResult {
   } else {
     rawKcal = tdee
   }
-  const kcal = round(rawKcal)
+  const requestedKcal = round(rawKcal)
 
   const proteinGPerKg = clamp(
     input.proteinGPerKg ?? DEFAULT_PROTEIN_G_PER_KG,
@@ -89,12 +89,31 @@ export function computeGoalTargets(input: GoalEngineInput): GoalEngineResult {
   const proteinG = round(proteinGPerKg * weightKg)
 
   const fatGPerKg = Math.max(input.fatGPerKg ?? MIN_FAT_G_PER_KG, MIN_FAT_G_PER_KG)
-  const fatG = round(fatGPerKg * weightKg)
+  const requestedFatG = round(fatGPerKg * weightKg)
+  const minimumFatG = round(MIN_FAT_G_PER_KG * weightKg)
+
+  // The displayed energy and macros must describe the same plan. Optional
+  // higher-fat preferences can exceed a lower energy target, and for some
+  // accepted profiles even chosen protein + the existing fat floor cannot
+  // fit. Keep those established minimums, raising energy only when required;
+  // then fit the optional fat allocation into the remaining energy. This
+  // changes neither ordinary profiles nor the underlying energy formula.
+  const minimumMacroKcal = proteinG * 4 + minimumFatG * 9
+  const kcal = Math.max(requestedKcal, minimumMacroKcal)
+  const availableFatG = Math.floor((kcal - proteinG * 4) / 9)
+  const fatG = Math.max(minimumFatG, Math.min(requestedFatG, availableFatG))
 
   const carbsKcal = kcal - proteinG * 4 - fatG * 9
   const carbsG = Math.max(0, round(carbsKcal / 4))
 
   const fiberG = computeFiberTarget(sex, age)
 
-  return { kcal, proteinG, carbsG, fatG, fiberG, bmr, tdee }
+  const adjustments: NonNullable<GoalEngineResult['adjustments']> = {}
+  if (kcal > requestedKcal) adjustments.caloriesRaisedFrom = requestedKcal
+  if (fatG < requestedFatG) adjustments.fatReducedFrom = requestedFatG
+
+  return {
+    kcal, proteinG, carbsG, fatG, fiberG, bmr, tdee,
+    ...(Object.keys(adjustments).length ? { adjustments } : {}),
+  }
 }

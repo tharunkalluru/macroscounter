@@ -1,5 +1,6 @@
 import { expect, type Page } from '@playwright/test'
 import { test } from '@playwright/test'
+import AxeBuilder from '@axe-core/playwright'
 import { onboard as onboardHelper } from './helpers/onboard'
 
 async function onboard(page: Page) {
@@ -15,7 +16,11 @@ async function mockSignedIn(page: Page) {
       status: 200,
       contentType: 'application/json',
       body: JSON.stringify({
-        session: { id: 'sess_1', userId: 'user_1', expiresAt: new Date(Date.now() + 3600_000).toISOString() },
+        session: {
+          id: 'sess_1',
+          userId: 'user_1',
+          expiresAt: new Date(Date.now() + 3600_000).toISOString(),
+        },
         user: {
           id: 'user_1',
           email: 'persona@example.com',
@@ -44,6 +49,7 @@ test('a guest is prompted to sign in instead of seeing the AI input screen', asy
   await expect(page.getByText('Sign in to use AI logging')).toBeVisible()
   await expect(page.getByTestId('ai-signin-button')).toBeVisible()
   await expect(page.getByTestId('ai-description-input')).not.toBeVisible()
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
 })
 
 test('describing a meal in text analyses it and logs the result', async ({ page }) => {
@@ -75,11 +81,14 @@ test('describing a meal in text analyses it and logs the result', async ({ page 
   )
 
   await page.getByTestId('ai-description-input').fill('100g grilled chicken breast')
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
+  await page.screenshot({ path: test.info().outputPath('ai-entry-desktop.png'), fullPage: true })
   await page.getByTestId('ai-analyse-button').click()
 
   await expect(page).toHaveURL('/log/ai/result')
   await expect(page.getByTestId('ai-result-list')).toContainText('Grilled chicken breast')
   await expect(page.getByTestId('ai-result-list')).toContainText('165 kcal · 31P 0C 4F 0Fb')
+  await page.screenshot({ path: test.info().outputPath('ai-review-desktop.png'), fullPage: true })
 
   await page.getByTestId('ai-log-all-button').click()
 
@@ -121,7 +130,9 @@ test('a low-confidence (photo-estimated) item shows the size-estimated flag', as
   await expect(page.getByTestId('ai-result-item-0')).toContainText('size estimated')
 })
 
-test('a missing API key shows a clear fallback message instead of a raw error', async ({ page }) => {
+test('a missing API key shows a clear fallback message instead of a raw error', async ({
+  page,
+}) => {
   await onboard(page)
   await mockSignedIn(page)
   await page.reload()
@@ -142,7 +153,9 @@ test('a missing API key shows a clear fallback message instead of a raw error', 
   await expect(page).toHaveURL(/\/log\/ai\?meal=breakfast/)
 })
 
-test('selecting a photo shows a preview, and it can be removed before analysing', async ({ page }) => {
+test('selecting a photo shows a preview, and it can be removed before analysing', async ({
+  page,
+}) => {
   await onboard(page)
   await mockSignedIn(page)
   await page.reload()
@@ -260,4 +273,90 @@ test('a photo used for AI logging is attached to the entries it produces', async
   await page.getByRole('button', { name: 'Edit Paneer butter masala' }).click()
   await expect(page.getByTestId('bottom-sheet')).toBeVisible()
   await expect(page.getByTestId('entry-detail-photo')).toBeVisible()
+})
+
+test('AI review corrects portions and nutrition before saving to a chosen day on a narrow phone', async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 320, height: 740 })
+  await onboard(page)
+  await mockSignedIn(page)
+  await page.reload()
+  await page.goto('/log/ai?meal=dinner&date=2026-08-17')
+  await page.route('**/api/ai/analyze', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        items: [
+          {
+            name: 'Rice bowl',
+            gramsEstimate: 200,
+            kcal: 260,
+            proteinG: 5,
+            carbsG: 56,
+            fatG: 2,
+            fiberG: 3,
+            confidence: 'high',
+          },
+          {
+            name: 'Dal',
+            gramsEstimate: 180,
+            kcal: 210,
+            proteinG: 14,
+            carbsG: 25,
+            fatG: 7,
+            fiberG: 8,
+            confidence: 'low',
+          },
+        ],
+      }),
+    })
+  )
+  await page.getByTestId('ai-description-input').fill('rice and dal')
+  await page.getByTestId('ai-analyse-button').click()
+  await expect(page.getByTestId('ai-review-total')).toContainText('470')
+  await page.getByTestId('ai-edit-item-0').click()
+  await page.getByTestId('ai-item-name-0').fill('Small rice bowl')
+  await page.getByTestId('ai-item-amount-0').fill('100')
+  await expect(page.getByTestId('ai-item-kcal-0')).toHaveValue('130')
+  await page.getByTestId('ai-item-proteinG-0').fill('3')
+  await page.getByTestId('ai-result-item-1').click()
+  await expect(page.getByTestId('ai-review-total')).toContainText('130')
+  await page.getByTestId('ai-review-meal').selectOption('lunch')
+  await page.getByTestId('ai-review-date').fill('2026-08-16')
+  const horizontalOverflow = await page.evaluate(
+    () => document.documentElement.scrollWidth > window.innerWidth
+  )
+  expect(horizontalOverflow).toBe(false)
+  expect((await new AxeBuilder({ page }).analyze()).violations).toEqual([])
+  await page.screenshot({ path: test.info().outputPath('ai-review-mobile.png'), fullPage: true })
+  await page.getByTestId('ai-log-all-button').click()
+  await expect(page).toHaveURL('/log?date=2026-08-16')
+  await expect(page.getByTestId('diary-day-total')).toContainText('130')
+  await expect(page.getByText('Small rice bowl')).toBeVisible()
+  await page.reload()
+  await expect(page.getByTestId('diary-day-total')).toContainText('130')
+  await page.goto('/')
+  await expect(page.getByTestId('figure-eaten').locator('p').first()).toHaveText('0')
+})
+
+test('AI daily allowance exhaustion preserves the manual logging destination', async ({ page }) => {
+  await onboard(page)
+  await mockSignedIn(page)
+  await page.reload()
+  await page.goto('/log/ai?meal=lunch&date=2026-08-17')
+  await page.route('**/api/ai/analyze', (route) =>
+    route.fulfill({
+      status: 429,
+      contentType: 'application/json',
+      body: JSON.stringify({ code: 'daily_limit' }),
+    })
+  )
+  await page.getByTestId('ai-description-input').fill('two rotis')
+  await page.getByTestId('ai-analyse-button').click()
+  await expect(page.getByTestId('ai-error-message')).toContainText('allowance is used for today')
+  await expect(page.getByTestId('ai-description-input')).toHaveValue('two rotis')
+  await page.getByRole('link', { name: 'Prefer food search? Find it here →' }).click()
+  await expect(page).toHaveURL('/log/add?meal=lunch&date=2026-08-17')
 })

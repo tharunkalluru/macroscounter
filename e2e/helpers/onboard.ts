@@ -60,6 +60,7 @@ export async function onboard(page: Page, options: OnboardOptions = {}) {
   // fast, not exercising the landing funnel (see e2e/landing.spec.ts for that).
   await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
+  await page.getByTestId('onboarding-detailed').click()
 
   await page.getByPlaceholder('Your name').fill(name)
   await page.getByTestId('onboarding-continue').click()

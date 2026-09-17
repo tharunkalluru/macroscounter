@@ -23,19 +23,19 @@ export default function DateNav({ date, onChange }: Props) {
 
   return (
     <div
-      className="mx-auto flex max-w-md items-center justify-center gap-1 px-6"
+      className="mx-auto flex w-fit max-w-full items-center justify-center gap-1 rounded-2xl bg-white p-1 shadow-card dark:bg-surface-dark-card dark:shadow-card-dark"
       data-testid="date-nav"
     >
       <button
         type="button"
         aria-label="Previous day"
         onClick={() => onChange(addDaysISO(date, -1))}
-        className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+        className="flex min-h-touch min-w-touch items-center justify-center pressable rounded-xl text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
       >
         <ChevronLeftIcon />
       </button>
       <label
-        className="relative flex min-h-touch min-w-[10rem] cursor-pointer items-center justify-center rounded-lg px-2 text-center text-body font-medium text-slate-900 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800"
+        className="relative flex min-h-touch min-w-0 flex-1 sm:min-w-[10rem] cursor-pointer items-center justify-center rounded-lg px-2 text-center text-body font-medium text-slate-900 hover:bg-slate-100 dark:text-slate-100 dark:hover:bg-slate-800"
         data-testid="date-nav-label"
       >
         {formatLabel(date)}
@@ -57,7 +57,7 @@ export default function DateNav({ date, onChange }: Props) {
         aria-label="Next day"
         onClick={() => !nextDisabled && onChange(nextDate)}
         disabled={nextDisabled}
-        className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800"
+        className="flex min-h-touch min-w-touch items-center justify-center pressable rounded-xl text-slate-600 hover:bg-slate-100 disabled:pointer-events-none disabled:opacity-30 dark:text-slate-300 dark:hover:bg-slate-800"
       >
         <ChevronRightIcon />
       </button>

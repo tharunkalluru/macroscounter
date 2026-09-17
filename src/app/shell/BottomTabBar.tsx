@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { diaryDate, todayISO } from '../../lib/date'
 import { activeMealWindow } from '../../domain/mealPrompt/activeMealWindow'
 import { useUIState } from './UIStateContext'
-import { CoachIcon, LogIcon, PlusIcon, TodayIcon, TrendsIcon } from './icons'
+import { CoachIcon, ForkKnifeIcon, LogIcon, PlusIcon, TodayIcon, TrendsIcon } from './icons'
 
 interface TabDef {
   key: string
@@ -45,17 +45,23 @@ export default function BottomTabBar() {
 
   return (
     <nav
-      className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-slate-700 dark:bg-surface-dark-card lg:inset-y-0 lg:right-auto lg:w-52 lg:border-r lg:border-t-0 lg:px-4 lg:pt-8"
+      className="fixed inset-x-0 bottom-0 z-30 border-t border-slate-200 bg-white pb-[env(safe-area-inset-bottom)] dark:border-slate-800 dark:bg-surface-dark-card lg:inset-y-0 lg:right-auto lg:flex lg:w-52 lg:flex-col lg:border-r lg:border-t-0 lg:px-4 lg:pt-6"
       aria-label="Primary"
       data-testid="bottom-tab-bar"
     >
-      <div className="mb-10 hidden px-3 lg:block"><p className="text-title font-bold text-brand-700 dark:text-brand-400">Bitewise<span className="text-brand-500">.</span></p><p className="mt-1 text-caption text-slate-500 dark:text-slate-400">A little better, every day.</p></div>
-      <div className="mx-auto flex max-w-md items-stretch justify-between px-2 lg:flex-col lg:gap-2 lg:px-0">
+      <div className="mb-9 hidden px-2 lg:block">
+        <Link to="/" className="flex min-h-touch items-center gap-2.5" aria-label="Bitewise home">
+          <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-700 text-white dark:bg-brand-400 dark:text-slate-950"><ForkKnifeIcon /></span>
+          <span className="text-title font-semibold tracking-tight text-slate-900 dark:text-slate-100">Bitewise<span className="text-brand-600 dark:text-brand-400">.</span></span>
+        </Link>
+        <p className="mt-3 text-caption leading-relaxed text-slate-500 dark:text-slate-400">A little better, every day.</p>
+      </div>
+      <div className="mx-auto flex w-full max-w-md items-stretch justify-between gap-1 px-2 py-1.5 lg:flex-col lg:gap-1.5 lg:px-0 lg:py-0">
         {TABS.slice(0, 2).map((tab) => (
           <TabLink key={tab.key} tab={tab} active={tab.isActive(location.pathname)} />
         ))}
 
-        <div className="relative flex flex-1 items-center justify-center lg:order-last lg:mt-6 lg:flex-none">
+        <div className="flex min-w-0 flex-1 flex-col items-center justify-center gap-1 py-0.5 lg:order-last lg:mt-6 lg:flex-none lg:py-0">
           <button
             type="button"
             onClick={() => {
@@ -65,11 +71,11 @@ export default function BottomTabBar() {
             }}
             aria-label="Add food"
             data-testid="fab-scan"
-            className="absolute -top-6 flex min-h-touch min-w-touch flex-col items-center justify-center rounded-full bg-brand-600 p-4 text-white shadow-card active:scale-95 lg:static lg:w-full lg:flex-row lg:gap-2 lg:rounded-xl lg:p-3"
+            className="flex h-11 w-11 min-h-touch min-w-touch items-center justify-center rounded-2xl bg-brand-700 text-white dark:bg-brand-400 dark:text-slate-950 lg:h-12 lg:w-full lg:gap-2 lg:rounded-xl lg:px-3"
           >
             <PlusIcon /><span className="hidden text-sm font-semibold lg:inline">Log food</span>
           </button>
-          <span className="pointer-events-none mt-8 lg:hidden text-caption text-slate-500 dark:text-slate-400">Add</span>
+          <span className="pointer-events-none text-caption font-medium text-slate-500 dark:text-slate-400 lg:hidden">Add</span>
         </div>
 
         {TABS.slice(2).map((tab) => (
@@ -87,12 +93,12 @@ function TabLink({ tab, active }: { tab: TabDef; active: boolean }) {
       to={tab.to}
       aria-current={active ? 'page' : undefined}
       data-testid={`tab-${tab.key}`}
-      className={`flex min-h-touch min-w-touch flex-1 flex-col items-center justify-center gap-0.5 py-1.5 transition-colors hover:bg-brand-50 dark:hover:bg-slate-800 lg:flex-none lg:flex-row lg:justify-start lg:gap-3 lg:rounded-xl lg:px-3 lg:py-3 ${
+      className={`flex min-h-touch min-w-touch flex-1 flex-col items-center justify-center gap-1 rounded-xl py-1 lg:flex-none lg:flex-row lg:justify-start lg:gap-3 lg:px-3 lg:py-3 ${
         active ? 'text-brand-700 dark:text-brand-400 lg:bg-brand-50 lg:dark:bg-slate-800' : 'text-slate-500 dark:text-slate-400'
       }`}
     >
-      <Icon active={active} />
-      <span className="text-caption">{tab.label}</span>
+      <span className={`flex h-8 w-11 items-center justify-center rounded-xl lg:h-auto lg:w-auto ${active ? 'bg-brand-50 dark:bg-slate-800 lg:bg-transparent lg:dark:bg-transparent' : ''}`}><Icon active={active} /></span>
+      <span className={`text-caption ${active ? 'font-semibold' : 'font-medium'}`}>{tab.label}</span>
     </Link>
   )
 }

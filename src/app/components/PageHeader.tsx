@@ -14,15 +14,15 @@ interface Props {
  */
 export default function PageHeader({ title, backTo, backLabel = 'Back' }: Props) {
   return (
-    <div className="mb-4 flex items-center gap-2">
+    <div className="mb-6 flex items-center gap-3">
       <Link
         to={backTo}
         aria-label={backLabel}
-        className="flex min-h-touch min-w-touch items-center justify-center rounded-full -ml-2 text-slate-600 dark:text-slate-300"
+        className="flex min-h-touch min-w-touch items-center justify-center pressable rounded-xl bg-white shadow-card dark:bg-surface-dark-card dark:shadow-card-dark text-slate-600 dark:text-slate-300"
       >
         <ArrowLeftIcon />
       </Link>
-      <h1 className="text-title text-brand-700 dark:text-brand-400">{title}</h1>
+      <h1 className="text-title tracking-tight text-slate-900 dark:text-slate-100">{title}</h1>
     </div>
   )
 }

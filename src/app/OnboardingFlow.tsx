@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ProfileRepo } from '../data/repos/ProfileRepo'
 import { TargetRepo } from '../data/repos/TargetRepo'
@@ -30,6 +30,8 @@ import {
 import type { Goal, Sex } from '../domain/goals/types'
 import { kgToLb, lbToKg } from '../domain/units/weight'
 import { addDaysISO, todayISO } from '../lib/date'
+import { saveSetup } from '../lib/onboarding/saveSetup'
+import QuickOnboardingFlow from './QuickOnboardingFlow'
 import ChoiceGrid from './components/ChoiceGrid'
 import { CoachMessage, CoachQuickReply } from './components/CoachBubble'
 import DateWheelPicker from './components/DateWheelPicker'
@@ -62,7 +64,12 @@ interface Props {
   onComplete?: () => void
 }
 
-export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) {
+export default function OnboardingFlow(props: Props) {
+  const [detailed, setDetailed] = useState(Boolean(props.profileRepo || props.targetRepo))
+  return detailed ? <DetailedOnboardingFlow {...props} /> : <QuickOnboardingFlow onDetailed={() => setDetailed(true)} />
+}
+
+function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) {
   const navigate = useNavigate()
   const [stepIndex, setStepIndex] = useState(0)
 
@@ -88,6 +95,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
   const [showExplain, setShowExplain] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const saveLock = useRef(false)
 
   const steps: StepId[] = useMemo(() => {
     const s: StepId[] = [...STEPS_BEFORE_RATE]
@@ -135,7 +143,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
   const preview = useMemo(() => {
     if (
       !Number.isFinite(ageNum) ||
-      ageNum < 13 ||
+      ageNum < 18 ||
       ageNum > 100 ||
       !Number.isFinite(heightNum) ||
       heightNum < 100 ||
@@ -180,7 +188,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
     if (step === 'basics') {
       if (!dateOfBirth) return 'Please enter your date of birth.'
       const computedAge = ageFromDateOfBirth(dateOfBirth, todayISO())
-      if (computedAge < 13 || computedAge > 100) return 'Age must be between 13 and 100.'
+      if (computedAge < 18 || computedAge > 100) return 'This setup is for adults aged 18 to 100.'
     }
     if (step === 'stats') {
       if (!Number.isFinite(heightNum) || heightNum < 100 || heightNum > 250) {
@@ -209,13 +217,15 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
   }
 
   async function handleFinish() {
-    if (!preview) return
+    if (!preview || saveLock.current) return
+    saveLock.current = true
     setSubmitting(true)
+    setError(null)
     try {
       const profiles = profileRepo ?? new ProfileRepo()
       const targets = targetRepo ?? new TargetRepo()
 
-      await profiles.save({
+      const profile = {
         name: name.trim(),
         sex,
         age: ageNum,
@@ -234,20 +244,29 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
         proteinPriority,
         calorieFloorChoice,
         goalRateLbPerWeek: goal === 'maintain' ? undefined : goalRateLbPerWeek,
-      })
-      await targets.add({
+      }
+      const target = {
         effectiveDate: todayISO(),
         kcal: preview.kcal,
         proteinG: preview.proteinG,
         carbsG: preview.carbsG,
         fatG: preview.fatG,
         fiberG: preview.fiberG,
-        source: 'computed',
-      })
+        source: 'computed' as const,
+      }
+      if (profileRepo || targetRepo) {
+        await profiles.save(profile)
+        await targets.add(target)
+      } else {
+        await saveSetup(profile, target)
+      }
 
       onComplete?.()
       navigate('/')
+    } catch {
+      setError('Your setup could not be saved. Your answers are still here. Please try again.')
     } finally {
+      saveLock.current = false
       setSubmitting(false)
     }
   }
@@ -567,6 +586,7 @@ export default function OnboardingFlow({ profileRepo, targetRepo, onComplete }: 
                   </p>
                 </div>
 
+                {preview.adjustments && <p className="mb-4 text-caption text-slate-500 dark:text-slate-400">Your energy and fat allocation were adjusted so the displayed macros fit the calorie target. Your preferred pace may change.</p>}
                 <div className="overflow-hidden rounded-card shadow-card dark:shadow-card-dark" data-testid="week-preview">
                   <WeekTable preview={preview} />
                 </div>

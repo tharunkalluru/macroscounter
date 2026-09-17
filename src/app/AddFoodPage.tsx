@@ -117,8 +117,8 @@ export default function AddFoodPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center text-slate-500 dark:text-slate-400">
-        Loading…
+      <div role="status" className="flex min-h-screen items-center justify-center text-sm text-slate-500 dark:text-slate-400">
+        Getting your food search ready…
       </div>
     )
   }
@@ -126,7 +126,7 @@ export default function AddFoodPage() {
   const backTo = diaryPath(entryDate)
 
   return (
-    <div className="mx-auto max-w-md px-6 py-8">
+    <div className="mx-auto max-w-lg px-5 py-6 sm:px-6 sm:py-8">
       <PageHeader
         title={editingId !== null ? 'Edit entry' : `Add food · ${MEAL_LABELS[meal]}`}
         backTo={backTo}
@@ -134,29 +134,58 @@ export default function AddFoodPage() {
 
       {!selected && (
         <>
+          <label htmlFor="page-food-search" className="mb-2 mt-5 block text-sm font-semibold text-slate-900 dark:text-slate-100">What did you eat?</label>
           <input
+            id="page-food-search"
             type="text"
             placeholder="Search foods (e.g. idli, sambar)"
-            className={`mt-3 w-full ${TEXT_INPUT_CLASS}`}
+            className={`w-full ${TEXT_INPUT_CLASS}`}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             autoFocus
           />
 
+          <div className="mt-3 grid grid-cols-2 gap-2">
+            <button
+              type="button"
+              onClick={() => navigate(`/log/ai?meal=${meal}&date=${entryDate}`)}
+              data-testid="page-ai-button"
+              className="pressable flex min-h-touch items-center justify-center gap-2 rounded-2xl border border-brand-200 bg-brand-50 px-3 py-2.5 text-sm font-medium text-brand-700 dark:border-slate-700 dark:bg-slate-800 dark:text-brand-400"
+            >
+              <SparkleIcon className="h-4 w-4 shrink-0" />
+              Describe with AI
+            </button>
+            <button
+              type="button"
+              onClick={() => navigate(`/log/quick-add?meal=${meal}&date=${entryDate}`)}
+              data-testid="page-custom-button"
+              className="pressable min-h-touch rounded-2xl border border-slate-200 bg-white px-3 py-2.5 text-sm font-medium text-slate-700 dark:border-slate-700 dark:bg-surface-dark-card dark:text-slate-200"
+            >
+              Custom entry
+            </button>
+          </div>
+
           {query.trim() ? (
             <ul
-              className="mt-3 divide-y divide-slate-100 dark:divide-slate-700 rounded-lg bg-white dark:bg-surface-dark-card shadow-sm"
+              className="mt-2 divide-y divide-slate-100 overflow-hidden rounded-card border border-slate-200 bg-white dark:divide-slate-800 dark:border-slate-700 dark:bg-surface-dark-card"
               data-testid="search-results"
             >
               {results.map((food) => (
                 <li key={food.id} className="flex items-center">
                   <button
                     type="button"
-                    className="flex min-h-touch flex-1 items-center gap-3 px-3 py-2 text-left hover:bg-slate-50 dark:hover:bg-slate-800"
+                    className="pressable flex min-h-touch min-w-0 flex-1 items-center gap-3 rounded-xl px-3 py-3 text-left [@media(hover:hover)]:hover:bg-brand-50 dark:[@media(hover:hover)]:hover:bg-slate-800"
+                    aria-label={food.name}
+                    aria-describedby={`page-food-${food.id}-nutrition`}
                     onClick={() => setSelected({ kind: 'food', food: food as FoodRecord })}
                   >
                     <FoodGlyph name={food.name} />
-                    {food.name}
+                    <span className="min-w-0 flex-1">
+                      <span className="block text-sm font-semibold leading-5 text-slate-900 dark:text-slate-100">{food.name}</span>
+                      <span id={`page-food-${food.id}-nutrition`} className="mt-1 block text-xs tabular-nums text-slate-500 dark:text-slate-400">
+                        {Math.round(food.per100g.kcal)} kcal · {Math.round(food.per100g.p)} g protein / 100 g
+                      </span>
+                    </span>
                   </button>
                   <button
                     type="button"
@@ -165,47 +194,34 @@ export default function AddFoodPage() {
                       isFavorite(food as FoodRecord) ? `Remove ${food.name} from favorites` : `Add ${food.name} to favorites`
                     }
                     data-testid={`favorite-toggle-${food.id}`}
-                    className="flex min-h-touch min-w-touch items-center justify-center px-2"
+                    className="pressable mr-1 flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-xl text-slate-500 [@media(hover:hover)]:hover:bg-brand-50 dark:text-slate-400 dark:[@media(hover:hover)]:hover:bg-slate-800"
                   >
                     <HeartIcon
                       active={isFavorite(food as FoodRecord)}
                       className={
-                        isFavorite(food as FoodRecord) ? 'text-brand-600 dark:text-brand-400' : 'text-slate-300 dark:text-slate-600'
+                        isFavorite(food as FoodRecord) ? 'text-brand-600 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'
                       }
                     />
                   </button>
                 </li>
               ))}
               {results.length === 0 && (
-                <li className="px-3 py-2 text-sm text-slate-500 dark:text-slate-400">
-                  No matches.
+                <li className="px-5 py-6 text-center">
+                  <div className="mb-3 flex justify-center"><FoodGlyph name="meal" /></div>
+                  <p className="font-semibold text-slate-900 dark:text-slate-100">No matches.</p>
+                  <p className="mx-auto mt-1 max-w-xs text-sm leading-relaxed text-slate-500 dark:text-slate-400">
+                    Try a simpler food name, describe your meal, or add a custom entry above.
+                  </p>
                 </li>
               )}
             </ul>
           ) : (
-            <div className="mt-4 flex flex-col gap-4">
-              {/* The Add Food *sheet* offers AI/custom/scan, but the sheet is
-                  today-only -- a past day routes here instead, which left no
-                  way at all to describe a meal you forgot to log yesterday. */}
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  onClick={() => navigate(`/log/ai?meal=${meal}&date=${entryDate}`)}
-                  data-testid="page-ai-button"
-                  className="flex min-h-touch flex-1 items-center justify-center gap-2 rounded-card border border-brand-700 px-3 py-2 text-sm font-medium text-brand-700 dark:border-brand-400 dark:text-brand-400"
-                >
-                  <SparkleIcon className="h-4 w-4" />
-                  Describe with AI
-                </button>
-                <button
-                  type="button"
-                  onClick={() => navigate(`/log/quick-add?meal=${meal}&date=${entryDate}`)}
-                  data-testid="page-custom-button"
-                  className="min-h-touch flex-1 rounded-card border border-slate-300 px-3 py-2 text-sm font-medium text-slate-700 dark:border-slate-600 dark:text-slate-300"
-                >
-                  Custom entry
-                </button>
-              </div>
+            <div className="mt-5 flex flex-col gap-5">
+              {favorites.length === 0 && recents.length === 0 && (
+                <p className="rounded-2xl bg-brand-50 px-4 py-3 text-sm leading-relaxed text-slate-600 dark:bg-slate-800 dark:text-slate-300">
+                  Search by food or ingredient. Your recent foods and favorites will be ready here next time.
+                </p>
+              )}
 
               {favorites.length > 0 && (
                 <FoodChipList
@@ -226,7 +242,7 @@ export default function AddFoodPage() {
                 />
               )}
               <div>
-                <p className="mb-1 text-xs font-medium uppercase text-slate-500 dark:text-slate-400">
+                <p className="mb-2 text-sm font-semibold text-slate-700 dark:text-slate-200">
                   My Recipes
                 </p>
                 <div className="flex flex-wrap gap-2">
@@ -234,7 +250,7 @@ export default function AddFoodPage() {
                     <button
                       key={recipe.id}
                       type="button"
-                      className="rounded-full bg-white dark:bg-surface-dark-card px-3 py-1 text-sm shadow-sm"
+                      className="pressable min-h-touch rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium text-slate-700 dark:border-slate-700 dark:bg-surface-dark-card dark:text-slate-200"
                       onClick={() => setSelected({ kind: 'recipe', recipe })}
                     >
                       {recipe.name}
@@ -244,7 +260,7 @@ export default function AddFoodPage() {
                     type="button"
                     onClick={() => navigate('/recipes/new')}
                     data-testid="page-new-recipe-button"
-                    className="min-h-touch rounded-full border border-dashed border-brand-700 px-3 py-1 text-sm text-brand-700 dark:border-brand-400 dark:text-brand-400"
+                    className="pressable min-h-touch rounded-xl border border-dashed border-brand-300 bg-brand-50 px-3 py-2 text-sm font-medium text-brand-700 dark:border-slate-600 dark:bg-slate-800 dark:text-brand-400"
                   >
                     + New recipe
                   </button>
@@ -261,12 +277,18 @@ export default function AddFoodPage() {
       )}
 
       {selected && (
-        <div className="mt-4 rounded-lg bg-white dark:bg-surface-dark-card p-4 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="font-semibold">{nameOf(selected)}</h2>
+        <div className="mt-5 rounded-card border border-slate-200 bg-white p-4 shadow-card dark:border-slate-700 dark:bg-surface-dark-card dark:shadow-card-dark">
+          <div className="flex items-center justify-between gap-3 rounded-2xl bg-brand-50 p-3 dark:bg-slate-800">
+            <div className="flex min-w-0 items-center gap-3">
+              <FoodGlyph name={nameOf(selected)} />
+              <div className="min-w-0">
+                <p className="text-xs text-slate-500 dark:text-slate-400">Choose your portion</p>
+                <h2 className="mt-0.5 text-sm font-semibold text-slate-900 dark:text-slate-100">{nameOf(selected)}</h2>
+              </div>
+            </div>
             <button
               type="button"
-              className="text-sm text-slate-500 dark:text-slate-400 underline"
+              className="pressable min-h-touch shrink-0 rounded-xl px-3 text-sm font-medium text-brand-700 dark:text-brand-400"
               onClick={() => setSelected(null)}
             >
               Change

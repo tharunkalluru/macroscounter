@@ -95,6 +95,7 @@ test('weight tracking respects a pounds preference set at onboarding', async ({ 
   await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
+  await page.getByTestId('onboarding-detailed').click()
 
   await page.getByPlaceholder('Your name').fill('Pounds Persona')
   await page.getByTestId('onboarding-continue').click()

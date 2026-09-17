@@ -20,7 +20,7 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
   const prefersReducedMotion = usePrefersReducedMotion()
   const largerNumbers = getLargerNumbers()
   const { resolvedTheme } = useTheme()
-  const trackColor = isDarkFamily(resolvedTheme) ? neutral[700] : neutral[200]
+  const trackColor = isDarkFamily(resolvedTheme) ? neutral[800] : neutral[100]
 
   // Ring fill/color track the final (settled) values — framer-motion handles
   // their own smooth interpolation via the `animate` transition below.
@@ -45,14 +45,14 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
       : `${Math.round(consumedKcal)} calories eaten, ${Math.max(0, Math.round(targetKcal - consumedKcal))} remaining of ${targetKcal}`
 
   return (
-    <div className="flex flex-col items-center">
+    <div className="flex items-center justify-center gap-4">
       <div
-        className="relative flex h-[180px] w-[180px] items-center justify-center"
+        className="relative flex h-36 w-36 sm:h-40 sm:w-40 shrink-0 items-center justify-center"
         data-testid="calories-ring"
         role="img"
         aria-label={ariaLabel}
       >
-        <svg width={180} height={180} viewBox="0 0 180 180">
+        <svg className="h-full w-full" width={164} height={164} viewBox="0 0 180 180">
           <circle cx={90} cy={90} r={RADIUS} fill="none" stroke={trackColor} strokeWidth={STROKE} />
           <motion.circle
             cx={90}
@@ -75,7 +75,7 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
         </svg>
         <div className="absolute flex flex-col items-center" aria-hidden="true">
           <span
-            className={`tabular-nums text-slate-900 dark:text-slate-100 ${largerNumbers ? 'text-5xl font-bold' : 'text-display'}`}
+            className={`tabular-nums text-slate-900 dark:text-slate-100 ${largerNumbers ? 'text-display sm:text-4xl' : 'text-[28px] font-semibold sm:text-display'}`}
             data-testid="kcal-remaining"
           >
             {textState.centerText}
@@ -87,26 +87,21 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
       </div>
 
       <div
-        className="mt-4 flex w-full max-w-[220px] justify-between text-center"
+        className="grid min-w-0 gap-5 border-l border-slate-100 pl-4 dark:border-slate-800"
         data-testid="eaten-remaining-target"
       >
         <Figure label="Eaten" value={eaten} testId="figure-eaten" />
-        <Figure
-          label="Remaining"
-          value={Math.max(0, targetKcal - Math.round(consumedKcal))}
-          testId="figure-remaining"
-        />
-        <Figure label="Target" value={targetKcal} testId="figure-target" />
+        <Figure label="Target" value={targetKcal > 0 ? targetKcal : null} testId="figure-target" />
       </div>
     </div>
   )
 }
 
-function Figure({ label, value, testId }: { label: string; value: number; testId: string }) {
+function Figure({ label, value, testId }: { label: string; value: number | null; testId: string }) {
   return (
     <div data-testid={testId}>
-      <p className="text-body font-semibold tabular-nums text-slate-800 dark:text-slate-100">
-        {value}
+      <p className="text-lg font-semibold leading-tight tabular-nums text-slate-800 dark:text-slate-100">
+        {value ?? '—'}
       </p>
       <p className="text-caption text-slate-500 dark:text-slate-400">{label}</p>
     </div>

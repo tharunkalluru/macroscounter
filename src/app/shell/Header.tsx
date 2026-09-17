@@ -64,43 +64,47 @@ export default function Header() {
   const showAvatarImage = avatarUrl && !avatarFailed
 
   return (
-    <header className="mx-auto flex max-w-5xl items-center justify-between px-5 pb-4 pt-6 lg:px-8">
-      <div>
-        <p className="text-title text-brand-700 dark:text-brand-400 lg:hidden">Bitewise</p>
-        <p className="hidden text-sm font-medium text-slate-600 dark:text-slate-300 lg:block">{profile?.name ? `Hello, ${profile.name}` : 'Your daily nutrition'}</p>
+    <header className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-5 py-4 lg:px-8 lg:py-5">
+      <div className="min-w-0 flex-1">
+        <p className="text-title font-semibold tracking-tight text-slate-900 dark:text-slate-100 lg:hidden">Bitewise<span className="text-brand-600 dark:text-brand-400">.</span></p>
+        <p className="hidden truncate text-body font-medium text-slate-700 dark:text-slate-200 lg:block">{profile?.name ? `Hello, ${profile.name}` : 'Your daily nutrition'}</p>
         <div className="mt-1"><SyncStatusDot testId="header-sync-status" /></div>
+      </div>
+
+      <div className="flex shrink-0 items-center gap-2 sm:gap-3">
         {streak > 0 && (
           <Link
             to="/trends"
             data-testid="streak-chip"
-            className="mt-2 inline-flex min-h-touch items-center gap-1 rounded-full bg-brand-50 px-2.5 py-1 text-caption font-medium text-brand-700 dark:bg-slate-800 dark:text-brand-400"
+            aria-label={`${streak} day${streak === 1 ? '' : 's'} logged in a row. View your progress`}
+            className="inline-flex min-h-touch min-w-touch items-center justify-center gap-1.5 rounded-xl bg-brand-50 px-2.5 text-caption font-medium tabular-nums text-brand-700 dark:bg-slate-800 dark:text-brand-400"
           >
             <FlameIcon className="text-brand-700 dark:text-brand-400" />
-            <span>
+            <span className="whitespace-nowrap">
               {streak} day{streak === 1 ? '' : 's'}
             </span>
           </Link>
         )}
-      </div>
 
-      <Link
-        to="/settings"
-        aria-label="Settings"
-        data-testid="avatar-link"
-        className="flex h-11 w-11 min-h-touch min-w-touch shrink-0 items-center justify-center overflow-hidden rounded-full bg-brand-100 text-base font-semibold text-brand-700 dark:bg-slate-800 dark:text-brand-400"
-      >
-        {showAvatarImage ? (
-          <img
-            src={avatarUrl}
-            alt=""
-            referrerPolicy="no-referrer"
-            className="h-full w-full object-cover"
-            onError={() => setAvatarFailed(true)}
-          />
-        ) : (
-          initial
-        )}
-      </Link>
+        <Link
+          to="/settings"
+          aria-label="Settings"
+          data-testid="avatar-link"
+          className="flex h-11 w-11 min-h-touch min-w-touch shrink-0 items-center justify-center overflow-hidden rounded-full border border-brand-100 bg-white text-sm font-semibold text-brand-700 dark:border-slate-700 dark:bg-surface-dark-card dark:text-brand-400"
+        >
+          {showAvatarImage ? (
+            <img
+              src={avatarUrl}
+              alt=""
+              referrerPolicy="no-referrer"
+              className="h-full w-full object-cover"
+              onError={() => setAvatarFailed(true)}
+            />
+          ) : (
+            initial
+          )}
+        </Link>
+      </div>
 
       <GoalCelebration
         show={milestoneMessage !== null}

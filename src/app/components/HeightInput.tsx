@@ -66,6 +66,7 @@ export default function HeightInput({ valueCm, onChangeCm, unit, onUnitChange }:
           className={TEXT_INPUT_CLASS}
           value={valueCm}
           onChange={(e) => onChangeCm(e.target.value)}
+          aria-label="Height in centimeters"
           placeholder="cm"
           data-testid="height-input-cm"
         />
@@ -76,6 +77,7 @@ export default function HeightInput({ valueCm, onChangeCm, unit, onUnitChange }:
             className={`w-full ${TEXT_INPUT_CLASS}`}
             value={feet}
             onChange={(e) => handleFeetInchesChange(e.target.value, inches)}
+            aria-label="Height feet"
             placeholder="feet"
             data-testid="height-input-feet"
           />
@@ -84,6 +86,7 @@ export default function HeightInput({ valueCm, onChangeCm, unit, onUnitChange }:
             className={`w-full ${TEXT_INPUT_CLASS}`}
             value={inches}
             onChange={(e) => handleFeetInchesChange(feet, e.target.value)}
+            aria-label="Height inches"
             placeholder="inches"
             data-testid="height-input-inches"
           />

@@ -1,4 +1,5 @@
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 
 interface Props {
   label: string
@@ -17,7 +18,7 @@ interface Props {
 const MIN_VISIBLE_SCALE = 0.025
 
 export default function MacroBar({ label, consumed, target, colorClass, testId, onTap }: Props) {
-  const prefersReducedMotion = useReducedMotion()
+  const prefersReducedMotion = usePrefersReducedMotion()
   const isOver = target > 0 && consumed > target
   const rawPct = target > 0 ? Math.min(1, consumed / target) : 0
   const scale = consumed > 0 ? Math.max(rawPct, MIN_VISIBLE_SCALE) : 0
@@ -31,18 +32,26 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
 
   const content = (
     <>
-      <div className="flex justify-between text-caption text-slate-500 dark:text-slate-400">
-        <span>{label}</span>
-        <span className="tabular-nums" data-testid={`${testId}-value`}>
-          {Math.round(consumed)}{target > 0 ? ` / ${Math.round(target)}` : ''} g
+      <div
+        className={`text-caption text-slate-500 dark:text-slate-400 ${onTap ? 'flex flex-col gap-1' : 'flex justify-between gap-2'}`}
+      >
+        <span className="font-medium text-slate-700 dark:text-slate-200">{label}</span>
+        <span className="tabular-nums leading-relaxed" data-testid={`${testId}-value`}>
+          {Math.round(consumed)}
+          {target > 0 ? ` / ${Math.round(target)}` : ''} g{' '}
           {isOver ? (
-            <span className="text-over-700 dark:text-over-400"> · +{overAmount}</span>
+            <span className={`${onTap ? 'block' : 'inline'} text-over-700 dark:text-over-400`}>
+              {onTap ? '' : ' · '}+{overAmount}
+            </span>
           ) : target > 0 ? (
-            <span data-testid={`${testId}-remaining`}> · {remaining} left</span>
+            <span className={onTap ? 'block' : 'inline'} data-testid={`${testId}-remaining`}>
+              {onTap ? '' : ' · '}
+              {remaining} left
+            </span>
           ) : null}
         </span>
       </div>
-      <div className="mt-1 flex h-2 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
+      <div className="mt-2 flex h-1.5 w-full overflow-hidden rounded-full bg-slate-100 dark:bg-slate-700">
         {isOver ? (
           <>
             <div className={`h-full ${colorClass}`} style={{ width: `${withinPct}%` }} />
@@ -50,7 +59,7 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
           </>
         ) : (
           <motion.div
-            className={`h-2 w-full origin-left rounded-full ${colorClass}`}
+            className={`h-1.5 w-full origin-left rounded-full ${colorClass}`}
             initial={false}
             animate={{ scaleX: scale }}
             transition={
@@ -71,7 +80,7 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
       type="button"
       onClick={onTap}
       data-testid={testId}
-      className="min-h-touch w-full rounded-lg text-left"
+      className="pressable min-h-touch w-full rounded-xl bg-slate-50 p-3 text-left dark:bg-surface-dark-raised"
       aria-label={`${label}: ${Math.round(consumed)}${target > 0 ? ` of ${Math.round(target)}` : ''} grams${
         target > 0 && !isOver ? `, ${remaining} remaining` : ''
       } - view breakdown`}

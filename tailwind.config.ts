@@ -19,6 +19,7 @@ const tailwindBrand = { ...brand, 400: 'var(--brand-400, ' + brand[400] + ')', 6
 const tailwindSurfaceDark = {
   DEFAULT: 'var(--surface-dark-bg, ' + surfaceDark.bg + ')',
   card: 'var(--surface-dark-card, ' + surfaceDark.card + ')',
+  raised: surfaceDark.raised,
 }
 
 export default {
@@ -47,6 +48,7 @@ export default {
         surface: {
           DEFAULT: surface.bg,
           card: surface.card,
+          raised: surface.raised,
         },
         'surface-dark': tailwindSurfaceDark,
       },

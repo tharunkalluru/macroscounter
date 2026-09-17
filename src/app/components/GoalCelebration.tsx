@@ -1,4 +1,5 @@
-import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
+import { AnimatePresence, motion } from 'framer-motion'
 import { useEffect, type ComponentType } from 'react'
 import { TargetIcon } from '../shell/icons'
 
@@ -32,7 +33,7 @@ export default function GoalCelebration({
   icon: Icon = TargetIcon,
   positionClassName = 'bottom-24',
 }: Props) {
-  const prefersReducedMotion = useReducedMotion()
+  const prefersReducedMotion = usePrefersReducedMotion()
 
   useEffect(() => {
     if (!show) return

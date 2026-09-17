@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { LogEntry, Meal } from '../../data/models'
 import { LogRepo } from '../../data/repos/LogRepo'
 import { computeMealSuggestions, type SuggestionChip } from '../../domain/logging/suggestions'
@@ -26,9 +26,13 @@ interface Props extends MealPromptControls {
 export default function MealPromptSheet({ meal, dismiss, close, onLogged }: Props) {
   const { openAddFoodSheet } = useUIState()
   const [historyEntries, setHistoryEntries] = useState<LogEntry[]>([])
+  const saving = useRef(false)
+  const [pending, setPending] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!meal) return
+    setError(null)
     let cancelled = false
     ;(async () => {
       const today = todayISO()
@@ -49,11 +53,21 @@ export default function MealPromptSheet({ meal, dismiss, close, onLogged }: Prop
   )
 
   async function handleChipTap(chip: SuggestionChip) {
-    if (!meal) return
-    await logSuggestionChip(chip, meal, todayISO())
-    vibrateTiny()
-    close()
-    onLogged()
+    if (!meal || saving.current) return
+    saving.current = true
+    setPending(true)
+    setError(null)
+    try {
+      await logSuggestionChip(chip, meal, todayISO())
+      vibrateTiny()
+      close()
+      onLogged()
+    } catch {
+      setError('Could not add this meal. Nothing was added; please try again.')
+    } finally {
+      saving.current = false
+      setPending(false)
+    }
   }
 
   function handleSearch() {
@@ -71,6 +85,7 @@ export default function MealPromptSheet({ meal, dismiss, close, onLogged }: Prop
   return (
     <BottomSheet open={!!meal} onClose={dismiss} title={meal ? `Log ${MEAL_LABELS[meal]}?` : ''}>
       <div className="flex flex-col gap-4 pb-4" data-testid="meal-prompt-sheet">
+        {error && <p role="alert" className="text-sm text-danger-700 dark:text-danger-300">{error}</p>}
         {suggestions.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {suggestions.map((chip) => (
@@ -78,6 +93,7 @@ export default function MealPromptSheet({ meal, dismiss, close, onLogged }: Prop
                 key={chip.key}
                 type="button"
                 onClick={() => handleChipTap(chip)}
+                disabled={pending}
                 data-testid="meal-prompt-suggestion-chip"
                 className="min-h-touch rounded-full border border-brand-700 px-3 py-1 text-caption text-brand-700 dark:border-brand-400 dark:text-brand-400"
               >

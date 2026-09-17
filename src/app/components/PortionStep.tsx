@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useId, useRef, useState } from 'react'
 import { computeMacrosForGrams, type Per100g } from '../../domain/logging/portionMath'
 import type { Portion } from '../../domain/fooddb/types'
 import type { Unit } from '../../data/models'
@@ -48,6 +48,7 @@ export default function PortionStep({
   saveLabel,
   onSave,
 }: Props) {
+  const gramsInputId = useId()
   const [gramsValue, setGramsValue] = useState(
     String(initialGrams ?? referencePortions[0]?.grams ?? 100)
   )
@@ -70,16 +71,16 @@ export default function PortionStep({
     setError(null)
     try {
       await onSave({
-      portionSummary: `${grams} g`,
-      qty: grams,
-      unit: 'grams',
-      portionLabel: undefined,
-      grams,
-      kcal: preview.kcal,
-      p: preview.p,
-      c: preview.c,
-      f: preview.f,
-      fiber: preview.fiber,
+        portionSummary: `${grams} g`,
+        qty: grams,
+        unit: 'grams',
+        portionLabel: undefined,
+        grams,
+        kcal: preview.kcal,
+        p: preview.p,
+        c: preview.c,
+        f: preview.f,
+        fiber: preview.fiber,
       })
     } catch {
       setError('Could not save this entry. Please try again.')
@@ -91,24 +92,25 @@ export default function PortionStep({
 
   return (
     <div>
-      <label className="flex flex-col gap-1">
-        <span className="text-sm font-medium">Grams</span>
+      <div>
+        <label htmlFor={gramsInputId} className="mb-2 block text-sm font-semibold text-slate-900 dark:text-slate-100">Grams</label>
         <div className="flex items-center gap-2">
           <button
             type="button"
             onClick={() => step(-10)}
             aria-label="Decrease by 10 grams"
             data-testid="portion-grams-decrement"
-            className="flex min-h-touch min-w-touch items-center justify-center rounded-full border border-slate-300 text-lg font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300"
+            className="pressable flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl font-medium text-slate-600 dark:border-slate-700 dark:bg-surface-dark-card dark:text-slate-300"
           >
             −
           </button>
           <input
+            id={gramsInputId}
             type="number"
             inputMode="decimal"
             min="0"
             data-testid="portion-grams-input"
-            className="min-h-touch flex-1 rounded border border-slate-300 px-3 py-2 text-center text-lg dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+            className="min-h-touch min-w-0 flex-1 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-center text-lg font-semibold tabular-nums text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-surface-dark-card dark:text-slate-100"
             value={gramsValue}
             onChange={(e) => setGramsValue(e.target.value)}
             autoFocus
@@ -119,21 +121,24 @@ export default function PortionStep({
             onClick={() => step(10)}
             aria-label="Increase by 10 grams"
             data-testid="portion-grams-increment"
-            className="flex min-h-touch min-w-touch items-center justify-center rounded-full border border-slate-300 text-lg font-medium text-slate-600 dark:border-slate-600 dark:text-slate-300"
+            className="pressable flex min-h-touch min-w-touch shrink-0 items-center justify-center rounded-xl border border-slate-200 bg-white text-xl font-medium text-slate-600 dark:border-slate-700 dark:bg-surface-dark-card dark:text-slate-300"
           >
             +
           </button>
         </div>
-      </label>
+      </div>
 
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className="mt-3 flex flex-wrap gap-2">
         {quickGrams.map((g) => (
           <button
             key={g}
             type="button"
             data-testid={`gram-chip-${g}`}
+            aria-pressed={grams === g}
             onClick={() => setGramsValue(String(g))}
-            className="min-h-touch rounded-full border border-slate-300 px-3 py-1 text-caption text-slate-700 dark:border-slate-600 dark:text-slate-300"
+            className={`pressable min-h-touch rounded-xl border px-3 py-2 text-caption font-medium tabular-nums ${grams === g
+              ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-slate-800 dark:text-brand-400'
+              : 'border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-surface-dark-card dark:text-slate-300'}`}
           >
             {g} g
           </button>
@@ -143,8 +148,11 @@ export default function PortionStep({
             key={portion.label}
             type="button"
             data-testid="gram-chip-portion"
+            aria-pressed={grams === portion.grams}
             onClick={() => setGramsValue(String(portion.grams))}
-            className="min-h-touch rounded-full border border-brand-700 px-3 py-1 text-caption text-brand-700 dark:border-brand-400 dark:text-brand-400"
+            className={`pressable min-h-touch rounded-xl border px-3 py-2 text-caption font-medium ${grams === portion.grams
+              ? 'border-brand-300 bg-brand-50 text-brand-700 dark:border-brand-400 dark:bg-slate-800 dark:text-brand-400'
+              : 'border-slate-200 bg-white text-slate-600 dark:border-slate-700 dark:bg-surface-dark-card dark:text-slate-300'}`}
           >
             {portion.label} ≈ {portion.grams} g
           </button>
@@ -153,7 +161,7 @@ export default function PortionStep({
 
       {preview && (
         <p
-          className="mt-3 text-sm tabular-nums text-slate-600 dark:text-slate-300"
+          className="mt-4 rounded-xl bg-slate-50 px-3 py-3 text-sm font-medium tabular-nums text-slate-600 dark:bg-slate-800 dark:text-slate-300"
           data-testid="entry-preview"
         >
           {Math.round(preview.kcal)} kcal · {preview.p}p / {preview.c}c / {preview.f}f
@@ -165,9 +173,10 @@ export default function PortionStep({
       <button
         type="button"
         disabled={!valid || saving}
+        aria-busy={saving}
         onClick={handleSave}
         data-testid="log-entry-button"
-        className="mt-4 min-h-touch w-full rounded bg-brand-700 px-4 py-2 font-medium text-white disabled:opacity-50"
+        className="pressable mt-4 min-h-touch w-full rounded-2xl bg-brand-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
       >
         {saving ? 'Saving…' : saveLabel ?? (valid && preview ? `Add ${Math.round(grams)} g · ${Math.round(preview.kcal)} kcal` : 'Add')}
       </button>

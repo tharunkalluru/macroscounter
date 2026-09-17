@@ -8,6 +8,8 @@ import {
   type ThemePreference,
 } from '../../domain/theme/resolveTheme'
 
+import { getReduceMotionPreference } from '../../lib/settings/appearancePreferences'
+
 export const THEME_STORAGE_KEY = 'macrodesi-theme'
 
 function getSystemPrefersDark(): boolean {
@@ -50,6 +52,7 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const resolved = resolveTheme(preference)
     setResolvedTheme(resolved)
     applyResolvedTheme(resolved)
+    document.documentElement.dataset.reduceMotion = String(getReduceMotionPreference())
   }, [preference])
 
   const setPreference = useCallback((pref: ThemePreference) => {

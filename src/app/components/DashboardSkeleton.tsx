@@ -1,30 +1,27 @@
 import { Pulse } from './Skeleton'
 
-/** Mirrors the shape/height of the loaded Today dashboard so nothing shifts once data arrives. */
+/** Mirrors the dashboard hierarchy while the local diary is loading. */
 export default function DashboardSkeleton() {
   return (
-    <div className="pb-4" data-testid="dashboard-skeleton" aria-hidden="true">
-      <div className="mx-auto flex max-w-md items-center justify-center gap-1 px-6">
-        <Pulse className="h-9 w-36" />
+    <div className="mx-auto max-w-5xl px-5 pb-4 lg:px-8" data-testid="dashboard-skeleton" aria-hidden="true">
+      <div className="mb-5 flex flex-wrap items-center justify-between gap-4">
+        <div><Pulse className="h-8 w-60" /><Pulse className="mt-2 h-4 w-48" /></div>
+        <Pulse className="h-14 w-64" />
       </div>
-
-      <div className="mx-auto mt-4 max-w-md px-6">
-        <div className="flex flex-col items-center rounded-card bg-white p-6 shadow-card dark:bg-surface-dark-card dark:shadow-card-dark">
-          <Pulse className="h-[180px] w-[180px] rounded-full" />
-          <Pulse className="mt-4 h-4 w-40" />
-          <div className="mt-6 grid w-full grid-cols-1 gap-3">
-            <Pulse className="h-8 w-full" />
-            <Pulse className="h-8 w-full" />
-            <Pulse className="h-8 w-full" />
+      <Pulse className="mb-5 h-28 w-full rounded-2xl sm:h-16" />
+      <div className="grid gap-5 lg:grid-cols-2">
+        <div className="rounded-card bg-white p-5 shadow-card dark:bg-surface-dark-card dark:shadow-card-dark">
+          <Pulse className="h-5 w-32" />
+          <div className="my-4 flex items-center justify-center gap-5">
+            <Pulse className="h-40 w-40 rounded-full" />
+            <Pulse className="h-32 w-16" />
           </div>
+          <div className="grid grid-cols-2 gap-3">{[0, 1, 2, 3].map((i) => <Pulse key={i} className="h-24 w-full rounded-xl" />)}</div>
         </div>
-
-        {[0, 1, 2, 3].map((i) => (
-          <div key={i} className="mt-6">
-            <Pulse className="h-5 w-24" />
-            <Pulse className="mt-2 h-16 w-full rounded-lg" />
-          </div>
-        ))}
+        <div className="space-y-5">
+          <Pulse className="h-72 w-full rounded-card" />
+          <Pulse className="h-52 w-full rounded-card" />
+        </div>
       </div>
     </div>
   )

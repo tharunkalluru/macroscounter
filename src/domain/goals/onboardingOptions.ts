@@ -53,10 +53,10 @@ export const DIET_STYLE_OPTIONS: {
   description: string
   fatGPerKg?: number
 }[] = [
-  { value: 'balanced', label: 'Balanced', description: "Roti and rice stay in - today's default" },
-  { value: 'low_fat', label: 'Low-fat', description: 'Less ghee & oil', fatGPerKg: 0.5 },
-  { value: 'low_carb', label: 'Low-carb', description: 'Fewer grains', fatGPerKg: 1.1 },
-  { value: 'keto', label: 'Keto', description: 'Under 30g carbs', fatGPerKg: 1.5 },
+  { value: 'balanced', label: 'Balanced', description: 'Flexible carbohydrate and fat allocation' },
+  { value: 'low_fat', label: 'Baseline fat', description: 'Uses the baseline fat allocation', fatGPerKg: 0.5 },
+  { value: 'low_carb', label: 'Higher fat', description: 'More fat, fewer carbohydrates', fatGPerKg: 1.1 },
+  { value: 'keto', label: 'Highest fat', description: 'Higher fat preference, limited by available calories', fatGPerKg: 1.5 },
 ]
 
 export type ProteinPriority = 'low' | 'moderate' | 'high' | 'extra_high'
@@ -87,7 +87,7 @@ export const CALORIE_FLOOR_OPTIONS: {
   {
     value: 'low',
     label: 'Low',
-    description: 'Below 800 - medical supervision recommended',
+    description: 'Uses the BMR floor; review with a qualified clinician',
     floorKcalOverride: 800,
   },
 ]

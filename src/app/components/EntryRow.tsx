@@ -1,5 +1,6 @@
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 import { useDraggable } from '@dnd-kit/core'
-import { motion, useReducedMotion } from 'framer-motion'
+import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LogEntry } from '../../data/models'
@@ -17,10 +18,10 @@ interface Props {
 
 /** One log-entry row — tap to see its macro breakdown (with an Edit option inside), swipe left to delete, drag the handle to move it to another meal. Shared by MealSection and Today's flat entry list (Phase R.3) so both stay pixel-identical. */
 export default function EntryRow({ entry, onSwipeDelete, draggable = false }: Props) {
-  const prefersReducedMotion = useReducedMotion()
+  const prefersReducedMotion = usePrefersReducedMotion()
   const navigate = useNavigate()
   const [detailOpen, setDetailOpen] = useState(false)
-  const { setNodeRef: setDragRef, attributes, listeners, isDragging } = useDraggable({ id: entry.id ?? -1 })
+  const { setNodeRef: setDragRef, setActivatorNodeRef, attributes, listeners, isDragging } = useDraggable({ id: entry.id ?? -1, disabled: !draggable })
 
   function handleEdit(target: LogEntry) {
     setDetailOpen(false)
@@ -45,10 +46,10 @@ export default function EntryRow({ entry, onSwipeDelete, draggable = false }: Pr
       style={{ opacity: isDragging ? 0.4 : 1 }}
     >
       <SwipeToDeleteRow onDelete={() => onSwipeDelete(entry)} deleteLabel="Delete">
-        <div className="flex items-center dark:bg-surface-dark-card">
+        <div ref={setDragRef} className="flex items-center dark:bg-surface-dark-card">
           {draggable && entry.id !== undefined && (
             <span
-              ref={setDragRef}
+              ref={setActivatorNodeRef}
               {...attributes}
               {...listeners}
               aria-label={`Reorder ${entry.name} to another meal`}
@@ -67,7 +68,7 @@ export default function EntryRow({ entry, onSwipeDelete, draggable = false }: Pr
             onClick={() => setDetailOpen(true)}
             aria-label={`Edit ${entry.name}`}
             data-testid={`entry-row-${entry.id}`}
-            className={`flex min-h-touch flex-1 items-center gap-3 py-2 text-left ${draggable ? 'pr-3' : 'px-3'}`}
+            className={`flex min-h-touch min-w-0 flex-1 items-center gap-3 py-2 text-left ${draggable ? 'pr-3' : 'px-3'}`}
           >
             <EntryRowVisual entry={entry} />
           </button>

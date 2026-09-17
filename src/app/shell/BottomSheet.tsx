@@ -1,5 +1,6 @@
+import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 import { createPortal } from 'react-dom'
-import { AnimatePresence, motion, useDragControls, useReducedMotion, type PanInfo } from 'framer-motion'
+import { motion, useDragControls, type PanInfo } from 'framer-motion'
 import { useEffect, useId, useRef, type ReactNode } from 'react'
 
 interface Props {
@@ -13,8 +14,16 @@ interface Props {
 const DISMISS_OFFSET_PX = 120
 const DISMISS_VELOCITY = 500
 
-export default function BottomSheet({ open, onClose, title, children, headerExtra }: Props) {
-  const prefersReducedMotion = useReducedMotion()
+export default function BottomSheet({ open, ...props }: Props) {
+  return open ? <OpenSheet {...props} /> : null
+}
+
+function OpenSheet({ onClose, title, children, headerExtra }: Omit<Props, 'open'>) {
+  // Capture before child autoFocus runs during commit, so Escape restores
+  // the control that opened the sheet rather than a now-unmounted input.
+  const openerRef = useRef(document.activeElement as HTMLElement | null)
+  const keyboardOpenedRef = useRef(openerRef.current?.matches(':focus-visible') ?? false)
+  const prefersReducedMotion = usePrefersReducedMotion()
   const dragControls = useDragControls()
   const sheetRef = useRef<HTMLDivElement>(null)
   const titleId = useId()
@@ -22,21 +31,39 @@ export default function BottomSheet({ open, onClose, title, children, headerExtr
   closeRef.current = onClose
 
   useEffect(() => {
-    if (!open) return
-    const previouslyFocused = document.activeElement as HTMLElement | null
+    const previouslyFocused = openerRef.current
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = 'hidden'
     function handleKeyDown(e: KeyboardEvent) {
       const dialogs = document.querySelectorAll('[role="dialog"]')
       if (dialogs[dialogs.length - 1] !== sheetRef.current) return
-      if (e.key === 'Escape') { e.preventDefault(); closeRef.current() }
+      if (e.key === 'Escape') {
+        e.preventDefault()
+        closeRef.current()
+      }
       if (e.key === 'Tab') {
-        const focusable = Array.from(sheetRef.current?.querySelectorAll<HTMLElement>('button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]') ?? []).filter((node) => node.getClientRects().length > 0)
+        const focusable = Array.from(
+          sheetRef.current?.querySelectorAll<HTMLElement>(
+            'button:not(:disabled), a[href], input:not(:disabled), select:not(:disabled), textarea:not(:disabled), [tabindex="0"]'
+          ) ?? []
+        ).filter((node) => node.getClientRects().length > 0)
         const first = focusable[0]
         const last = focusable.at(-1)
-        if (!first) { e.preventDefault(); sheetRef.current?.focus(); return }
-        if (e.shiftKey && (document.activeElement === first || document.activeElement === sheetRef.current)) { e.preventDefault(); last?.focus() }
-        else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus() }
+        if (!first) {
+          e.preventDefault()
+          sheetRef.current?.focus()
+          return
+        }
+        if (
+          e.shiftKey &&
+          (document.activeElement === first || document.activeElement === sheetRef.current)
+        ) {
+          e.preventDefault()
+          last?.focus()
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault()
+          first.focus()
+        }
       }
     }
     document.addEventListener('keydown', handleKeyDown)
@@ -51,9 +78,9 @@ export default function BottomSheet({ open, onClose, title, children, headerExtr
       document.removeEventListener('keydown', handleKeyDown)
       cancelAnimationFrame(raf)
       document.body.style.overflow = previousOverflow
-      if (previouslyFocused?.isConnected) previouslyFocused.focus()
+      if (previouslyFocused?.isConnected) previouslyFocused.focus({ preventScroll: true })
     }
-  }, [open])
+  }, [])
 
   function handleDragEnd(_: unknown, info: PanInfo) {
     if (info.offset.y > DISMISS_OFFSET_PX || info.velocity.y > DISMISS_VELOCITY) {
@@ -61,75 +88,80 @@ export default function BottomSheet({ open, onClose, title, children, headerExtr
     }
   }
 
-  const transition = prefersReducedMotion ? { duration: 0 } : { type: 'spring' as const, damping: 32, stiffness: 340 }
+  const transition = prefersReducedMotion
+    ? { duration: 0 }
+    : { type: 'spring' as const, damping: 32, stiffness: 340 }
 
-  if (!open) return null
+  const skipEntrance = prefersReducedMotion || keyboardOpenedRef.current
 
   return createPortal(
-    <AnimatePresence>
-      {open && (
-        <>
-          <motion.div
-            className="fixed inset-0 z-40 bg-slate-900/40"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: prefersReducedMotion ? 0 : 0.2 }}
-            onClick={onClose}
-            aria-hidden="true"
-            data-testid="sheet-backdrop"
-          />
-          <motion.div
-            ref={sheetRef}
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby={titleId}
-            tabIndex={-1}
-            className="fixed inset-x-0 bottom-0 z-50 flex max-h-[85vh] flex-col rounded-t-card bg-white shadow-card outline-none dark:bg-surface-dark-card dark:shadow-card-dark sm:mx-auto sm:bottom-6 sm:max-w-lg sm:rounded-card"
-            initial={{ y: '100%' }}
-            animate={{ y: 0 }}
-            exit={{ y: '100%' }}
-            transition={transition}
-            drag="y"
-            dragControls={dragControls}
-            dragListener={false}
-            dragConstraints={{ top: 0, bottom: 0 }}
-            dragElastic={{ top: 0, bottom: 0.4 }}
-            onDragEnd={handleDragEnd}
-            data-testid="bottom-sheet"
-          >
-            <div className="flex shrink-0 flex-col items-center pt-2">
-              <div className="flex h-4 w-16 touch-none items-center justify-center" onPointerDown={(event) => dragControls.start(event)} aria-hidden="true"><div className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" /></div>
-              <div className="mt-2 flex w-full items-center justify-between px-4 pb-2">
-                <h2 id={titleId} className="text-title text-slate-900 dark:text-slate-100">
-                  {title}
-                </h2>
-                <div className="flex items-center gap-2">
-                  {headerExtra}
-                  <button
-                    type="button"
-                    onClick={onClose}
-                    aria-label="Close"
-                    className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                  >
-                    <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
-                      <path
-                        d="M5 5l10 10M15 5L5 15"
-                        stroke="currentColor"
-                        strokeWidth="1.8"
-                        strokeLinecap="round"
-                      />
-                    </svg>
-                  </button>
-                </div>
+    <>
+      <motion.div
+        className="fixed inset-0 z-40 bg-slate-900/40"
+        initial={skipEntrance ? false : { opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: skipEntrance ? 0 : 0.2 }}
+        onClick={onClose}
+        aria-hidden="true"
+        data-testid="sheet-backdrop"
+      />
+      <div className="pointer-events-none fixed inset-0 z-50 flex items-end justify-center sm:items-center sm:p-6">
+        <motion.div
+          ref={sheetRef}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby={titleId}
+          tabIndex={-1}
+          className="pointer-events-auto relative flex max-h-[85dvh] w-full flex-col rounded-t-card bg-white shadow-card outline-none dark:bg-surface-dark-card dark:shadow-card-dark sm:max-w-lg sm:rounded-card"
+          initial={skipEntrance ? false : { y: 24, opacity: 0 }}
+          animate={{ y: 0, opacity: 1 }}
+          transition={transition}
+          drag={prefersReducedMotion ? false : 'y'}
+          dragControls={dragControls}
+          dragListener={false}
+          dragConstraints={{ top: 0, bottom: 0 }}
+          dragElastic={{ top: 0, bottom: 0.4 }}
+          onDragEnd={handleDragEnd}
+          data-testid="bottom-sheet"
+        >
+          <div className="flex shrink-0 flex-col items-center pt-2">
+            <div
+              className="flex h-4 w-16 touch-none items-center justify-center"
+              onPointerDown={(event) => dragControls.start(event)}
+              aria-hidden="true"
+            >
+              <div className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />
+            </div>
+            <div className="mt-2 flex w-full items-center justify-between px-4 pb-2">
+              <h2 id={titleId} className="text-title text-slate-900 dark:text-slate-100">
+                {title}
+              </h2>
+              <div className="flex items-center gap-2">
+                {headerExtra}
+                <button
+                  type="button"
+                  onClick={onClose}
+                  aria-label="Close"
+                  className="flex min-h-touch min-w-touch items-center justify-center rounded-full text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+                >
+                  <svg width="20" height="20" viewBox="0 0 20 20" fill="none" aria-hidden="true">
+                    <path
+                      d="M5 5l10 10M15 5L5 15"
+                      stroke="currentColor"
+                      strokeWidth="1.8"
+                      strokeLinecap="round"
+                    />
+                  </svg>
+                </button>
               </div>
             </div>
-            <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
-              {children}
-            </div>
-          </motion.div>
-        </>
-      )}
-    </AnimatePresence>, document.body
+          </div>
+          <div className="flex-1 overflow-y-auto overscroll-contain px-4 pb-[max(1rem,env(safe-area-inset-bottom))]">
+            {children}
+          </div>
+        </motion.div>
+      </div>
+    </>,
+    document.body
   )
 }

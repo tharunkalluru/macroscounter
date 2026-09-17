@@ -93,3 +93,24 @@ describe('computeMealSuggestions', () => {
     expect(computeMealSuggestions(history, 'breakfast', TODAY, 14)).toHaveLength(1)
   })
 })
+
+
+describe('complete meal snapshots', () => {
+  const custom = { date: '2026-08-17', meal: 'breakfast' as const, name: 'My porridge', qty: 1, unit: 'portion' as const, grams: 250, portionSummary: '1 bowl', kcal: 350, p: 20, c: 45, f: 10, fiber: 6 }
+  it('includes custom, AI, recipe and scanned portions with their saved nutrients', () => {
+    const entries = [custom, { ...custom, name: 'AI smoothie' }, { ...custom, name: 'Recipe toast', recipeId: 2 }, { ...custom, name: 'Yogurt', barcode: '123' }]
+    const [chip] = computeMealSuggestions(entries, 'breakfast', TODAY)
+    expect(chip.entries).toHaveLength(4)
+    expect(chip.entries[0].snapshot).toMatchObject({ name: 'My porridge', kcal: 350, fiber: 6, grams: 250 })
+    expect(chip.entries[2].snapshot).not.toHaveProperty('recipeId')
+    expect(chip.entries[3].snapshot?.barcode).toBe('123')
+  })
+  it('keeps differently sized servings as different repeat meals', () => {
+    const chips = computeMealSuggestions([{ ...custom, foodId: 'porridge' }, { ...custom, foodId: 'porridge', date: '2026-08-16', grams: 150, portionSummary: '1 small bowl' }], 'breakfast', TODAY)
+    expect(chips).toHaveLength(2)
+    expect(chips[0].key).not.toBe(chips[1].key)
+  })
+  it('never presents a partial meal when one entry is unreplayable', () => {
+    expect(computeMealSuggestions([custom, { date: custom.date, meal: custom.meal, name: 'Unknown', qty: 1, unit: 'portion', grams: 0 }], 'breakfast', TODAY)).toEqual([])
+  })
+})

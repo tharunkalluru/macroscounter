@@ -1,70 +1,32 @@
 import { addDaysISO } from '../../lib/date.js'
+import type { Goal } from '../goals/types.js'
 
-export interface DayKcal {
-  date: string
-  kcal: number
-}
-
-export interface WeighInPoint {
-  date: string
-  weightKg: number
-}
-
+export interface DayKcal { date: string; kcal: number }
+export interface WeighInPoint { date: string; weightKg: number }
 export interface AdaptiveRecommendation {
   currentKcal: number
   suggestedKcal: number
-  /** Signed, already clamped to +-100 kcal and floor-respecting on the target itself. */
+  /** Actual floor-respecting change, not the unclamped proposal. */
   adjustment: number
   weeklyWeightChangeKg: number
   meanLoggedKcal: number
   impliedTDEE: number
   reason: string
+  /** Attached by the repository layer; pure calculations have no persistence basis. */
+  basis?: { fingerprint: string; referenceDate: string; proteinG: number; fatG: number }
 }
 
 const WINDOW_DAYS = 7
 const KCAL_PER_KG = 7700
-const TARGET_WEEKLY_LOSS_KG = 0.5
-const DAILY_DEFICIT_FOR_TARGET_RATE = (TARGET_WEEKLY_LOSS_KG * KCAL_PER_KG) / WINDOW_DAYS // 550
 const MAX_WEEKLY_ADJUSTMENT = 100
-const PLATEAU_EPSILON_KG = 0.05
-
-function clamp(value: number, min: number, max: number): number {
-  return Math.min(Math.max(value, min), max)
-}
-
-function round1(n: number): number {
-  return Math.round(n * 10) / 10
-}
-
-function describeTrend(weeklyWeightChangeKg: number): string {
-  if (weeklyWeightChangeKg < -PLATEAU_EPSILON_KG) {
-    return `lost ${Math.abs(weeklyWeightChangeKg).toFixed(1)} kg`
-  }
-  if (weeklyWeightChangeKg > PLATEAU_EPSILON_KG) {
-    return `gained ${weeklyWeightChangeKg.toFixed(1)} kg`
-  }
-  return "stayed about the same"
-}
-
-function buildReason(weeklyWeightChangeKg: number, adjustment: number): string {
-  const trend = describeTrend(weeklyWeightChangeKg)
-  if (adjustment > 0) {
-    return `You ${trend} over the last 7 days - faster than your 0.5 kg/week goal, so we're raising your target by ${adjustment} kcal to keep this sustainable.`
-  }
-  if (adjustment < 0) {
-    return `You ${trend} over the last 7 days - slower than your 0.5 kg/week goal, so we're lowering your target by ${Math.abs(adjustment)} kcal.`
-  }
-  return `You ${trend} over the last 7 days - right on track for your 0.5 kg/week goal, no change needed.`
-}
+const round1 = (value: number) => Math.round(value * 10) / 10
+const clamp = (value: number, min: number, max: number) => Math.min(Math.max(value, min), max)
 
 /**
- * Weekly adaptive-target job. Compares mean logged intake against a
- * weight-trend-implied TDEE (derived from the raw weigh-in delta across the
- * trailing 7-day window, times 7700 kcal/kg) and nudges the kcal target
- * toward a 0.5 kg/week loss rate, clamped to +-100 kcal and never below
- * `floorKcal` (the same floor `computeGoalTargets`/`computeKcalFloor` use).
- * Returns null ("no-op") when there isn't a full 7 days of logged data or
- * fewer than 2 weigh-ins inside that window to establish a trend.
+ * An estimate from logged intake and weight change, never proof of complete
+ * intake. Caller must ask the user to review missing meals before applying it.
+ * Seven distinct dates with entries and weights at least three days apart are
+ * required. Normalize by the actual weight interval, not the window length.
  */
 export function computeAdaptiveAdjustment(params: {
   loggedDays: DayKcal[]
@@ -72,31 +34,45 @@ export function computeAdaptiveAdjustment(params: {
   currentTargetKcal: number
   floorKcal: number
   referenceDate: string
+  goal?: Goal
+  goalRateLbPerWeek?: number
 }): AdaptiveRecommendation | null {
   const windowStart = addDaysISO(params.referenceDate, -(WINDOW_DAYS - 1))
-
-  const daysInWindow = params.loggedDays.filter(
-    (d) => d.date >= windowStart && d.date <= params.referenceDate
-  )
-  if (daysInWindow.length < WINDOW_DAYS) return null
-
-  const weighInsInWindow = params.weighIns
-    .filter((w) => w.date >= windowStart && w.date <= params.referenceDate)
-    .sort((a, b) => a.date.localeCompare(b.date))
-  if (weighInsInWindow.length < 2) return null
-
-  const meanLoggedKcal = daysInWindow.reduce((sum, d) => sum + d.kcal, 0) / daysInWindow.length
-  const weeklyWeightChangeKg =
-    weighInsInWindow[weighInsInWindow.length - 1].weightKg - weighInsInWindow[0].weightKg
-
-  const impliedTDEE = meanLoggedKcal - (weeklyWeightChangeKg * KCAL_PER_KG) / WINDOW_DAYS
-  const idealTarget = impliedTDEE - DAILY_DEFICIT_FOR_TARGET_RATE
-
-  const rawAdjustment = idealTarget - params.currentTargetKcal
-  const adjustment = Math.round(clamp(rawAdjustment, -MAX_WEEKLY_ADJUSTMENT, MAX_WEEKLY_ADJUSTMENT))
-
-  const suggestedKcal = Math.max(Math.round(params.currentTargetKcal + adjustment), params.floorKcal)
-
+  const days = new Map<string, number>()
+  for (const day of params.loggedDays) {
+    if (day.date >= windowStart && day.date <= params.referenceDate && Number.isFinite(day.kcal) && day.kcal >= 0) {
+      days.set(day.date, day.kcal)
+    }
+  }
+  if (days.size < WINDOW_DAYS) return null
+  const weights = new Map<string, number>()
+  for (const point of params.weighIns) {
+    if (point.date >= windowStart && point.date <= params.referenceDate && Number.isFinite(point.weightKg) && point.weightKg > 0) {
+      weights.set(point.date, point.weightKg)
+    }
+  }
+  const points = [...weights].sort(([a], [b]) => a.localeCompare(b))
+  if (points.length < 2) return null
+  const first = points[0]
+  const last = points[points.length - 1]
+  const intervalDays = (Date.parse(`${last[0]}T00:00:00Z`) - Date.parse(`${first[0]}T00:00:00Z`)) / 86400000
+  if (intervalDays < 3) return null
+  const goal = params.goal ?? 'cut'
+  const configuredRate = params.goalRateLbPerWeek
+  const weeklyRateKg = Number.isFinite(configuredRate) && configuredRate! > 0
+    ? configuredRate! / 2.2046226218
+    : goal === 'gain' ? 0.25 : 0.5
+  const desiredWeeklyChange = goal === 'maintain' ? 0 : goal === 'gain' ? weeklyRateKg : -weeklyRateKg
+  const meanLoggedKcal = [...days.values()].reduce((sum, kcal) => sum + kcal, 0) / days.size
+  const weeklyWeightChangeKg = (last[1] - first[1]) / intervalDays * WINDOW_DAYS
+  const impliedTDEE = meanLoggedKcal - weeklyWeightChangeKg * KCAL_PER_KG / WINDOW_DAYS
+  const idealTarget = impliedTDEE + desiredWeeklyChange * KCAL_PER_KG / WINDOW_DAYS
+  const rawAdjustment = Math.round(clamp(idealTarget - params.currentTargetKcal, -MAX_WEEKLY_ADJUSTMENT, MAX_WEEKLY_ADJUSTMENT))
+  const suggestedKcal = Math.max(Math.round(params.currentTargetKcal + rawAdjustment), params.floorKcal)
+  const adjustment = suggestedKcal - params.currentTargetKcal
+  const trend = Math.abs(weeklyWeightChangeKg) < 0.05 ? 'stayed about the same' : `${weeklyWeightChangeKg < 0 ? 'lost' : 'gained'} ${Math.abs(weeklyWeightChangeKg).toFixed(1)} kg per week at the observed rate`
+  const goalDescription = goal === 'maintain' ? 'maintenance goal' : `${weeklyRateKg.toFixed(2)} kg/week ${goal === 'gain' ? 'gain' : 'loss'} goal`
+  const action = adjustment === 0 ? 'no change needed' : `${adjustment > 0 ? 'raising' : 'lowering'} your target by ${Math.abs(adjustment)} kcal is a possible small adjustment`
   return {
     currentKcal: params.currentTargetKcal,
     suggestedKcal,
@@ -104,6 +80,6 @@ export function computeAdaptiveAdjustment(params: {
     weeklyWeightChangeKg: round1(weeklyWeightChangeKg),
     meanLoggedKcal: round1(meanLoggedKcal),
     impliedTDEE: round1(impliedTDEE),
-    reason: buildReason(weeklyWeightChangeKg, adjustment),
+    reason: `Your weight ${trend}. For your ${goalDescription}, ${action}. This estimate uses logged intake; review missing meals before changing your target.`,
   }
 }

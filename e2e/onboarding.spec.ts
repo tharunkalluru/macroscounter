@@ -10,6 +10,7 @@ test('completing onboarding computes and shows the correct kcal target on the da
   await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
+  await page.getByTestId('onboarding-detailed').click()
   await expect(page).toHaveURL(/\/onboarding$/)
   await expect(page.getByRole('heading', { name: 'What should we call you?' })).toBeVisible()
 
@@ -50,9 +51,9 @@ test('completing onboarding computes and shows the correct kcal target on the da
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-target')).toHaveText('1628 kcal target')
-  await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 126 g · 126 left')
-  await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 171 g · 171 left')
-  await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 49 g · 49 left')
+  await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 126 g 126 left')
+  await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 171 g 171 left')
+  await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 49 g 49 left')
 })
 
 // Same persona/formula as the cm/kg case above, entered via ft+in and lb
@@ -65,6 +66,7 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
   await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
+  await page.getByTestId('onboarding-detailed').click()
 
   await page.getByPlaceholder('Your name').fill('Imperial Persona')
   await page.getByTestId('onboarding-continue').click()
@@ -102,9 +104,9 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
 
   await expect(page).toHaveURL('/')
   await expect(page.getByTestId('kcal-target')).toHaveText('1759 kcal target')
-  await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 144 g · 144 left')
-  await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 170 g · 170 left')
-  await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 56 g · 56 left')
+  await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 144 g 144 left')
+  await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 170 g 170 left')
+  await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 56 g 56 left')
 
   // The preference persists to Settings, still showing ft+in/lb.
   await page.getByTestId('avatar-link').click()
@@ -122,6 +124,7 @@ test('data persists across a reload after onboarding', async ({ page }) => {
   await page.clock.setFixedTime(new Date('2026-08-18T02:00:00'))
   await page.goto('/welcome')
   await page.getByTestId('signin-skip-button').click()
+  await page.getByTestId('onboarding-detailed').click()
 
   await page.getByPlaceholder('Your name').fill('Reload Check')
   await page.getByTestId('onboarding-continue').click()

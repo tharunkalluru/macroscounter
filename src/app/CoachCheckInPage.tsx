@@ -3,6 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import type { AdaptiveRecommendation } from '../domain/adaptive/adaptiveTargets'
 import { computeWeeklyFocusTip } from '../domain/adaptive/weeklyFocusTip'
 import { LogRepo } from '../data/repos/LogRepo'
+import { ProfileRepo } from '../data/repos/ProfileRepo'
+import { kgToLb } from '../domain/units/weight'
 import { TargetRepo } from '../data/repos/TargetRepo'
 import { groupEntriesByDate } from '../domain/history/averages'
 import { addDaysISO, todayISO } from '../lib/date'
@@ -17,16 +19,21 @@ type Step = (typeof STEPS)[number]
 type LoadState =
   | { status: 'loading' }
   | { status: 'none' }
+  | { status: 'error' }
   | { status: 'ready'; recommendation: AdaptiveRecommendation; focusTip: string | null }
 
 export default function CoachCheckInPage() {
   const navigate = useNavigate()
   const [state, setState] = useState<LoadState>({ status: 'loading' })
   const [stepIndex, setStepIndex] = useState(0)
+  const [alreadyApplied, setAlreadyApplied] = useState(false)
+  const [weightUnit, setWeightUnit] = useState<'kg' | 'lb'>('kg')
 
   useEffect(() => {
     ;(async () => {
-      const { recommendation } = await fetchAdaptiveRecommendation()
+      const [{ review: recommendation, alreadyAppliedThisWeek }, profile] = await Promise.all([fetchAdaptiveRecommendation(), new ProfileRepo().get()])
+      setWeightUnit(profile?.weightUnit ?? 'kg')
+      setAlreadyApplied(alreadyAppliedThisWeek)
       if (!recommendation) {
         setState({ status: 'none' })
         return
@@ -52,7 +59,7 @@ export default function CoachCheckInPage() {
           : null
 
       setState({ status: 'ready', recommendation, focusTip })
-    })()
+    })().catch(() => setState({ status: 'error' }))
   }, [])
 
   if (state.status === 'loading') {
@@ -64,21 +71,21 @@ export default function CoachCheckInPage() {
     )
   }
 
-  if (state.status === 'none') {
+  if (state.status === 'none' || state.status === 'error') {
     return (
       <div className="mx-auto max-w-md px-6 py-8">
         <PageHeader title="Weekly check-in" backTo="/coach" />
         <p className="text-sm text-slate-500 dark:text-slate-400" data-testid="checkin-none">
-          Nothing to check in on yet - log a full week (7 days) with at least 2 weigh-ins to unlock your
-          next check-in.
+          {state.status === 'error' ? 'Could not load this review. Please reload and try again.' : 'Keep building your picture. A target review needs entries on 7 distinct days and 2 weigh-ins at least 3 days apart. You can review your diary at any time.'}
         </p>
+        <Link to="/log" className="mt-4 inline-flex min-h-touch items-center text-sm font-medium text-brand-700 dark:text-brand-400">Review your diary →</Link>
       </div>
     )
   }
 
   const { recommendation, focusTip } = state
   const step: Step = STEPS[stepIndex]
-  const direction = recommendation.adjustment > 0 ? 'increase' : 'decrease'
+  const noChange = recommendation.adjustment === 0 || alreadyApplied
 
   function handleContinue() {
     setStepIndex((i) => Math.min(i + 1, STEPS.length - 1))
@@ -124,8 +131,7 @@ export default function CoachCheckInPage() {
       <div className="flex flex-1 flex-col justify-center gap-3 py-8" data-testid={`checkin-step-${step}`}>
         {step === 'intro' && (
           <CoachMessage>
-            Let's check in on your week. I'll walk through your last 7 days of logs and weigh-ins, show you
-            the math, and suggest a target adjustment if one's worth making.
+            Let's check in on your week. I'll walk through your last 7 days of logs and weigh-ins, show the estimate, and suggest a small adjustment only if it fits your selected goal. Missing meals can skew this estimate.
           </CoachMessage>
         )}
 
@@ -142,10 +148,10 @@ export default function CoachCheckInPage() {
                 </strong>
               </p>
               <p>
-                Weight change:{' '}
+                Observed weekly weight rate:{' '}
                 <strong className="tabular-nums" data-testid="checkin-weight-change">
                   {recommendation.weeklyWeightChangeKg > 0 ? '+' : ''}
-                  {recommendation.weeklyWeightChangeKg} kg
+                  {(weightUnit === 'lb' ? kgToLb(recommendation.weeklyWeightChangeKg) : recommendation.weeklyWeightChangeKg).toFixed(1)} {weightUnit}
                 </strong>
               </p>
             </CoachMessage>
@@ -161,7 +167,7 @@ export default function CoachCheckInPage() {
           <>
             <CoachMessage testId="checkin-math-message">
               <p className="mb-1">
-                Measured TDEE:{' '}
+                Estimated daily expenditure:{' '}
                 <strong className="tabular-nums">{Math.round(recommendation.impliedTDEE)} kcal</strong>
               </p>
               <p className="mb-1">
@@ -188,13 +194,13 @@ export default function CoachCheckInPage() {
           <>
             <CoachMessage testId="checkin-new-target-message">
               <p className="mb-2 text-caption uppercase tracking-widest text-brand-600 dark:text-brand-400">
-                New daily target
+                {alreadyApplied ? 'Your updated plan is in place' : noChange ? 'Your target still fits' : 'A possible daily target'}
               </p>
               <p
                 className="text-display font-semibold tabular-nums text-brand-700 dark:text-brand-400"
                 data-testid="checkin-suggested-kcal"
               >
-                {recommendation.suggestedKcal} kcal
+                {alreadyApplied ? recommendation.currentKcal : recommendation.suggestedKcal} kcal
               </p>
             </CoachMessage>
             {focusTip && <CoachMessage testId="checkin-focus-tip">{focusTip}</CoachMessage>}
@@ -206,11 +212,11 @@ export default function CoachCheckInPage() {
         <div className="flex flex-col gap-2">
           <button
             type="button"
-            onClick={() => navigate('/coach/check-in/plan')}
+            onClick={() => navigate(noChange ? '/coach' : '/coach/check-in/plan')}
             data-testid="checkin-accept"
-            className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98]"
+            className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50"
           >
-            {direction === 'increase' ? 'Raise' : 'Lower'} for this week
+            {noChange ? 'Keep this plan' : 'Review this plan'}
           </button>
           <button
             type="button"

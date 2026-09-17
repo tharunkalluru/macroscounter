@@ -48,4 +48,9 @@ export interface GoalEngineResult {
   fiberG: number
   bmr: number
   tdee: number
+  /** Explain conflicting allocation preferences without silently displaying impossible targets. */
+  adjustments?: {
+    caloriesRaisedFrom?: number
+    fatReducedFrom?: number
+  }
 }
