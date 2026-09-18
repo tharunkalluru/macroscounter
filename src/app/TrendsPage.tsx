@@ -9,7 +9,7 @@ import { computeEMA } from '../domain/history/ema'
 import { computeStreak } from '../domain/streaks/streak'
 import { kgToLb } from '../domain/units/weight'
 import { addDaysISO, todayISO } from '../lib/date'
-import { CoachIcon, FlameIcon, TargetIcon, TrendsIcon } from './shell/icons'
+import { ChevronRightIcon, CoachIcon, FlameIcon, TargetIcon, TrendsIcon } from './shell/icons'
 
 interface HubCard {
   to: string
@@ -23,28 +23,28 @@ const CARDS: HubCard[] = [
   {
     to: '/weight',
     label: 'Weight',
-    description: 'Your weight trend and goal ETA',
+    description: 'Trend & goal estimate',
     Icon: TrendsIcon,
     testId: 'trends-card-weight',
   },
   {
     to: '/trends/expenditure',
     label: 'Expenditure',
-    description: 'Your estimated energy needs over time',
+    description: 'Estimated energy needs',
     Icon: TargetIcon,
     testId: 'trends-card-expenditure',
   },
   {
     to: '/trends/habits',
     label: 'Habits',
-    description: 'Streak, consistency, and weekly patterns',
+    description: 'Consistency & patterns',
     Icon: FlameIcon,
     testId: 'trends-card-habits',
   },
   {
     to: '/trends/report',
     label: 'Weekly report',
-    description: "This week's numbers and insights",
+    description: 'Your week at a glance',
     Icon: CoachIcon,
     testId: 'trends-card-report',
   },
@@ -109,8 +109,7 @@ export default function TrendsPage() {
 
   return (
     <div className="mx-auto max-w-md px-6 pb-24 pt-2">
-      <h1 className="mb-2 text-display">Your progress</h1>
-      <p className="mb-5 text-sm text-slate-500 dark:text-slate-400">Look for patterns, one week at a time.</p>
+      <h1 className="mb-5 text-display">Your progress</h1>
 
       <div className="flex flex-col gap-3">
         {CARDS.map((card) => {
@@ -126,19 +125,15 @@ export default function TrendsPage() {
                 <card.Icon className="h-5 w-5" />
               </span>
               <span className="min-w-0 flex-1">
-                <span className="flex flex-wrap items-baseline justify-between gap-2">
-                  <span className="block font-semibold text-slate-900 dark:text-slate-100">{card.label}</span>
-                  {live && (
-                    <span
-                      className="flex-none text-caption font-medium tabular-nums text-brand-700 dark:text-brand-400"
-                      data-testid={`${card.testId}-live`}
-                    >
-                      {live}
-                    </span>
-                  )}
+                <span className="block font-semibold text-slate-900 dark:text-slate-100">{card.label}</span>
+                <span
+                  className={`mt-0.5 block text-caption ${live ? 'font-medium tabular-nums text-brand-700 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'}`}
+                  data-testid={live ? `${card.testId}-live` : undefined}
+                >
+                  {live ?? card.description}
                 </span>
-                <span className="block text-caption text-slate-500 dark:text-slate-400">{card.description}</span>
               </span>
+              <ChevronRightIcon className="h-4 w-4 shrink-0 text-slate-400" />
             </Link>
           )
         })}

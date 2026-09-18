@@ -99,7 +99,7 @@ export default function ServingPortionStep({
 
   return (
     <div>
-      <label className="flex flex-col gap-1">
+      <label className="flex min-w-0 flex-col gap-1">
         <span className="text-sm font-medium">Servings</span>
         <input
           type="number"
@@ -107,14 +107,14 @@ export default function ServingPortionStep({
           min="0"
           step="0.5"
           data-testid="portion-servings-input"
-          className="min-h-touch rounded border border-slate-300 px-3 py-2 text-lg dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
+          className="min-h-touch w-full min-w-0 rounded border border-slate-300 px-3 py-2 text-lg dark:border-slate-600 dark:bg-slate-800 dark:text-slate-100"
           value={servingsValue}
           onChange={(e) => setServingsValue(e.target.value)}
           autoFocus
           onFocus={(e) => e.target.select()}
         />
         {servingSizeText && (
-          <span className="text-caption text-slate-500 dark:text-slate-400">
+          <span className="break-words text-caption text-slate-500 dark:text-slate-400">
             1 serving = {servingSizeText}
           </span>
         )}

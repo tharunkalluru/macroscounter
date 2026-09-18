@@ -11,7 +11,7 @@ async function onboard(page: Page) {
     activityLevel: 'active',
   })
   // Fixture persona target: BMR 1905, TDEE 3286.125, cut -500 -> 2786 kcal.
-  await expect(page.getByTestId('kcal-target')).toHaveText('2786 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2786')
 }
 
 /** Same plateau-week fixture as adaptive.spec.ts — 7 days at target, flat weight. */
@@ -105,7 +105,7 @@ test('walking through the weekly check-in wizard and accepting updates the targe
   await expect(page).toHaveURL('/coach')
 
   await page.goto('/')
-  await expect(page.getByTestId('kcal-target')).toHaveText('2686 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2686')
 })
 
 test('keeping the current target from the wizard leaves the target unchanged', async ({ page }) => {
@@ -121,13 +121,14 @@ test('keeping the current target from the wizard leaves the target unchanged', a
   await expect(page).toHaveURL('/coach')
 
   await page.goto('/')
-  await expect(page.getByTestId('kcal-target')).toHaveText('2786 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2786')
 })
 
 test('reaching a goal weight shows the full-screen takeover on the next app open, once', async ({ page }) => {
   await onboard(page)
 
   await page.goto('/settings')
+  await page.getByTestId('settings-profile-toggle').click()
   await page.getByTestId('goal-weight-input').fill('90')
   await page.getByRole('button', { name: 'Save & recalculate' }).click()
   await expect(page.getByText('Saved - targets recalculated.')).toBeVisible()

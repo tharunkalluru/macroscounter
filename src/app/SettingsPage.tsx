@@ -17,7 +17,7 @@ import SettingsRow from './components/SettingsRow'
 import SyncStatusDot from './components/SyncStatusDot'
 import { TEXT_INPUT_CLASS } from './components/formStyles'
 import WeightInput, { type WeightUnit } from './components/WeightInput'
-import { ForkKnifeIcon, PaletteIcon, TrashIcon } from './shell/icons'
+import { ChevronRightIcon, ForkKnifeIcon, PaletteIcon, TrashIcon } from './shell/icons'
 import { useTheme } from './shell/ThemeContext'
 
 const SEX_OPTIONS: { value: Sex; label: string }[] = [
@@ -166,7 +166,15 @@ export default function SettingsPage() {
       <ProfileSummaryCard name={name} />
 
       <SettingsGroup title="You">
-      <form onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <details className="group rounded-card bg-white p-4 shadow-card dark:bg-surface-dark-card">
+      <summary
+        data-testid="settings-profile-toggle"
+        className="flex min-h-touch cursor-pointer list-none items-center justify-between gap-3 font-semibold text-slate-900 dark:text-slate-100 [&::-webkit-details-marker]:hidden"
+      >
+        Profile & goals
+        <ChevronRightIcon className="h-5 w-5 text-slate-400 group-open:rotate-90" />
+      </summary>
+      <form onSubmit={handleSubmit} className="flex flex-col gap-4 pt-4">
         <label className="flex flex-col gap-1">
           <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Name</span>
           <input className={TEXT_INPUT_CLASS} value={name} onChange={(e) => setName(e.target.value)} />
@@ -218,7 +226,7 @@ export default function SettingsPage() {
             data-testid="goal-weight-input"
           />
           <span className="text-xs text-slate-500 dark:text-slate-400">
-            Set this to see a projected ETA on Trends.
+            Shows an estimated goal date.
           </span>
         </label>
 
@@ -268,6 +276,7 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
+      </details>
       </SettingsGroup>
 
       <SettingsGroup title="The App">

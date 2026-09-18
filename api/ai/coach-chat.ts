@@ -11,6 +11,7 @@ import type { LogEntry, Profile, Targets } from '../../src/data/models.js'
 import { deriveCurrentProgram } from '../../src/domain/programs/program.js'
 import { groupEntriesByDate } from '../../src/domain/history/averages.js'
 import { addDaysISO, isValidISODate, todayISO } from '../../src/lib/date.js'
+import { normalizeCoachReply } from '../../src/lib/ai/coachReply.js'
 
 const MAX_MESSAGE_CHARS = 1000
 const MAX_HISTORY_ITEMS = 20
@@ -179,12 +180,15 @@ export function formatUserContext(data: CoachContextData, today: string): string
 
   let adaptiveReason: string | null = null
   if (latestTarget && profile.age >= 18) {
-    const floorKcal = Math.max(Math.ceil(latestTarget.proteinG * 4 + latestTarget.fatG * 9), computeKcalFloor(
-      profile.sex as 'male' | 'female',
-      profile.weightKg,
-      profile.heightCm,
-      profile.age
-    ))
+    const floorKcal = Math.max(
+      Math.ceil(latestTarget.proteinG * 4 + latestTarget.fatG * 9),
+      computeKcalFloor(
+        profile.sex as 'male' | 'female',
+        profile.weightKg,
+        profile.heightCm,
+        profile.age
+      )
+    )
     const adaptive = computeAdaptiveAdjustment({
       loggedDays: dailyTotals.map((d) => ({ date: d.date, kcal: d.kcal })),
       weighIns,
@@ -208,7 +212,10 @@ export function formatUserContext(data: CoachContextData, today: string): string
   lines.push(
     `Goal: ${profile.goal}${profile.goalWeightKg ? `, target weight: ${profile.goalWeightKg} kg` : ''}`
   )
-  if (profile.dietStyle) lines.push(`Macro allocation preference (not a prescribed diet): ${DIET_STYLE_OPTIONS.find((option) => option.value === profile.dietStyle)?.label ?? profile.dietStyle}`)
+  if (profile.dietStyle)
+    lines.push(
+      `Macro allocation preference (not a prescribed diet): ${DIET_STYLE_OPTIONS.find((option) => option.value === profile.dietStyle)?.label ?? profile.dietStyle}`
+    )
 
   if (latestTarget) {
     lines.push(
@@ -269,7 +276,9 @@ ${userContext}
 </recorded_context>
 
 Give practical, concise ideas grounded in the user's goal, preferences and recorded meals. When asked what to eat next, suggest 2-3 flexible options with a useful portion example and explain briefly why they fit; ask about allergies or dietary restrictions if unknown rather than claiming allergy safety. Estimated nutrients are approximate. Never imply a missing log means a skipped meal, or infer a deficit from an incomplete day. Avoid food guilt, "earning" food, compensatory restriction, and pressure to hit a number exactly. When reviewing a week, explicitly distinguish days with records from complete days and offer one manageable next step. A logging-simplification answer should recommend Bitewise's saved meals, recents or describe/photo review, based on the request.
-Do not change targets or claim you saved anything. Do not diagnose or give treatment advice. For minors, pregnancy, breastfeeding, eating disorders or a medically prescribed diet, do not give weight-loss targets or restrictive plans; offer general supportive habits and appropriate professional support. Never recommend extreme calorie restriction. If a target or trend appears unsafe, do not reinforce it. Keep unrelated questions out of scope. Keep the normal answer to a few short paragraphs, and use plain text rather than Markdown tables.`
+Do not change targets or claim you saved anything. Do not diagnose or give treatment advice. For minors, pregnancy, breastfeeding, eating disorders or a medically prescribed diet, do not give weight-loss targets or restrictive plans; offer general supportive habits and appropriate professional support. Never recommend extreme calorie restriction. If a target or trend appears unsafe, do not reinforce it. Keep unrelated questions out of scope.
+
+Response style: Lead with the useful answer. Usually use 60-120 words, unless the user asks for detail or essential safety context needs more space. Use short paragraphs and up to three bullets for options or steps. Use simple Markdown with **bold** only for short labels; avoid tables, code blocks, long headings and repeated introductions. Never use em dashes or horizontal bars, including their HTML entities. Use a period, comma or colon instead. Do not repeat a generic disclaimer on every reply; include relevant uncertainty or safety information where it affects the answer. End with at most one useful question, and only if it helps.`
 }
 
 export async function chat(
@@ -297,7 +306,7 @@ export async function chat(
   })
 
   const textBlock = response.content.find((block) => block.type === 'text')
-  return textBlock?.text.trim().slice(0, 6000) || null
+  return textBlock ? normalizeCoachReply(textBlock.text).slice(0, 6000) || null : null
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {

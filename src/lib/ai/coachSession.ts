@@ -1,3 +1,5 @@
+import { normalizeCoachReply } from './coachReply'
+
 export interface CoachChatMessage {
   role: 'user' | 'assistant'
   content: string
@@ -48,6 +50,11 @@ export function readCoachSession(
         )
       })
       .slice(-COACH_SESSION_MAX_MESSAGES)
+      .map((message: CoachChatMessage) => ({
+        ...message,
+        content:
+          message.role === 'assistant' ? normalizeCoachReply(message.content) : message.content,
+      }))
     return {
       messages,
       draft: typeof data.draft === 'string' ? data.draft.slice(0, 500) : '',
@@ -96,19 +103,19 @@ export function clearCoachSession(userId: string, storage?: SessionStore): void 
 
 export const COACH_INTENTS = {
   'next-meal': {
-    title: 'Plan my next meal',
+    title: 'Meal ideas',
     detail: 'A few ideas that fit my day',
     prompt:
       'What could I eat next? Suggest a few practical options using my goals and what I have logged today. Remember my diary may be incomplete.',
   },
   'week-review': {
-    title: 'Review my week',
+    title: 'My week',
     detail: 'Find one useful pattern',
     prompt:
       'Review my past week of logged meals and give me one manageable next step. Please distinguish incomplete records from actual intake.',
   },
   simplify: {
-    title: 'Make logging easier',
+    title: 'Log faster',
     detail: 'Build a routine I can keep',
     prompt:
       'How can I make food logging easier to keep up with? Use my recent meals and suggest a small repeatable routine in Bitewise.',

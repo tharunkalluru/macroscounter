@@ -39,6 +39,7 @@ test('setting a goal weight in Settings surfaces a projected ETA on Weight track
   ])
 
   await page.goto('/settings')
+  await page.getByTestId('settings-profile-toggle').click()
   await page.getByTestId('goal-weight-input').fill('60')
   await page.getByRole('button', { name: 'Save & recalculate' }).click()
   await expect(page.getByText('Saved - targets recalculated.')).toBeVisible()
@@ -60,11 +61,13 @@ test('clearing a previously-set goal weight removes the card', async ({ page }) 
   ])
 
   await page.goto('/settings')
+  await page.getByTestId('settings-profile-toggle').click()
   await page.getByTestId('goal-weight-input').fill('60')
   await page.getByRole('button', { name: 'Save & recalculate' }).click()
   await expect(page.getByText('Saved - targets recalculated.')).toBeVisible()
 
   await page.goto('/settings')
+  await page.getByTestId('settings-profile-toggle').click()
   await expect(page.getByTestId('goal-weight-input')).toHaveValue('60')
   await page.getByTestId('goal-weight-input').fill('')
   await page.getByRole('button', { name: 'Save & recalculate' }).click()

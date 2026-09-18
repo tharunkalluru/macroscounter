@@ -187,8 +187,7 @@ export default function AiLogPage() {
             Sign in to use AI logging
           </h2>
           <p className="mt-3 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-            Describe your meal, speak it, or share a photo. Review the estimate and make it yours
-            before saving.
+            Describe a meal or add a photo. Review before saving.
           </p>
           <button
             type="button"
@@ -204,7 +203,7 @@ export default function AiLogPage() {
             data-testid="ai-signin-other-options"
             className="mt-2 inline-flex min-h-touch items-center text-sm font-medium text-brand-700 dark:text-brand-400"
           >
-            Use a password or email code instead
+            More sign-in options
           </Link>
           {error && (
             <p role="alert" className="mt-3 text-sm text-danger-700 dark:text-danger-300">
@@ -216,7 +215,7 @@ export default function AiLogPage() {
           to={manualPath}
           className="mt-3 flex min-h-touch items-center justify-center text-sm text-slate-600 dark:text-slate-300"
         >
-          Continue with food search →
+          Search food instead →
         </Link>
       </main>
     )
@@ -225,20 +224,9 @@ export default function AiLogPage() {
   const canAnalyse = (description.trim().length > 0 || photo !== null) && !analysing
 
   return (
-    <main className="mx-auto max-w-4xl px-5 py-6 sm:px-8">
+    <main className="mx-auto max-w-2xl px-5 py-6 sm:px-8">
       <PageHeader title="Log with AI" backTo={diaryPath(entryDate)} />
-      <div className="mb-6">
-        <p className="text-caption font-semibold uppercase tracking-widest text-brand-700 dark:text-brand-400">
-          Less searching, more living
-        </p>
-        <h2 className="mt-2 text-3xl font-semibold tracking-tight text-slate-900 dark:text-slate-100">
-          What did you have?
-        </h2>
-        <p className="mt-2 text-sm text-slate-600 dark:text-slate-300">
-          A few words, a photo, or both. You get the final say.
-        </p>
-      </div>
-      <div className="grid items-start gap-5 md:grid-cols-[minmax(0,1fr)_260px]">
+      <div>
         <section className="min-w-0 rounded-card bg-white p-5 shadow-card dark:bg-surface-dark-card dark:shadow-card-dark">
           <div className="mb-4 flex flex-wrap items-center gap-2 text-caption">
             <span className="rounded-full bg-brand-50 px-3 py-1.5 font-medium capitalize text-brand-700 dark:bg-slate-800 dark:text-brand-400">
@@ -253,13 +241,12 @@ export default function AiLogPage() {
                     year: 'numeric',
                   })}
             </span>
-            <span className="text-slate-400">Change on review</span>
           </div>
           <label
             htmlFor="meal-description"
             className="text-sm font-semibold text-slate-900 dark:text-slate-100"
           >
-            Describe your meal
+            What did you have?
           </label>
           <div className="relative mt-2">
             <textarea
@@ -267,7 +254,7 @@ export default function AiLogPage() {
               value={description}
               disabled={analysing}
               onChange={(event) => setDescription(event.target.value.slice(0, MAX_CHARS))}
-              placeholder="Two rotis, a bowl of dal and a little rice. Cooked with about a teaspoon of oil."
+              placeholder="2 rotis, a bowl of dal and a little rice"
               rows={5}
               data-testid="ai-description-input"
               className="w-full resize-y rounded-xl border border-slate-200 bg-slate-50 p-4 pr-14 text-body leading-relaxed text-slate-900 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/20 disabled:opacity-60 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100"
@@ -289,8 +276,8 @@ export default function AiLogPage() {
           <div className="mt-1 flex min-h-5 justify-between gap-3 text-caption text-slate-500 dark:text-slate-400">
             <span role="status">
               {isListening
-                ? 'Listening… tap the microphone when you’re done.'
-                : 'Amounts and cooking details help.'}
+                ? 'Listening… tap to stop.'
+                : 'Include portions and cooking details.'}
             </span>
             <span className="shrink-0 tabular-nums">
               {description.length}/{MAX_CHARS}
@@ -319,9 +306,6 @@ export default function AiLogPage() {
                 <p className="text-sm font-semibold text-slate-900 dark:text-slate-100">
                   Photo ready
                 </p>
-                <p className="mt-1 text-caption text-slate-500 dark:text-slate-400">
-                  Add details above for anything the camera can't see.
-                </p>
                 <button
                   type="button"
                   onClick={removePhoto}
@@ -347,10 +331,7 @@ export default function AiLogPage() {
               </span>
               <span>
                 <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
-                  Add a meal photo
-                </span>
-                <span className="mt-0.5 block text-caption text-slate-500 dark:text-slate-400">
-                  Take a photo or choose one from your library
+                  Add photo
                 </span>
               </span>
             </button>
@@ -372,40 +353,17 @@ export default function AiLogPage() {
             className="pressable mt-5 flex min-h-touch w-full items-center justify-center gap-2 rounded-xl bg-brand-700 px-4 py-3 font-semibold text-white disabled:opacity-50"
           >
             <SparkleIcon className="h-4 w-4" />
-            {analysing ? 'Putting your meal together…' : 'Analyse this meal'}
+            {analysing ? 'Analysing…' : 'Review estimate'}
           </button>
           <p className="mt-3 text-center text-caption text-slate-500 dark:text-slate-400">
-            You can edit every item before logging.
+            AI estimates nutrition. Check portions and ingredients before saving.
           </p>
         </section>
-        <aside className="space-y-5">
-          <div className="rounded-card bg-brand-50 p-5 dark:bg-slate-900">
-            <p className="text-sm font-semibold text-brand-800 dark:text-brand-300">
-              Your meal, your control
-            </p>
-            <ol className="mt-4 space-y-3 text-sm text-slate-600 dark:text-slate-300">
-              {[
-                'Describe or photograph your food.',
-                'Review portions and nutrition.',
-                'Save to the right day and meal.',
-              ].map((text, index) => (
-                <li key={text} className="flex items-start gap-3">
-                  <span className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-white text-caption font-semibold text-brand-700 dark:bg-slate-800 dark:text-brand-400">
-                    {index + 1}
-                  </span>
-                  <span className="pt-0.5">{text}</span>
-                </li>
-              ))}
-            </ol>
-            <p className="mt-4 border-t border-brand-100 pt-4 text-caption leading-relaxed text-slate-600 dark:border-slate-700 dark:text-slate-400">
-              AI estimates portions and nutrition. It cannot reliably see hidden ingredients, so
-              always check the result.
-            </p>
-          </div>
-          <div>
-            <h3 className="text-caption font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-              Try a description
-            </h3>
+        <div className="mt-3">
+          <details className="rounded-xl px-2">
+            <summary className="min-h-touch cursor-pointer py-3 text-sm font-medium text-slate-600 dark:text-slate-300">
+              Try an example
+            </summary>
             <div className="mt-2 flex flex-col gap-1">
               {EXAMPLES.map((example) => (
                 <button
@@ -419,14 +377,14 @@ export default function AiLogPage() {
                 </button>
               ))}
             </div>
-          </div>
+          </details>
           <Link
             to={manualPath}
-            className="flex min-h-touch items-center text-sm font-medium text-brand-700 dark:text-brand-400"
+            className="flex min-h-touch items-center justify-center text-sm font-medium text-brand-700 dark:text-brand-400"
           >
-            Prefer food search? Find it here →
+            Search food instead →
           </Link>
-        </aside>
+        </div>
       </div>
     </main>
   )

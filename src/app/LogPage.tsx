@@ -123,8 +123,7 @@ export default function LogPage() {
 
   return (
     <div className="mx-auto max-w-xl px-5 py-6">
-      <h1 className="text-display">Food diary</h1>
-      <p className="mb-5 mt-1 text-sm text-slate-500 dark:text-slate-400">Every meal, in one place. Choose a day to review or add food.</p>
+      <h1 className="mb-5 text-display">Food diary</h1>
 
       <div className="flex gap-1 rounded-lg bg-slate-100 p-1 dark:bg-slate-800" role="tablist" aria-label="Log view">
         {TABS.map((t) => (

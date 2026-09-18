@@ -56,34 +56,30 @@ export default function InstallCoachMark() {
 
   return (
     <div
-      className="flex items-start gap-3 border-b border-brand-100 bg-brand-50 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] dark:border-slate-700 dark:bg-slate-800"
+      className="flex items-center gap-2 border-b border-brand-100 bg-brand-50 px-4 pb-3 pt-[max(0.75rem,env(safe-area-inset-top))] dark:border-slate-700 dark:bg-slate-800"
       data-testid="install-coach-mark"
     >
-      <span className="mt-0.5 shrink-0 text-brand-700 dark:text-brand-400">
+      <span className="shrink-0 text-brand-700 dark:text-brand-400">
         <InstallIcon />
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-sm font-medium text-slate-900 dark:text-slate-100">Install Bitewise</p>
-        {deferredPrompt ? (
-          <p className="text-caption text-slate-600 dark:text-slate-300">
-            Add it to your home screen for a faster, full-screen experience.
-          </p>
-        ) : (
+        {!deferredPrompt && (
           <p className="text-caption text-slate-600 dark:text-slate-300">
             Tap <span aria-hidden="true">􀈂</span> Share, then "Add to Home Screen".
           </p>
         )}
-        {deferredPrompt && (
+      </div>
+      {deferredPrompt && (
           <button
             type="button"
             onClick={handleInstall}
             data-testid="install-coach-mark-install"
-            className="mt-2 min-h-touch rounded bg-brand-700 px-3 py-1.5 text-sm font-medium text-white"
+            className="min-h-touch shrink-0 rounded-lg px-3 text-sm font-semibold text-brand-700 dark:text-brand-400"
           >
             Install
           </button>
         )}
-      </div>
       <button
         type="button"
         onClick={handleDismiss}

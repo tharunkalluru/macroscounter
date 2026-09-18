@@ -11,7 +11,7 @@ async function onboard(page: Page) {
     activityLevel: 'active',
   })
   // Fixture persona target: BMR 1905, TDEE 3286.125, cut -500 -> 2786 kcal.
-  await expect(page.getByTestId('kcal-target')).toHaveText('2786 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2786')
 }
 
 /** Seeds 7 days of logEntries (following the target exactly, a plateau) plus 2 weigh-ins directly into IndexedDB. */
@@ -74,7 +74,7 @@ test('adaptive prompt routes through review before a confirmed target update', a
   await page.goto('/')
 
   await expect(page.getByTestId('adaptive-prompt')).not.toBeVisible()
-  await expect(page.getByTestId('kcal-target')).toHaveText('2686 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2686')
 
   // Reloading shouldn't re-suggest the same week's adjustment again.
   await page.reload()
@@ -94,5 +94,5 @@ test('dismissing the adaptive prompt hides it and it stays hidden on reload', as
   await page.reload()
   await expect(page.getByTestId('adaptive-prompt')).not.toBeVisible()
   // Target is unchanged since the suggestion was dismissed, not accepted.
-  await expect(page.getByTestId('kcal-target')).toHaveText('2786 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2786')
 })

@@ -76,7 +76,7 @@ test('an empty today with a logged yesterday offers a one-tap whole-day copy', a
 
   const prompt = page.getByTestId('copy-yesterday-prompt')
   await expect(prompt).toBeVisible()
-  await expect(prompt).toContainText('2 items, 205 kcal')
+  await expect(prompt).toContainText('2 items · 205 kcal')
 
   await page.getByTestId('copy-yesterday-confirm').click()
 

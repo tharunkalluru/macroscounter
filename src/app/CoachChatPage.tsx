@@ -14,11 +14,14 @@ import {
 } from '../lib/ai/coachSession'
 import { useSpeechRecognition } from './hooks/useSpeechRecognition'
 import { CoachMessage, CoachUserMessage } from './components/CoachBubble'
+import CoachReply from './components/CoachReply'
+import { normalizeCoachReply } from '../lib/ai/coachReply'
 import PageHeader from './components/PageHeader'
-import { MicIcon, SparkleIcon } from './shell/icons'
+import { ForkKnifeIcon, LogIcon, MicIcon, PlusIcon, SparkleIcon, TrendsIcon } from './shell/icons'
 
 const MAX_CHARS = 500
 const MAX_HISTORY_SENT = 10
+const intentIcons = { 'next-meal': ForkKnifeIcon, 'week-review': TrendsIcon, simplify: LogIcon }
 
 function errorMessageFor(code?: string): string {
   if (code === 'not_signed_in')
@@ -71,10 +74,10 @@ export default function CoachChatPage() {
             <SparkleIcon className="h-8 w-8" />
           </span>
           <h2 className="text-lg font-semibold text-slate-900 dark:text-slate-100">
-            A little guidance for your day
+            Personal guidance
           </h2>
           <p className="max-w-xs text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-            Sign in for meal ideas and practical next steps based on your synced diary.
+            Meal ideas and advice from your diary.
           </p>
           <button
             type="button"
@@ -90,7 +93,7 @@ export default function CoachChatPage() {
             data-testid="coach-chat-signin-other-options"
             className="inline-flex min-h-touch items-center text-sm text-brand-700 underline dark:text-brand-400"
           >
-            Use a password or email code instead
+            More sign-in options
           </Link>
           {signInError && (
             <p role="alert" className="text-sm text-danger-600 dark:text-danger-500">
@@ -193,9 +196,10 @@ function CoachConversation({ userId, intent }: { userId: string; intent: CoachIn
       if (typeof json.reply !== 'string' || !json.reply.trim()) throw new Error(errorMessageFor())
       if (controller.signal.aborted) return
       setMessages(
-        [...next, { role: 'assistant', content: json.reply.trim().slice(0, 6000) }].slice(
-          -COACH_SESSION_MAX_MESSAGES
-        ) as CoachChatMessage[]
+        [
+          ...next,
+          { role: 'assistant', content: normalizeCoachReply(json.reply).slice(0, 6000) },
+        ].slice(-COACH_SESSION_MAX_MESSAGES) as CoachChatMessage[]
       )
       setFailedQuestion(null)
     } catch {
@@ -222,22 +226,20 @@ function CoachConversation({ userId, intent }: { userId: string; intent: CoachIn
   return (
     <div className="mx-auto flex min-h-[calc(100dvh-11rem)] max-w-2xl flex-col px-5 py-5 lg:min-h-[calc(100dvh-8rem)] lg:px-8">
       <PageHeader title="Ask your coach" backTo="/coach" />
-      <div className="mb-4 flex items-center justify-between gap-3">
-        <p className="text-caption text-slate-500 dark:text-slate-400">
-          Your diary. A useful next step.
-        </p>
-        {messages.length > 0 && (
+      {messages.length > 0 && (
+        <div className="mb-2 flex justify-end">
           <button
             type="button"
             onClick={clearConversation}
             disabled={sending}
-            className="min-h-touch text-caption font-medium text-slate-500 disabled:opacity-50 dark:text-slate-400"
+            className="flex min-h-touch items-center gap-1.5 rounded-lg px-2 text-caption font-medium text-slate-500 disabled:opacity-50 dark:text-slate-400"
             data-testid="coach-chat-clear"
           >
-            New conversation
+            <PlusIcon className="h-4 w-4" />
+            New chat
           </button>
-        )}
-      </div>
+        </div>
+      )}
       <div
         ref={transcriptRef}
         role="log"
@@ -250,32 +252,30 @@ function CoachConversation({ userId, intent }: { userId: string; intent: CoachIn
       >
         {messages.length === 0 && (
           <>
-            <CoachMessage testId="coach-chat-intro">
-              Let’s make your next step easier. I can help with meal ideas, patterns in your diary,
-              or a routine that fits your life.
-            </CoachMessage>
+            <CoachMessage testId="coach-chat-intro">What would help today?</CoachMessage>
             <div className="my-3 grid gap-2 sm:grid-cols-3">
               {(
                 Object.entries(COACH_INTENTS) as [
                   CoachIntent,
                   (typeof COACH_INTENTS)[CoachIntent],
                 ][]
-              ).map(([id, item]) => (
-                <button
-                  key={id}
-                  type="button"
-                  onClick={() => selectIntent(id)}
-                  data-testid={`coach-intent-${id}`}
-                  className={`min-h-touch rounded-card border p-4 text-left transition-transform active:scale-[0.98] ${intent === id ? 'border-brand-300 bg-brand-50 dark:border-brand-600 dark:bg-brand-900/20' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-surface-dark-card'}`}
-                >
-                  <span className="block text-sm font-semibold text-slate-900 dark:text-slate-100">
-                    {item.title}
-                  </span>
-                  <span className="mt-1 block text-caption text-slate-500 dark:text-slate-400">
-                    {item.detail}
-                  </span>
-                </button>
-              ))}
+              ).map(([id, item]) => {
+                const IntentIcon = intentIcons[id]
+                return (
+                  <button
+                    key={id}
+                    type="button"
+                    onClick={() => selectIntent(id)}
+                    data-testid={`coach-intent-${id}`}
+                    className={`flex min-h-touch items-center gap-2.5 rounded-card border px-3 py-3 text-left transition-transform active:scale-[0.98] ${intent === id ? 'border-brand-300 bg-brand-50 dark:border-brand-600 dark:bg-brand-900/20' : 'border-slate-200 bg-white dark:border-slate-800 dark:bg-surface-dark-card'}`}
+                  >
+                    <IntentIcon className="h-5 w-5 shrink-0 text-brand-700 dark:text-brand-400" />
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                      {item.title}
+                    </span>
+                  </button>
+                )
+              })}
             </div>
           </>
         )}
@@ -288,13 +288,11 @@ function CoachConversation({ userId, intent }: { userId: string; intent: CoachIn
           ) : (
             <CoachMessage key={index} testId={`coach-chat-message-${index}`}>
               <span className="sr-only">Coach: </span>
-              <span className="whitespace-pre-wrap break-words">{message.content}</span>
+              <CoachReply text={message.content} />
             </CoachMessage>
           )
         )}
-        {sending && (
-          <CoachMessage testId="coach-chat-thinking">Looking at your synced diary…</CoachMessage>
-        )}
+        {sending && <CoachMessage testId="coach-chat-thinking">Thinking…</CoachMessage>}
       </div>
       {error && (
         <div
@@ -363,9 +361,11 @@ function CoachConversation({ userId, intent }: { userId: string; intent: CoachIn
                   <MicIcon active={isListening} />
                 </button>
               )}
-              <span className="text-caption tabular-nums text-slate-400">
-                {input.length}/{MAX_CHARS}
-              </span>
+              {input.length >= MAX_CHARS - 100 && (
+                <span className="text-caption tabular-nums text-slate-400" aria-live="polite">
+                  {MAX_CHARS - input.length} left
+                </span>
+              )}
             </div>
             <button
               type="submit"
@@ -377,10 +377,13 @@ function CoachConversation({ userId, intent }: { userId: string; intent: CoachIn
             </button>
           </div>
         </div>
-        <p className="mt-3 text-center text-caption leading-relaxed text-slate-500 dark:text-slate-400">
-          AI uses your synced profile and diary. Logs may be incomplete. Conversation stays in this
-          tab for up to 24 hours; general guidance, not medical advice.
-        </p>
+        <details className="mt-2 text-caption leading-relaxed text-slate-500 dark:text-slate-400">
+          <summary className="mx-auto w-fit cursor-pointer py-3">About AI coach</summary>
+          <p className="pb-2 text-center">
+            Uses your synced profile and diary, which may be incomplete. Chat stays in this tab for
+            up to 24 hours. General guidance, not medical advice.
+          </p>
+        </details>
       </form>
     </div>
   )

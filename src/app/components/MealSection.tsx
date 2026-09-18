@@ -16,6 +16,7 @@ import { useUIState } from '../shell/UIStateContext'
 import EntryRow from './EntryRow'
 import MealOverflowSheet from './MealOverflowSheet'
 import Snackbar from './Snackbar'
+import MealSuggestionRow from './MealSuggestionRow'
 
 interface Props {
   meal: Meal
@@ -188,17 +189,14 @@ export default function MealSection({
           (suggestions.length > 0 ? (
             <div className="flex flex-col gap-2 px-3 py-3">
               <p className="text-caption text-slate-500 dark:text-slate-400">Your usual?</p>
-              <div className="flex flex-wrap gap-2">
+              <div className="space-y-2">
                 {suggestions.map((chip) => (
-                  <button
+                  <MealSuggestionRow
                     key={chip.key}
-                    type="button"
-                    onClick={() => handleSuggestionTap(chip)}
-                    data-testid={`suggestion-chip-${meal}`}
-                    className="min-h-touch rounded-full border border-brand-700 px-3 py-1 text-caption text-brand-700 dark:border-brand-400 dark:text-brand-400"
-                  >
-                    {chip.label}
-                  </button>
+                    chip={chip}
+                    onAdd={() => handleSuggestionTap(chip)}
+                    addTestId={`suggestion-chip-${meal}`}
+                  />
                 ))}
               </div>
             </div>

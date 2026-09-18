@@ -54,7 +54,6 @@ export default function BottomTabBar() {
           <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-brand-700 text-white dark:bg-brand-400 dark:text-slate-950"><ForkKnifeIcon /></span>
           <span className="text-title font-semibold tracking-tight text-slate-900 dark:text-slate-100">Bitewise<span className="text-brand-600 dark:text-brand-400">.</span></span>
         </Link>
-        <p className="mt-3 text-caption leading-relaxed text-slate-500 dark:text-slate-400">A little better, every day.</p>
       </div>
       <div className="mx-auto flex w-full max-w-md items-stretch justify-between gap-1 px-2 py-1.5 lg:flex-col lg:gap-1.5 lg:px-0 lg:py-0">
         {TABS.slice(0, 2).map((tab) => (

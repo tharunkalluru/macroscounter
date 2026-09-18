@@ -13,6 +13,10 @@ test('settings groups You, The App, and Your Data are all visible', async ({ pag
   await expect(page.getByRole('heading', { name: 'You', exact: true })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'The App' })).toBeVisible()
   await expect(page.getByRole('heading', { name: 'Your Data' })).toBeVisible()
+  await expect(page.getByLabel('Name', { exact: true })).not.toBeVisible()
+  await page.getByTestId('settings-profile-toggle').click()
+  await expect(page.getByLabel('Name', { exact: true })).toHaveValue('Settings Persona')
+  await expect(page.getByLabel('Name', { exact: true })).toBeVisible()
 })
 
 test('food source toggles default on and persist a change across reload', async ({ page }) => {

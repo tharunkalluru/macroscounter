@@ -357,6 +357,6 @@ test('AI daily allowance exhaustion preserves the manual logging destination', a
   await page.getByTestId('ai-analyse-button').click()
   await expect(page.getByTestId('ai-error-message')).toContainText('allowance is used for today')
   await expect(page.getByTestId('ai-description-input')).toHaveValue('two rotis')
-  await page.getByRole('link', { name: 'Prefer food search? Find it here →' }).click()
+  await page.getByRole('link', { name: 'Search food instead →' }).click()
   await expect(page).toHaveURL('/log/add?meal=lunch&date=2026-08-17')
 })

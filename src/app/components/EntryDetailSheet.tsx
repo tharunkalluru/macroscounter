@@ -3,6 +3,7 @@ import type { FoodRecord, LogEntry } from '../../data/models'
 import { EntryPhotoRepo } from '../../data/repos/EntryPhotoRepo'
 import { FoodRepo } from '../../data/repos/FoodRepo'
 import { LogRepo } from '../../data/repos/LogRepo'
+import { getFoodDisplayName } from '../../domain/logging/foodDisplayName'
 import { vibrateTiny } from '../../lib/haptics'
 import BottomSheet from '../shell/BottomSheet'
 import { useUIState } from '../shell/UIStateContext'
@@ -121,11 +122,30 @@ export default function EntryDetailSheet({ open, onClose, entry, onEdit }: Props
 
   const hasServingsToggle = per100g !== null && food !== null && food.portions.length > 0
   const selectedPortion = food?.portions[portionIdx]
+  const displayName = getFoodDisplayName(entry?.name ?? '')
+  const sheetTitle = displayName.title.length > 48 ? 'Food details' : displayName.title
+  const showFullName = displayName.isCompact || sheetTitle !== displayName.title
 
   return (
-    <BottomSheet open={open} onClose={onClose} title={entry?.name ?? ''}>
+    <BottomSheet open={open} onClose={onClose} title={sheetTitle}>
       {entry && (
         <div className="flex flex-col gap-4" data-testid="entry-detail-content">
+          {(showFullName || entry.barcode || entry.portionSummary.includes('AI estimate')) && (
+            <div className="min-w-0">
+              {showFullName && (
+                <p className="break-words text-sm leading-relaxed text-slate-700 dark:text-slate-300" data-testid="entry-full-name">
+                  {entry.name}
+                </p>
+              )}
+              {entry.barcode ? (
+                <p className="mt-1 break-all text-caption text-slate-500 dark:text-slate-400">
+                  Barcode · {entry.barcode}
+                </p>
+              ) : entry.portionSummary.includes('AI estimate') ? (
+                <p className="mt-1 text-caption text-slate-500 dark:text-slate-400">AI estimate</p>
+              ) : null}
+            </div>
+          )}
           {photoUrl && (
             <img
               src={photoUrl}

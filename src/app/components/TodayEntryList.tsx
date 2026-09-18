@@ -10,15 +10,12 @@ import EntryRow from './EntryRow'
 import FoodDiaryIllustration from './FoodDiaryIllustration'
 import { PlusIcon } from '../shell/icons'
 import Snackbar from './Snackbar'
-import YourUsualsRow from './YourUsualsRow'
 
 interface Props {
   entries: LogEntry[]
-  historyEntries: LogEntry[]
   date: string
   isToday: boolean
   onDelete: (id: number) => void
-  onLogged: () => void
 }
 
 const MEAL_ORDER: Meal[] = ['breakfast', 'lunch', 'snacks', 'dinner']
@@ -32,7 +29,7 @@ const UNDO_MS = 5000
  * the per-meal breakdown; Today now shows everything logged so far in one
  * place, matching the Nocturne redesign.
  */
-export default function TodayEntryList({ entries, historyEntries, date, isToday, onDelete, onLogged }: Props) {
+export default function TodayEntryList({ entries, date, isToday, onDelete }: Props) {
   const navigate = useNavigate()
   const { openAddFoodSheet, notifyDataChanged } = useUIState()
   const [snackbar, setSnackbar] = useState<{ message: string; onUndo?: () => void } | null>(null)
@@ -48,7 +45,6 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
   }, [entries])
 
   const activeMeal = isToday ? activeMealWindow(new Date()) : null
-  const showUsuals = activeMeal !== null && entries.every((e) => e.meal !== activeMeal)
 
   function showSnackbar(message: string, onUndo?: () => void) {
     if (undoTimerRef.current) clearTimeout(undoTimerRef.current)
@@ -79,14 +75,11 @@ export default function TodayEntryList({ entries, historyEntries, date, isToday,
 
   return (
     <section className="rounded-card bg-white p-5 shadow-card dark:bg-surface-dark-card dark:shadow-card-dark" data-testid="today-entry-list">
-      <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">{isToday ? "Today’s food" : "Food diary"}</h2><span className="text-caption text-slate-500 dark:text-slate-400">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span></div>
-      {showUsuals && activeMeal && (
-        <YourUsualsRow meal={activeMeal} date={date} historyEntries={historyEntries} onLogged={onLogged} />
-      )}
+      <div className="mb-3 flex items-center justify-between"><h2 className="font-semibold">{isToday ? "Today’s food" : "Food diary"}</h2>{entries.length > 0 && <span className="text-caption text-slate-500 dark:text-slate-400">{entries.length} {entries.length === 1 ? 'entry' : 'entries'}</span>}</div>
 
       <div className="mt-2 divide-y divide-slate-100 overflow-hidden dark:divide-slate-800">
         {entries.length === 0 && (
-          <div className="px-4 pb-4 pt-1 text-center"><FoodDiaryIllustration className="mx-auto mb-2 h-24 w-40" /><p className="text-sm font-medium">{isToday ? "Your first meal starts here." : "Nothing logged for this day."}</p><p className="mt-2 text-caption text-slate-500 dark:text-slate-400">{isToday ? "Search a favorite, scan a label, or add a meal in your own words." : "Forgot to log? You can still add or edit your meals."}</p></div>
+          <div className="px-4 pb-4 pt-1 text-center"><FoodDiaryIllustration className="mx-auto mb-2 h-24 w-40" /><p className="text-sm font-medium">{isToday ? "Ready for your first meal?" : "No meals logged."}</p></div>
         )}
         <AnimatePresence initial={false}>
           {sorted.map((entry) => (

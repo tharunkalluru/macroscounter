@@ -48,7 +48,7 @@ async function seedIdliBreakfast(page: Page, date: string) {
   }, date)
 }
 
-test('the "See all" link on Your usuals opens the full screen, and a repeated combo can be one-tap logged', async ({
+test('the recent meals link opens the full screen, and a repeated combo can be one-tap logged', async ({
   page,
 }) => {
   await onboard(page)
@@ -61,12 +61,14 @@ test('the "See all" link on Your usuals opens the full screen, and a repeated co
   await page.clock.setFixedTime(new Date('2026-08-18T08:00:00'))
   await page.goto('/')
   const notNow = page.getByTestId('meal-prompt-not-now-button')
-  if (await notNow.isVisible().catch(() => false)) await notNow.click()
-  await expect(page.getByTestId('your-usuals-row')).toBeVisible()
-  await page.getByTestId('your-usuals-see-all').click()
+  await expect(notNow).toBeVisible()
+  await notNow.click()
+  await expect(page.getByTestId('repeat-meals-card')).toBeVisible()
+  await page.getByRole('link', { name: 'All recent meals' }).click()
   await expect(page).toHaveURL('/log/usuals?date=2026-08-18&meal=breakfast')
 
-  await expect(page.getByTestId('usuals-item').first()).toContainText('logged 2×')
+  await page.getByTestId('meal-suggestion-details-toggle').first().click()
+  await expect(page.getByTestId('meal-suggestion-details').first()).toContainText('Logged 2×')
   await page.getByTestId('usuals-item').first().click()
   await expect(page.getByTestId('usuals-item').first()).toContainText('Logged')
 })
@@ -102,7 +104,7 @@ test('repeating an AI meal preserves its portions and chosen historical destinat
   }))
   await page.goto('/log/usuals?date=2026-08-17&meal=dinner')
   await expect(page.getByTestId('usuals-filter-dinner')).toHaveAttribute('aria-pressed', 'true')
-  await expect(page.getByTestId('usuals-item')).toContainText('1 large bowl')
+  await expect(page.getByTestId('meal-suggestion-row')).toContainText('1 large bowl')
   await page.getByTestId('usuals-item').click()
   await expect(page.getByRole('status')).toContainText('Meal added')
   await page.goto('/log?date=2026-08-17')

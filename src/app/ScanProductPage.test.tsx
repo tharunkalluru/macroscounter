@@ -113,6 +113,40 @@ afterEach(async () => {
 })
 
 describe('ScanProductPage (Phase 10.5 integration: scan -> card -> one-tap add)', () => {
+  it('shows a compact product title, reveals its original label and saves the unchanged barcode identity', async () => {
+    const fullName = 'Ultra Nutrition High Protein Shake, Chocolate, 30g Protein, 330ml'
+    await db.scannedProducts.put({
+      barcode: PROTEIN_SHAKE_BARCODE,
+      name: fullName,
+      brand: 'Ultra Nutrition',
+      per100g: { kcal: 49.2, p: 6.2, c: 3.7, f: 0.9 },
+      servingSize: 330,
+      servingSizeText: '330 ml',
+      source: 'off',
+      firstScanned: todayISO(),
+    })
+    renderAt(`/scan/product/${PROTEIN_SHAKE_BARCODE}?meal=snacks`)
+    expect(await screen.findByTestId('scanned-product-name')).toHaveTextContent('Protein shake')
+    expect(screen.getByTestId('scanned-product-name')).not.toHaveTextContent('Ultra Nutrition')
+    const details = screen.getByTestId('food-name-details')
+    expect(details).not.toHaveAttribute('open')
+    fireEvent.click(screen.getByText('Full name'))
+    expect(details).toHaveAttribute('open')
+    expect(screen.getByTestId('food-full-name')).toHaveTextContent(fullName)
+    expect(details).toHaveTextContent(PROTEIN_SHAKE_BARCODE)
+
+    fireEvent.click(screen.getByTestId('log-entry-button'))
+    await waitFor(async () => {
+      const entries = await new LogRepo(db).getEntriesForDate(todayISO())
+      expect(entries.find((entry) => entry.barcode === PROTEIN_SHAKE_BARCODE)).toMatchObject({
+        name: fullName,
+        barcode: PROTEIN_SHAKE_BARCODE,
+        grams: 330,
+        meal: 'snacks',
+      })
+    })
+  })
+
   it('shows a skeleton while the lookup is in flight, then the card defaulted to 1 serving', async () => {
     renderAt(`/scan/product/${BARCODE}?meal=lunch`)
 

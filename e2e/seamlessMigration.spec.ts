@@ -77,7 +77,7 @@ test('an account with pre-redesign data renders correctly with nothing dropped',
 
   // Today renders the legacy target/entry with no crash.
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('kcal-target')).toHaveText('1700 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('1700')
   await expect(page.getByTestId('today-view')).toContainText('Legacy Idli')
 
   // The 'system' theme preference migrated to a concrete value, not lost.

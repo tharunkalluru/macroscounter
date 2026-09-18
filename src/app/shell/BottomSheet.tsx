@@ -133,10 +133,10 @@ function OpenSheet({ onClose, title, children, headerExtra }: Omit<Props, 'open'
               <div className="h-1 w-10 rounded-full bg-slate-300 dark:bg-slate-600" />
             </div>
             <div className="mt-2 flex w-full items-center justify-between px-4 pb-2">
-              <h2 id={titleId} className="text-title text-slate-900 dark:text-slate-100">
+              <h2 id={titleId} className="min-w-0 flex-1 break-words pr-3 text-title text-slate-900 dark:text-slate-100 [overflow-wrap:anywhere]">
                 {title}
               </h2>
-              <div className="flex items-center gap-2">
+              <div className="flex shrink-0 items-center gap-2">
                 {headerExtra}
                 <button
                   type="button"

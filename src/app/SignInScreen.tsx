@@ -162,11 +162,11 @@ export default function SignInScreen() {
   const showEmailForms = !isPending && !session && !resolving
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col items-center px-6 py-10 text-center">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col items-center px-6 py-10 text-center">
       <div className="mb-6 flex h-16 w-16 items-center justify-center rounded-2xl bg-brand-100 text-3xl dark:bg-brand-900/30" aria-hidden="true">🥗</div>
       <h1 className="mb-2 text-3xl font-bold text-brand-700 dark:text-brand-400">Welcome to Bitewise</h1>
       <p className="mb-8 text-sm leading-relaxed text-slate-500 dark:text-slate-400">
-        Your everyday food diary. Log the food you love, build a routine, and see your progress.
+        Your everyday food diary.
       </p>
       {error ? (
         <div role="alert" className="mb-5 w-full rounded-xl border border-danger-200 bg-danger-50 p-4 text-sm text-danger-700 dark:border-danger-800 dark:bg-danger-900/20 dark:text-danger-300">
@@ -207,9 +207,9 @@ export default function SignInScreen() {
 
           {method === 'password' && passwordScreen === 'signin' && (
             <form onSubmit={handlePasswordSignIn} className="flex flex-col gap-3 text-left">
-              <input type="email" required autoComplete="email" placeholder="Email" value={email}
+              <input type="email" required autoComplete="email" placeholder="Email" aria-label="Email" value={email}
                 onChange={(e) => setEmail(e.target.value)} data-testid="signin-email-input" className={TEXT_INPUT_CLASS} />
-              <input type="password" required autoComplete="current-password" placeholder="Password" value={password}
+              <input type="password" required autoComplete="current-password" placeholder="Password" aria-label="Password" value={password}
                 onChange={(e) => setPassword(e.target.value)} data-testid="signin-password-input" className={TEXT_INPUT_CLASS} />
               <button type="submit" disabled={submitting} data-testid="signin-password-submit"
                 className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50">
@@ -224,11 +224,11 @@ export default function SignInScreen() {
 
           {method === 'password' && passwordScreen === 'signup' && (
             <form onSubmit={handleSignUp} className="flex flex-col gap-3 text-left">
-              <input type="text" autoComplete="name" placeholder="Your name" value={name}
+              <input type="text" autoComplete="name" placeholder="Your name" aria-label="Your name" value={name}
                 onChange={(e) => setName(e.target.value)} data-testid="signup-name-input" className={TEXT_INPUT_CLASS} />
-              <input type="email" required autoComplete="email" placeholder="Email" value={email}
+              <input type="email" required autoComplete="email" placeholder="Email" aria-label="Email" value={email}
                 onChange={(e) => setEmail(e.target.value)} data-testid="signup-email-input" className={TEXT_INPUT_CLASS} />
-              <input type="password" required autoComplete="new-password" placeholder="Password (min. 8 characters)" value={password}
+              <input type="password" required autoComplete="new-password" placeholder="Password (min. 8 characters)" aria-label="Password (min. 8 characters)" value={password}
                 onChange={(e) => setPassword(e.target.value)} minLength={8} data-testid="signup-password-input" className={TEXT_INPUT_CLASS} />
               <button type="submit" disabled={submitting} data-testid="signup-submit"
                 className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50">
@@ -243,7 +243,7 @@ export default function SignInScreen() {
           {method === 'password' && passwordScreen === 'forgot' && (
             <form onSubmit={handleRequestReset} className="flex flex-col gap-3 text-left">
               <p className="text-sm text-slate-500 dark:text-slate-400">Enter your email and we'll send a link to reset your password.</p>
-              <input type="email" required autoComplete="email" placeholder="Email" value={email}
+              <input type="email" required autoComplete="email" placeholder="Email" aria-label="Email" value={email}
                 onChange={(e) => setEmail(e.target.value)} data-testid="forgot-password-email-input" className={TEXT_INPUT_CLASS} />
               <button type="submit" disabled={submitting} data-testid="forgot-password-submit"
                 className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50">
@@ -257,7 +257,7 @@ export default function SignInScreen() {
 
           {method === 'code' && !otpSent && (
             <form onSubmit={handleSendCode} className="flex flex-col gap-3 text-left">
-              <input type="email" required autoComplete="email" placeholder="Email" value={email}
+              <input type="email" required autoComplete="email" placeholder="Email" aria-label="Email" value={email}
                 onChange={(e) => setEmail(e.target.value)} data-testid="code-email-input" className={TEXT_INPUT_CLASS} />
               <button type="submit" disabled={submitting} data-testid="code-send-submit"
                 className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50">
@@ -268,7 +268,7 @@ export default function SignInScreen() {
 
           {method === 'code' && otpSent && (
             <form onSubmit={handleVerifyCode} className="flex flex-col gap-3 text-left">
-              <input type="text" inputMode="numeric" autoComplete="one-time-code" required placeholder="6-digit code" value={otp}
+              <input type="text" inputMode="numeric" autoComplete="one-time-code" required placeholder="6-digit code" aria-label="6-digit code" value={otp}
                 onChange={(e) => setOtp(e.target.value.replace(/\D/g, '').slice(0, 6))} data-testid="code-otp-input" className={TEXT_INPUT_CLASS} />
               <button type="submit" disabled={submitting || otp.length < 6} data-testid="code-verify-submit"
                 className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50">
@@ -281,14 +281,14 @@ export default function SignInScreen() {
             </form>
           )}
 
-          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Back up your diary and use it across your devices.</p>
+          <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Sign in to sync across devices.</p>
           <button type="button" data-testid="signin-skip-button" onClick={handleSkip} disabled={resolving}
-            className="min-h-touch rounded-xl px-4 py-2.5 text-sm text-slate-600 underline disabled:opacity-50 dark:text-slate-400">Skip for now</button>
-          <p className="text-xs text-slate-500 dark:text-slate-400">Without an account, your diary is saved only in this browser.</p>
+            className="min-h-touch rounded-xl px-4 py-2.5 text-sm text-slate-600 underline disabled:opacity-50 dark:text-slate-400">Continue as guest</button>
+          <p className="text-xs text-slate-500 dark:text-slate-400">Guest data is saved only in this browser.</p>
         </div>
       ) : !error ? (
         <div className="text-sm text-slate-500 dark:text-slate-400" role="status">{isPending ? 'Loading your account…' : 'Restoring your diary…'}</div>
       ) : null}
-    </div>
+    </main>
   )
 }

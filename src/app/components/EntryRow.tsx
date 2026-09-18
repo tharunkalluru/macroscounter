@@ -4,6 +4,7 @@ import { motion } from 'framer-motion'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import type { LogEntry } from '../../data/models'
+import { getFoodDisplayName } from '../../domain/logging/foodDisplayName'
 import EntryDetailSheet from './EntryDetailSheet'
 import EntryRowVisual from './EntryRowVisual'
 import SwipeToDeleteRow from './SwipeToDeleteRow'
@@ -18,6 +19,8 @@ interface Props {
 
 /** One log-entry row — tap to see its macro breakdown (with an Edit option inside), swipe left to delete, drag the handle to move it to another meal. Shared by MealSection and Today's flat entry list (Phase R.3) so both stay pixel-identical. */
 export default function EntryRow({ entry, onSwipeDelete, draggable = false }: Props) {
+  const displayName = getFoodDisplayName(entry.name)
+  const accessibleName = displayName.isCompact ? `${displayName.title}: ${entry.name}` : entry.name
   const prefersReducedMotion = usePrefersReducedMotion()
   const navigate = useNavigate()
   const [detailOpen, setDetailOpen] = useState(false)
@@ -52,7 +55,7 @@ export default function EntryRow({ entry, onSwipeDelete, draggable = false }: Pr
               ref={setActivatorNodeRef}
               {...attributes}
               {...listeners}
-              aria-label={`Reorder ${entry.name} to another meal`}
+              aria-label={`Reorder ${accessibleName} to another meal`}
               data-testid={`entry-drag-handle-${entry.id}`}
               className={`flex min-h-touch min-w-touch shrink-0 touch-none items-center justify-center rounded-full transition-colors ${
                 isDragging
@@ -66,7 +69,7 @@ export default function EntryRow({ entry, onSwipeDelete, draggable = false }: Pr
           <button
             type="button"
             onClick={() => setDetailOpen(true)}
-            aria-label={`Edit ${entry.name}`}
+            aria-label={`Edit ${accessibleName}`}
             data-testid={`entry-row-${entry.id}`}
             className={`flex min-h-touch min-w-0 flex-1 items-center gap-3 py-2 text-left ${draggable ? 'pr-3' : 'px-3'}`}
           >

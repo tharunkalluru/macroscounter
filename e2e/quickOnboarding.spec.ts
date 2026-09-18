@@ -14,16 +14,36 @@ async function basics(page: Page) {
   await page.getByLabel('Typical activity').selectOption('light')
 }
 async function signedIn(page: Page) {
-  await page.route('**/api/auth/get-session', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ session: { id: 'setup-session', userId: 'setup-user', expiresAt: '2099-01-01T00:00:00Z' }, user: { id: 'setup-user', name: 'Ari', email: 'ari@example.com', emailVerified: true, createdAt: '2026-01-01', updatedAt: '2026-01-01' } }) }))
+  await page.route('**/api/auth/get-session', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        session: { id: 'setup-session', userId: 'setup-user', expiresAt: '2099-01-01T00:00:00Z' },
+        user: {
+          id: 'setup-user',
+          name: 'Ari',
+          email: 'ari@example.com',
+          emailVerified: true,
+          createdAt: '2026-01-01',
+          updatedAt: '2026-01-01',
+        },
+      }),
+    })
+  )
 }
 
-test('guest completes three-step setup, reviews target changes and retains the diary after reload', async ({ page }) => {
+test('guest completes three-step setup, reviews target changes and retains the diary after reload', async ({
+  page,
+}) => {
   await start(page)
   await page.getByLabel('What should we call you?').fill('Ari')
   await page.getByTestId('quick-setup-continue').click()
   await basics(page)
   await page.getByTestId('quick-setup-continue').click()
   const target = await page.getByTestId('quick-setup-kcal').textContent()
+  await expect(page.getByLabel('Protein priority')).not.toBeVisible()
+  await page.getByText('Adjust targets', { exact: true }).click()
   await page.getByLabel('Protein priority').selectOption('high')
   await expect(page.getByLabel('Your starting targets')).toContainText('130 g')
   await expect(page.getByTestId('quick-setup-kcal')).toHaveText(target!)
@@ -33,10 +53,13 @@ test('guest completes three-step setup, reviews target changes and retains the d
   await page.reload()
   await expect(page.getByTestId('today-view')).toBeVisible()
   await page.goto('/settings')
+  await page.getByTestId('settings-profile-toggle').click()
   await expect(page.getByRole('textbox', { name: 'Name', exact: true })).toHaveValue('Ari')
 })
 
-test('required facts cannot be skipped and imperial inputs remain editable on small screens', async ({ page }) => {
+test('required facts cannot be skipped and imperial inputs remain editable on small screens', async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 320, height: 780 })
   await start(page)
   await page.getByTestId('quick-setup-continue').click()
@@ -52,7 +75,9 @@ test('required facts cannot be skipped and imperial inputs remain editable on sm
   await page.getByLabel('Height inches').fill('10')
   await page.getByTestId('weight-unit-lb').click()
   await page.getByLabel('Weight in pounds').fill('170')
-  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true)
+  expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(
+    true
+  )
   const audit = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze()
   expect(audit.violations).toEqual([])
   await page.getByTestId('quick-setup-continue').click()
@@ -63,12 +88,32 @@ test('required facts cannot be skipped and imperial inputs remain editable on sm
 
 test('AI fills only a draft and missing facts still require explicit review', async ({ page }) => {
   await signedIn(page)
-  await page.route('**/api/ai/setup', (route) => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ draft: { name: 'Alex', age: 30, sex: null, heightCm: 175, weightKg: 75, activityLevel: 'light', goal: 'maintain', dietStyle: null }, notes: [] }) }))
+  await page.route('**/api/ai/setup', (route) =>
+    route.fulfill({
+      status: 200,
+      contentType: 'application/json',
+      body: JSON.stringify({
+        draft: {
+          name: 'Alex',
+          age: 30,
+          sex: null,
+          heightCm: 175,
+          weightKg: 75,
+          activityLevel: 'light',
+          goal: 'maintain',
+          dietStyle: null,
+        },
+        notes: [],
+      }),
+    })
+  )
   await page.goto('/onboarding')
-  await page.getByRole('button', { name: 'Fill the details with AI' }).click()
-  await page.getByLabel('About you').fill('I am Alex, 30, 175 cm and 75 kg. I walk daily and want to maintain.')
+  await page.getByRole('button', { name: 'Draft with AI' }).click()
+  await page
+    .getByLabel('About you')
+    .fill('I am Alex, 30, 175 cm and 75 kg. I walk daily and want to maintain.')
   await page.getByRole('button', { name: 'Fill my details', exact: true }).click()
-  await expect(page.getByRole('status')).toContainText('Your draft is filled in')
+  await expect(page.getByRole('status')).toContainText('Draft ready')
   await expect(page.getByLabel('What should we call you?')).toHaveValue('Alex')
   await page.getByTestId('quick-setup-continue').click()
   await expect(page.getByLabel('Age', { exact: true })).toHaveValue('30')
@@ -86,9 +131,15 @@ test('AI fills only a draft and missing facts still require explicit review', as
 
 test('AI failure leaves manual setup fully usable', async ({ page }) => {
   await signedIn(page)
-  await page.route('**/api/ai/setup', (route) => route.fulfill({ status: 429, contentType: 'application/json', body: JSON.stringify({ code: 'daily_limit' }) }))
+  await page.route('**/api/ai/setup', (route) =>
+    route.fulfill({
+      status: 429,
+      contentType: 'application/json',
+      body: JSON.stringify({ code: 'daily_limit' }),
+    })
+  )
   await page.goto('/onboarding')
-  await page.getByRole('button', { name: 'Fill the details with AI' }).click()
+  await page.getByRole('button', { name: 'Draft with AI' }).click()
   await page.getByLabel('About you').fill('I am Ari and want to maintain.')
   await page.getByRole('button', { name: 'Fill my details', exact: true }).click()
   await expect(page.getByRole('alert')).toContainText('daily limit')

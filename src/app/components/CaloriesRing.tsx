@@ -81,7 +81,7 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
             {textState.centerText}
           </span>
           <span className="text-caption text-slate-500 dark:text-slate-400">
-            {textState.subLabel}
+            {textState.subLabel === 'over' ? 'kcal over' : textState.subLabel}
           </span>
         </div>
       </div>
@@ -100,7 +100,7 @@ export default function CaloriesRing({ consumedKcal, targetKcal }: Props) {
 function Figure({ label, value, testId }: { label: string; value: number | null; testId: string }) {
   return (
     <div data-testid={testId}>
-      <p className="text-lg font-semibold leading-tight tabular-nums text-slate-800 dark:text-slate-100">
+      <p data-testid={testId === 'figure-target' ? 'kcal-target' : undefined} className="text-lg font-semibold leading-tight tabular-nums text-slate-800 dark:text-slate-100">
         {value ?? '—'}
       </p>
       <p className="text-caption text-slate-500 dark:text-slate-400">{label}</p>

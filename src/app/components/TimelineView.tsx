@@ -77,7 +77,7 @@ export default function TimelineView({ entries, onDelete }: Props) {
             <span className="w-12 flex-none pt-1 text-caption font-medium text-slate-400 dark:text-slate-400">
               {formatHour(hour)}
             </span>
-            <div className="flex flex-1 flex-col gap-1.5 border-l border-slate-100 pb-5 pl-3 dark:border-slate-700">
+            <div className="flex min-w-0 flex-1 flex-col gap-1.5 border-l border-slate-100 pb-5 pl-3 dark:border-slate-700">
               <AnimatePresence initial={false}>
                 {items.map((entry) => (
                   <EntryRow

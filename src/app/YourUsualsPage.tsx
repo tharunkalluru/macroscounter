@@ -10,6 +10,7 @@ import { vibrateTiny } from '../lib/haptics'
 import { logSuggestionChip } from '../lib/logging/logSuggestionChip'
 import PageHeader from './components/PageHeader'
 import { useUIState } from './shell/UIStateContext'
+import MealSuggestionRow from './components/MealSuggestionRow'
 
 const MEAL_FILTERS: { key: Meal; label: string }[] = [
   { key: 'breakfast', label: 'Breakfast' },
@@ -115,22 +116,15 @@ export default function YourUsualsPage() {
           </p>
         )}
         {suggestions.map((chip) => (
-          <button
+          <MealSuggestionRow
             key={chip.key}
-            type="button"
-            onClick={() => handleLog(chip)}
+            chip={chip}
+            onAdd={() => handleLog(chip)}
             disabled={pending}
-            data-testid="usuals-item"
-            className="flex min-h-touch items-center gap-3 rounded-card border border-slate-200 bg-white p-3.5 text-left transition-transform active:scale-[0.98] dark:border-slate-700 dark:bg-surface-dark-card"
-          >
-            <div className="min-w-0 flex-1">
-              <p className="truncate font-medium text-slate-900 dark:text-slate-100">{chip.label}</p>
-              <p className="text-caption text-slate-500 dark:text-slate-400">{chip.entries.map((entry) => entry.snapshot?.portionSummary ?? `${entry.grams} g`).join(' · ')} · logged {chip.count}×</p>
-            </div>
-            <span className="flex-none rounded-lg px-3 py-1.5 text-sm font-semibold text-brand-700 ring-1 ring-inset ring-brand-600 dark:text-brand-400 dark:ring-brand-400">
-              {logged === chip.key ? 'Logged' : pending ? '…' : 'Log'}
-            </span>
-          </button>
+            added={logged === chip.key}
+            addTestId="usuals-item"
+            showFrequency
+          />
         ))}
 
         {yesterdaySummary.count > 0 && (

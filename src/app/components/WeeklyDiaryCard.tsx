@@ -23,7 +23,7 @@ export default function WeeklyDiaryCard({ date, entries, onSelect }: {
   return (
     <section className="rounded-card bg-white p-5 shadow-card dark:bg-surface-dark-card dark:shadow-card-dark" aria-label="Seven-day diary" data-testid="weekly-diary-card">
       <div className="flex items-center justify-between gap-3">
-        <h2 className="font-semibold">Your last 7 days</h2>
+        <h2 className="font-semibold">Last 7 days</h2>
         <span className="text-caption font-medium text-brand-700 dark:text-brand-400">{loggedDays.length} / 7 days logged</span>
       </div>
       <div ref={stripRef} className="my-3 overflow-x-auto"><div className="grid min-w-[308px] grid-cols-7 gap-0">
@@ -39,7 +39,7 @@ export default function WeeklyDiaryCard({ date, entries, onSelect }: {
           </button>
         })}
       </div></div>
-      <p className="text-caption leading-relaxed text-slate-500 dark:text-slate-400">Tap a day to review. Logged days may include partial entries.</p>
+      <p className="text-caption text-slate-500 dark:text-slate-400">Logged calories · days may be partial</p>
     </section>
   )
 }

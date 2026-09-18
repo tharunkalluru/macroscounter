@@ -110,4 +110,32 @@ describe('coach user journey', () => {
     )
     expect(screen.getByTestId('coach-chat-intro')).toBeInTheDocument()
   })
+
+  it('formats replies and restored assistant history without changing the user’s words', async () => {
+    fetchMock.mockResolvedValue(
+      apiResponse({ reply: '**Try this:**\n- Tofu—about 150 g\n- Rice and vegetables' })
+    )
+    const first = render(view())
+    fireEvent.change(screen.getByTestId('coach-chat-input'), {
+      target: { value: 'Dinner—any ideas?' },
+    })
+    fireEvent.click(screen.getByTestId('coach-chat-send-button'))
+    await screen.findByText('Try this:')
+    expect(screen.getByTestId('coach-chat-message-0')).toHaveTextContent('Dinner—any ideas?')
+    expect(screen.getByTestId('coach-chat-message-1')).toHaveTextContent('Tofu, about 150 g')
+    expect(screen.getAllByRole('listitem')).toHaveLength(2)
+    first.unmount()
+
+    // Simulate a transcript written by the previous version of the app.
+    const key = 'bitewise:coach:v1:account-a'
+    const saved = JSON.parse(sessionStorage.getItem(key)!)
+    saved.messages[1].content = '**Try this:**\n- Tofu—about 150 g'
+    sessionStorage.setItem(key, JSON.stringify(saved))
+    render(view())
+    expect(screen.getByTestId('coach-chat-message-1')).toHaveTextContent('Tofu, about 150 g')
+    expect(screen.getByTestId('coach-chat-message-1').textContent).not.toContain('—')
+    expect(screen.getByTestId('coach-chat-message-0')).toHaveTextContent('Dinner—any ideas?')
+    expect(screen.getByText('Try this:').tagName).toBe('STRONG')
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
 })

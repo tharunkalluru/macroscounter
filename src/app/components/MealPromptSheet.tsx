@@ -8,6 +8,7 @@ import { logSuggestionChip } from '../../lib/logging/logSuggestionChip'
 import type { MealPromptControls } from '../hooks/useMealPrompt'
 import { useUIState } from '../shell/UIStateContext'
 import BottomSheet from '../shell/BottomSheet'
+import MealSuggestionRow from './MealSuggestionRow'
 
 const MEAL_LABELS: Record<Meal, string> = {
   breakfast: 'breakfast',
@@ -87,18 +88,15 @@ export default function MealPromptSheet({ meal, dismiss, close, onLogged }: Prop
       <div className="flex flex-col gap-4 pb-4" data-testid="meal-prompt-sheet">
         {error && <p role="alert" className="text-sm text-danger-700 dark:text-danger-300">{error}</p>}
         {suggestions.length > 0 && (
-          <div className="flex flex-wrap gap-2">
+          <div className="space-y-2">
             {suggestions.map((chip) => (
-              <button
+              <MealSuggestionRow
                 key={chip.key}
-                type="button"
-                onClick={() => handleChipTap(chip)}
+                chip={chip}
+                onAdd={() => handleChipTap(chip)}
                 disabled={pending}
-                data-testid="meal-prompt-suggestion-chip"
-                className="min-h-touch rounded-full border border-brand-700 px-3 py-1 text-caption text-brand-700 dark:border-brand-400 dark:text-brand-400"
-              >
-                {chip.label}
-              </button>
+                addTestId="meal-prompt-suggestion-chip"
+              />
             ))}
           </div>
         )}

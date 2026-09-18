@@ -52,7 +52,7 @@ test('opening the app at 08:00 with an empty breakfast shows the prompt, with a 
 
   const chip = page.getByTestId('meal-prompt-suggestion-chip')
   await expect(chip).toBeVisible()
-  await expect(chip).toContainText('Idli')
+  await expect(chip).toHaveAccessibleName(/Add.*Idli/)
 
   await chip.click()
 

@@ -36,7 +36,7 @@ const food = {
   confidence: 'low',
 }
 
-function renderReview(withPhoto = false) {
+function renderReview(withPhoto = false, name = food.name) {
   render(
     <MemoryRouter
       initialEntries={[
@@ -45,7 +45,7 @@ function renderReview(withPhoto = false) {
           state: {
             meal: 'dinner',
             date: '2026-01-02',
-            items: [food],
+            items: [{ ...food, name }],
             ...(withPhoto ? { photo: { data: 'AA==', mediaType: 'image/png' } } : {}),
           },
         },
@@ -67,6 +67,33 @@ beforeEach(() => {
 })
 
 describe('AI review save integrity', () => {
+  it('offers a compact review title while preserving the full name in details, editing and saved food', async () => {
+    const fullName = 'Ultra Nutrition High Protein Shake, Chocolate, 30g Protein, 330ml'
+    renderReview(false, fullName)
+
+    expect(screen.getByTestId('ai-result-item-0')).toHaveTextContent('Protein shake')
+    expect(screen.getByTestId('ai-result-item-0')).not.toHaveTextContent('Ultra Nutrition')
+    expect(screen.getByTestId('ai-result-item-0')).toHaveAccessibleName(`Exclude Protein shake: ${fullName}`)
+    const details = screen.getByTestId('food-name-details')
+    expect(details).not.toHaveAttribute('open')
+    fireEvent.click(screen.getByText('Full name'))
+    expect(details).toHaveAttribute('open')
+    expect(screen.getByTestId('food-full-name')).toHaveTextContent(fullName)
+
+    fireEvent.click(screen.getByTestId('ai-edit-item-0'))
+    expect(screen.getByTestId('ai-item-name-0')).toHaveValue(fullName)
+    fireEvent.click(screen.getByTestId('ai-log-all-button'))
+    await screen.findByText('Diary destination')
+    expect(mocks.save).toHaveBeenCalledWith([
+      expect.objectContaining({
+        name: fullName,
+        customSnapshot: expect.objectContaining({ name: fullName }),
+        grams: 200,
+        kcal: 260,
+      }),
+    ])
+  })
+
   it('commits corrected portions, name and destination only after confirmation', async () => {
     renderReview()
     fireEvent.click(screen.getByTestId('ai-edit-item-0'))

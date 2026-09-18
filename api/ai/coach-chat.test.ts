@@ -1,7 +1,9 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
+import type Anthropic from '@anthropic-ai/sdk'
 import { describe, expect, it, vi } from 'vitest'
 import {
   buildSystemPrompt,
+  chat,
   formatUserContext,
   validateRequestBody,
   type CoachContextData,
@@ -247,5 +249,32 @@ describe('coach local-day context', () => {
     expect(prompt).toContain('infer a deficit from an incomplete day')
     expect(prompt).toContain('Do not change targets or claim you saved anything')
     expect(prompt).toContain('For minors')
+    expect(prompt).toContain('Never use em dashes')
+    expect(prompt).toContain('60-120 words')
+    expect(prompt).toContain('simple Markdown')
+  })
+})
+
+describe('coach response normalization', () => {
+  it('removes em dashes before returning model text while retaining useful formatting and safety context', async () => {
+    const client = {
+      messages: {
+        create: vi
+          .fn()
+          .mockResolvedValue({
+            content: [
+              {
+                type: 'text',
+                text: '**An option:**\n- Tofu—about 150 g\n\nCheck ingredients &mdash; allergies matter.',
+              },
+            ],
+          }),
+      },
+    } as unknown as Anthropic
+    const reply = await chat(client, 'system', { message: 'Dinner ideas?' })
+    expect(reply).toBe(
+      '**An option:**\n- Tofu, about 150 g\n\nCheck ingredients, allergies matter.'
+    )
+    expect(reply).not.toContain('—')
   })
 })

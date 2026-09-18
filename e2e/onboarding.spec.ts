@@ -50,7 +50,7 @@ test('completing onboarding computes and shows the correct kcal target on the da
   await page.getByTestId('onboarding-finish').click()
 
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('kcal-target')).toHaveText('1628 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('1628')
   await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 126 g 126 left')
   await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 171 g 171 left')
   await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 49 g 49 left')
@@ -103,13 +103,14 @@ test('height/weight unit toggle: entering ft+in and lb converts to the same cano
   await page.getByTestId('onboarding-finish').click()
 
   await expect(page).toHaveURL('/')
-  await expect(page.getByTestId('kcal-target')).toHaveText('1759 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('1759')
   await expect(page.getByTestId('protein-bar-value')).toHaveText('0 / 144 g 144 left')
   await expect(page.getByTestId('carbs-bar-value')).toHaveText('0 / 170 g 170 left')
   await expect(page.getByTestId('fat-bar-value')).toHaveText('0 / 56 g 56 left')
 
   // The preference persists to Settings, still showing ft+in/lb.
   await page.getByTestId('avatar-link').click()
+  await page.getByTestId('settings-profile-toggle').click()
   await expect(page.getByTestId('height-unit-ft_in')).toHaveAttribute('aria-checked', 'true')
   await expect(page.getByTestId('height-input-feet')).toHaveValue('5')
   await expect(page.getByTestId('height-input-inches')).toHaveValue('9')
@@ -154,11 +155,11 @@ test('data persists across a reload after onboarding', async ({ page }) => {
   await page.getByTestId('onboarding-continue').click() // coach-reveal
   await page.getByTestId('onboarding-finish').click()
 
-  await expect(page.getByTestId('kcal-target')).toHaveText('2046 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2046')
 
   await page.reload()
 
-  await expect(page.getByTestId('kcal-target')).toHaveText('2046 kcal target')
+  await expect(page.getByTestId('kcal-target')).toHaveText('2046')
   // Header avatar shows the profile's initial (no more "Hi {name}" text link post-9B).
   await expect(page.getByTestId('avatar-link')).toHaveText('R')
 })

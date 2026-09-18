@@ -6,6 +6,7 @@ import { ScannedProductRepo } from '../data/repos/ScannedProductRepo'
 import { getServingOptions } from '../domain/barcode/servingOptions'
 import { lookupProduct } from '../domain/barcode/lookupProduct'
 import { parseServingSize } from '../domain/barcode/servingSizeParser'
+import { getFoodDisplayName } from '../domain/logging/foodDisplayName'
 import { activeMealWindow } from '../domain/mealPrompt/activeMealWindow'
 import { diaryDate, diaryPath } from '../lib/date'
 import { vibrateTiny } from '../lib/haptics'
@@ -58,6 +59,7 @@ export default function ScanProductPage() {
   // parse forever. Re-deriving from the always-preserved raw text means an
   // already-cached product benefits from parser fixes without a re-fetch.
   const servingSize = product ? (parseServingSize(product.servingSizeText) ?? product.servingSize) : undefined
+  const displayName = getFoodDisplayName(product?.name ?? '')
 
   useEffect(() => {
     if (!barcode) return
@@ -119,15 +121,17 @@ export default function ScanProductPage() {
             )}
             <div className="min-w-0 flex-1">
               <div className="flex items-start justify-between gap-2">
-                <h2 className="font-semibold" data-testid="scanned-product-name">
-                  {product.name}
+                <h2 className="line-clamp-2 break-words font-semibold" data-testid="scanned-product-name">
+                  {displayName.title}
                 </h2>
                 <span className="shrink-0 rounded bg-slate-100 px-2 py-0.5 text-caption text-slate-500 dark:bg-slate-700 dark:text-slate-400">
                   {product.source}
                 </span>
               </div>
-              {product.brand && (
-                <p className="text-caption text-slate-500 dark:text-slate-400">{product.brand}</p>
+              {(product.brand || displayName.variant) && (
+                <p className="mt-1 line-clamp-2 break-words text-caption text-slate-500 dark:text-slate-400">
+                  {[product.brand, displayName.variant].filter(Boolean).join(' · ')}
+                </p>
               )}
               <p className="mt-1 text-caption tabular-nums text-slate-500 dark:text-slate-400">
                 Per 100 g: {Math.round(product.per100g.kcal)} kcal · {product.per100g.p}p /{' '}
@@ -136,6 +140,18 @@ export default function ScanProductPage() {
               </p>
             </div>
           </div>
+
+          {(displayName.isCompact || product.name.length > 48) && (
+            <details className="mt-2 text-caption" data-testid="food-name-details">
+              <summary className="min-h-touch cursor-pointer content-center font-medium text-brand-700 dark:text-brand-400">
+                Full name
+              </summary>
+              <p className="break-words text-sm leading-relaxed text-slate-700 dark:text-slate-300" data-testid="food-full-name">
+                {product.name}
+              </p>
+              <p className="mt-1 break-all text-slate-500 dark:text-slate-400">Barcode · {product.barcode}</p>
+            </details>
+          )}
 
           <div className="mt-4">
             <SegmentedControl

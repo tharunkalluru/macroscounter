@@ -40,7 +40,7 @@ const view = () => (
 )
 
 function startAI(description = '  I am Taylor A, 32, female, 175 cm and 75 kg.  ') {
-  fireEvent.click(screen.getByRole('button', { name: /Fill the details with AI/i }))
+  fireEvent.click(screen.getByRole('button', { name: /Draft with AI/i }))
   fireEvent.change(screen.getByLabelText('About you'), { target: { value: description } })
   fireEvent.click(screen.getByRole('button', { name: 'Fill my details' }))
 }
@@ -78,7 +78,7 @@ describe('AI setup failure boundaries', () => {
     result.rerender(view())
     expect(options.signal.aborted).toBe(true)
     expect(screen.getByLabelText('What should we call you?')).toHaveValue('')
-    fireEvent.click(screen.getByRole('button', { name: /Fill the details with AI/i }))
+    fireEvent.click(screen.getByRole('button', { name: /Draft with AI/i }))
     expect(screen.getByLabelText('About you')).toHaveValue('')
 
     await act(async () => {

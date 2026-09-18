@@ -4,6 +4,7 @@ import type { LogEntry, Meal } from '../../data/models'
 import { computeMealSuggestions } from '../../domain/logging/suggestions'
 import { vibrateTiny } from '../../lib/haptics'
 import { logSuggestionChip } from '../../lib/logging/logSuggestionChip'
+import MealSuggestionRow from './MealSuggestionRow'
 
 interface Props {
   meal: Meal
@@ -55,18 +56,15 @@ export default function YourUsualsRow({ meal, date, historyEntries, onLogged }: 
         </Link>
       </div>
       {error && <p role="alert" className="text-caption text-danger-700 dark:text-danger-300">{error}</p>}
-      <div className="flex flex-wrap gap-2">
+      <div className="space-y-2">
         {suggestions.map((chip) => (
-          <button
+          <MealSuggestionRow
             key={chip.key}
-            type="button"
-            onClick={() => handleTap(chip)}
+            chip={chip}
+            onAdd={() => handleTap(chip)}
             disabled={pending}
-            data-testid="suggestion-chip"
-            className="min-h-touch rounded-full border border-brand-700 px-3 py-1 text-caption text-brand-700 dark:border-brand-400 dark:text-brand-400"
-          >
-            {chip.label}
-          </button>
+            addTestId="suggestion-chip"
+          />
         ))}
       </div>
     </div>

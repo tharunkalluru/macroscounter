@@ -16,6 +16,7 @@ import {
   type MealReviewItem,
 } from '../domain/ai/mealReview'
 import { base64ToBlob } from '../lib/ai/imageCompress'
+import { getFoodDisplayName } from '../domain/logging/foodDisplayName'
 import { diaryDate, diaryPath, isValidISODate, todayISO } from '../lib/date'
 import { vibrateSuccess } from '../lib/haptics'
 import FoodGlyph from './components/FoodGlyph'
@@ -230,22 +231,17 @@ export default function AiLogResultPage() {
       ) : (
         <div className="grid items-start gap-5 md:grid-cols-[minmax(0,1fr)_280px]">
           <div className="min-w-0">
-            <div className="mb-5 flex items-start gap-3">
-              <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-brand-100 text-brand-700 dark:bg-slate-800 dark:text-brand-400">
-                <SparkleIcon className="h-5 w-5" />
+            <div className="mb-4 flex items-center gap-2 text-sm text-slate-600 dark:text-slate-300">
+              <span className="shrink-0 text-brand-700 dark:text-brand-400">
+                <SparkleIcon className="h-4 w-4" />
               </span>
-              <div>
-                <h2 className="font-semibold text-slate-900 dark:text-slate-100">
-                  A starting point, made yours.
-                </h2>
-                <p className="mt-1 text-sm leading-relaxed text-slate-600 dark:text-slate-300">
-                  Check the foods and portions. Make any changes before they reach your diary.
-                </p>
-              </div>
+              <p>AI estimates. Check foods and portions.</p>
             </div>
             <div className="flex flex-col gap-3" data-testid="ai-result-list">
               {items.map((item, i) => {
                 const food = reviewedFood(item)
+                const displayName = getFoodDisplayName(item.name)
+                const accessibleName = displayName.isCompact ? `${displayName.title}: ${item.name}` : item.name
                 const isEditing = editing === i
                 return (
                   <article
@@ -260,7 +256,7 @@ export default function AiLogResultPage() {
                         }
                         data-testid={`ai-result-item-${i}`}
                         aria-pressed={item.included}
-                        aria-label={`${item.included ? 'Exclude' : 'Include'} ${item.name}`}
+                        aria-label={`${item.included ? 'Exclude' : 'Include'} ${accessibleName}`}
                         className="flex min-h-touch min-w-0 flex-1 items-center gap-3 text-left"
                       >
                         <span
@@ -271,9 +267,12 @@ export default function AiLogResultPage() {
                         </span>
                         <FoodGlyph name={item.name} />
                         <span className="min-w-0">
-                          <span className="block break-words font-semibold text-slate-900 dark:text-slate-100">
-                            {item.name || 'Unnamed food'}
+                          <span className="line-clamp-2 break-words font-semibold text-slate-900 dark:text-slate-100">
+                            {displayName.title || 'Unnamed food'}
                           </span>
+                          {displayName.variant && (
+                            <span className="mt-1 block truncate text-caption text-slate-500 dark:text-slate-400">{displayName.variant}</span>
+                          )}
                           <span className="mt-1 block text-caption text-slate-500 dark:text-slate-400">
                             {item.amount || '—'}{' '}
                             {item.original.gramsEstimate === null ? '× portion' : 'g'} ·{' '}
@@ -308,6 +307,16 @@ export default function AiLogResultPage() {
                         </button>
                       </div>
                     </div>
+                    {(displayName.isCompact || item.name.length > 48) && !isEditing && (
+                      <details className="px-4 pb-2 text-caption" data-testid="food-name-details">
+                        <summary className="min-h-touch cursor-pointer content-center font-medium text-brand-700 dark:text-brand-400">
+                          Full name
+                        </summary>
+                        <p className="pb-2 break-words text-sm leading-relaxed text-slate-700 dark:text-slate-300" data-testid="food-full-name">
+                          {item.name}
+                        </p>
+                      </details>
+                    )}
                     {isEditing && (
                       <div
                         id={`food-editor-${i}`}
@@ -365,7 +374,7 @@ export default function AiLogResultPage() {
                           ))}
                         </div>
                         <p className="mt-2 text-caption text-slate-500 dark:text-slate-400">
-                          Nutrition scales with the portion. You can also correct the values below.
+                          Nutrition adjusts with the portion.
                         </p>
                         <div className="mt-3 grid grid-cols-2 gap-3 sm:grid-cols-3">
                           {REVIEW_NUTRIENTS.map((key) => (
@@ -410,7 +419,7 @@ export default function AiLogResultPage() {
                           }
                           className="mt-2 min-h-touch text-caption font-medium text-slate-600 underline dark:text-slate-300"
                         >
-                          Reset to original estimate
+                          Reset estimate
                         </button>
                       </div>
                     )}
@@ -419,20 +428,18 @@ export default function AiLogResultPage() {
               })}
             </div>
             <p className="mt-4 text-caption leading-relaxed text-slate-500 dark:text-slate-400">
-              Check for extras such as cooking oil, sauces and drinks. AI nutrition is an estimate,
-              not a verified database result; a provided quantity does not guarantee accurate
-              nutrition.
+              Check for oils, sauces and drinks. Nutrition is estimated, even when you provide quantities.
             </p>
             <Link
               to={manualPath}
               className="mt-2 inline-flex min-h-touch items-center text-sm font-medium text-brand-700 dark:text-brand-400"
             >
-              Use food search instead →
+              Search food instead →
             </Link>
           </div>
           <aside className="rounded-card border border-slate-200/70 bg-white shadow-card dark:border-slate-800 dark:bg-surface-dark-card dark:shadow-card-dark p-5 md:sticky md:top-6">
             <p className="text-caption font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-400">
-              Your plate
+              Meal total
             </p>
             <p
               className="mt-2 text-4xl font-semibold tracking-tight text-slate-900 dark:text-slate-100"
@@ -457,7 +464,7 @@ export default function AiLogResultPage() {
             </div>
             <div className="my-5 border-t border-slate-100 dark:border-slate-800" />
             <label className="block text-caption font-medium text-slate-600 dark:text-slate-300">
-              Add to meal
+              Meal
               <select
                 value={meal}
                 onChange={(event) => setMeal(event.target.value as Meal)}
@@ -472,7 +479,7 @@ export default function AiLogResultPage() {
               </select>
             </label>
             <label className="mt-3 block text-caption font-medium text-slate-600 dark:text-slate-300">
-              Diary date
+              Date
               <input
                 type="date"
                 value={entryDate}
@@ -508,9 +515,6 @@ export default function AiLogResultPage() {
                 ? 'Saving meal…'
                 : `Log ${selectedCount} item${selectedCount === 1 ? '' : 's'}`}
             </button>
-            <p className="mt-2 text-center text-caption text-slate-500 dark:text-slate-400">
-              Nothing is logged until you confirm.
-            </p>
           </aside>
         </div>
       )}

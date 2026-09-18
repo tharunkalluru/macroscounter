@@ -183,7 +183,7 @@ test('an empty meal with a repeated history shows a one-tap "your usual" suggest
   await page.goto('/log') // meal-grouped breakdown lives on the Log tab's Meals view (Phase R.3)
   const chip = page.getByTestId('suggestion-chip-dinner')
   await expect(chip).toBeVisible()
-  await expect(chip).toContainText('Idli')
+  await expect(chip).toHaveAccessibleName(/Add.*Idli/)
 
   await chip.click()
   await expect(page.getByTestId('meal-subtotal-dinner')).toHaveText('82 kcal')

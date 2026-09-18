@@ -90,13 +90,13 @@ nav {
 html[data-reduce-motion='true'] .pressable { transition: none; }
 html[data-reduce-motion='true'] .pressable:active { transform: none; }
 
-button:not(:disabled), a, [role='tab'] { cursor: pointer; }
+button:not(:disabled), a, summary, [role='tab'] { cursor: pointer; }
 button:disabled { cursor: not-allowed; }
-:where(button, a, input, select, textarea):focus-visible {
+:where(button, a, input, select, textarea, summary):focus-visible {
   outline: 2px solid var(--brand-600);
   outline-offset: 3px;
 }
-.dark :where(button, a, input, select, textarea):focus-visible { outline-color: var(--brand-400); }
+.dark :where(button, a, input, select, textarea, summary):focus-visible { outline-color: var(--brand-400); }
 label:has(input[type='date']:focus-visible) { outline: 2px solid var(--brand-400); outline-offset: 2px; }
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { scroll-behavior: auto !important; }

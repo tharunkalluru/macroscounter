@@ -114,3 +114,23 @@ describe('complete meal snapshots', () => {
     expect(computeMealSuggestions([custom, { date: custom.date, meal: custom.meal, name: 'Unknown', qty: 1, unit: 'portion', grams: 0 }], 'breakfast', TODAY)).toEqual([])
   })
 })
+
+
+describe('product identity in repeat meals', () => {
+  const product = { date: '2026-08-17', meal: 'breakfast' as const, name: 'Ultra Complete Chocolate Protein Shake, high protein, ready to drink, 325 ml', barcode: '111', qty: 1, unit: 'portion' as const, grams: 325, portionSummary: '1 bottle', kcal: 160, p: 30, c: 5, f: 2 }
+
+  it('keeps products distinct even when both use the same short display category', () => {
+    const otherName = 'Everyday Chocolate Protein Shake, high protein, ready to drink, 325 ml'
+    const chips = computeMealSuggestions([product, { ...product, date: '2026-08-16', name: otherName, barcode: '222' }], 'breakfast', TODAY)
+    expect(chips).toHaveLength(2)
+    expect(chips[0].entries[0].snapshot).toMatchObject({ name: product.name, barcode: '111', kcal: 160, grams: 325 })
+    expect(chips[1].entries[0].snapshot).toMatchObject({ name: otherName, barcode: '222' })
+    expect(product.name).toBe('Ultra Complete Chocolate Protein Shake, high protein, ready to drink, 325 ml')
+  })
+
+  it('does not merge different barcodes with identical names and nutrition', () => {
+    const chips = computeMealSuggestions([product, { ...product, date: '2026-08-16', barcode: '222' }], 'breakfast', TODAY)
+    expect(chips).toHaveLength(2)
+    expect(new Set(chips.map((chip) => chip.entries[0].snapshot?.barcode))).toEqual(new Set(['111', '222']))
+  })
+})

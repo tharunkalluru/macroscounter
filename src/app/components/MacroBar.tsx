@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion'
+import { ChevronRightIcon } from '../shell/icons'
 import { usePrefersReducedMotion } from '../hooks/usePrefersReducedMotion'
 
 interface Props {
@@ -35,7 +36,7 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
       <div
         className={`text-caption text-slate-500 dark:text-slate-400 ${onTap ? 'flex flex-col gap-1' : 'flex justify-between gap-2'}`}
       >
-        <span className="font-medium text-slate-700 dark:text-slate-200">{label}</span>
+        <span className="flex items-center justify-between gap-2 font-medium text-slate-700 dark:text-slate-200">{label}{onTap && <ChevronRightIcon className="h-3.5 w-3.5 text-slate-400" />}</span>
         <span className="tabular-nums leading-relaxed" data-testid={`${testId}-value`}>
           {Math.round(consumed)}
           {target > 0 ? ` / ${Math.round(target)}` : ''} g{' '}
@@ -44,7 +45,7 @@ export default function MacroBar({ label, consumed, target, colorClass, testId, 
               {onTap ? '' : ' · '}+{overAmount}
             </span>
           ) : target > 0 ? (
-            <span className={onTap ? 'block' : 'inline'} data-testid={`${testId}-remaining`}>
+            <span className={onTap ? 'sr-only' : 'inline'} data-testid={`${testId}-remaining`}>
               {onTap ? '' : ' · '}
               {remaining} left
             </span>

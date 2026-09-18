@@ -50,10 +50,9 @@ export default function CopyYesterdayPrompt({ date, todayEntryCount, historyEntr
       className="mt-4 rounded-lg border border-brand-100 bg-brand-50 p-4 text-sm dark:border-slate-700 dark:bg-slate-800"
       data-testid="copy-yesterday-prompt"
     >
-      <p className="font-medium text-brand-700 dark:text-brand-400">Nothing logged yet today</p>
+      <p className="font-medium text-brand-700 dark:text-brand-400">Same meals as yesterday?</p>
       <p className="mt-1 text-slate-600 dark:text-slate-300">
-        Copy yesterday&apos;s log ({count} item{count === 1 ? '' : 's'}, {kcal} kcal) to get a quick
-        start?
+        {count} item{count === 1 ? '' : 's'} · {kcal} kcal
       </p>
       {error && <p role="alert" className="mt-2 text-danger-700 dark:text-danger-300">{error}</p>}
       <div className="mt-3 flex gap-3">

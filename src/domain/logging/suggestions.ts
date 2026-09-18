@@ -39,7 +39,7 @@ function toSuggestion(entry: SuggestionSourceEntry): SuggestionEntry | null {
 
 function comboSignature(entries: SuggestionEntry[]): string {
   return entries.map((entry) => JSON.stringify([
-    entry.foodId ?? entry.name, entry.qty, entry.unit, entry.grams, entry.portionLabel ?? '',
+    entry.foodId ?? entry.name, entry.snapshot?.barcode ?? '', entry.qty, entry.unit, entry.grams, entry.portionLabel ?? '',
     entry.snapshot?.kcal, entry.snapshot?.p, entry.snapshot?.c, entry.snapshot?.f, entry.snapshot?.fiber,
   ])).sort().join('|')
 }

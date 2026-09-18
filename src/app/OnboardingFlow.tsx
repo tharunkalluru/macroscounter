@@ -33,7 +33,6 @@ import { addDaysISO, todayISO } from '../lib/date'
 import { saveSetup } from '../lib/onboarding/saveSetup'
 import QuickOnboardingFlow from './QuickOnboardingFlow'
 import ChoiceGrid from './components/ChoiceGrid'
-import { CoachMessage, CoachQuickReply } from './components/CoachBubble'
 import DateWheelPicker from './components/DateWheelPicker'
 import GoalRateSlider from './components/GoalRateSlider'
 import HeightInput, { type HeightUnit } from './components/HeightInput'
@@ -47,13 +46,19 @@ const SEX_OPTIONS: { value: Sex; label: string }[] = [
   { value: 'female', label: 'female' },
 ]
 
-const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
-
 const DIET_STYLE_LABELS: Record<DietStyle, string> = Object.fromEntries(
   DIET_STYLE_OPTIONS.map((o) => [o.value, o.label])
 ) as Record<DietStyle, string>
 
-const STEPS_BEFORE_RATE = ['name', 'basics', 'stats', 'weight-history', 'body-fat', 'activity', 'goal'] as const
+const STEPS_BEFORE_RATE = [
+  'name',
+  'basics',
+  'stats',
+  'weight-history',
+  'body-fat',
+  'activity',
+  'goal',
+] as const
 const STEPS_AFTER_RATE = ['diet-style', 'coach-reveal', 'confirm'] as const
 
 type StepId = (typeof STEPS_BEFORE_RATE)[number] | 'goal-rate' | (typeof STEPS_AFTER_RATE)[number]
@@ -66,7 +71,11 @@ interface Props {
 
 export default function OnboardingFlow(props: Props) {
   const [detailed, setDetailed] = useState(Boolean(props.profileRepo || props.targetRepo))
-  return detailed ? <DetailedOnboardingFlow {...props} /> : <QuickOnboardingFlow onDetailed={() => setDetailed(true)} />
+  return detailed ? (
+    <DetailedOnboardingFlow {...props} />
+  ) : (
+    <QuickOnboardingFlow onDetailed={() => setDetailed(true)} />
+  )
 }
 
 function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) {
@@ -137,7 +146,9 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
   const goalWeightKg = goalWeightLb !== null ? lbToKg(goalWeightLb) : undefined
 
   const fatGPerKg = DIET_STYLE_OPTIONS.find((o) => o.value === dietStyle)?.fatGPerKg
-  const proteinGPerKg = PROTEIN_PRIORITY_OPTIONS.find((o) => o.value === proteinPriority)?.proteinGPerKg
+  const proteinGPerKg = PROTEIN_PRIORITY_OPTIONS.find(
+    (o) => o.value === proteinPriority
+  )?.proteinGPerKg
   const floorOption = CALORIE_FLOOR_OPTIONS.find((o) => o.value === calorieFloorChoice)
 
   const preview = useMemo(() => {
@@ -168,13 +179,29 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
       goalRateLbPerWeek: goal === 'maintain' ? undefined : goalRateLbPerWeek,
     })
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [sex, ageNum, heightNum, weightNum, activityLevel, goal, proteinGPerKg, fatGPerKg, floorOption, goalRateLbPerWeek])
+  }, [
+    sex,
+    ageNum,
+    heightNum,
+    weightNum,
+    activityLevel,
+    goal,
+    proteinGPerKg,
+    fatGPerKg,
+    floorOption,
+    goalRateLbPerWeek,
+  ])
 
   // A simple linear estimate for the onboarding preview only — not the
   // trend-based projection weightProjection.ts computes from real logged
   // data once someone has a history.
   const goalDateISO = useMemo(() => {
-    if (goal === 'maintain' || goalWeightKg === undefined || !Number.isFinite(weightNum) || weightNum <= 0) {
+    if (
+      goal === 'maintain' ||
+      goalWeightKg === undefined ||
+      !Number.isFinite(weightNum) ||
+      weightNum <= 0
+    ) {
       return null
     }
     const totalLb = Math.abs(kgToLb(weightNum) - kgToLb(goalWeightKg))
@@ -272,7 +299,7 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
   }
 
   return (
-    <div className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-6">
+    <main className="mx-auto flex min-h-screen max-w-md flex-col px-6 py-6">
       <div className="flex items-center gap-2">
         {stepIndex > 0 ? (
           <button
@@ -289,7 +316,7 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
         )}
         <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-slate-100 dark:bg-slate-800">
           <div
-            className="h-full origin-left rounded-full bg-brand-600 transition-transform duration-300 ease-out"
+            className="h-full origin-left rounded-full bg-brand-600 transition-transform duration-200 ease-out motion-reduce:transition-none"
             style={{ transform: `scaleX(${(stepIndex + 1) / steps.length})` }}
             data-testid="onboarding-progress"
           />
@@ -299,7 +326,10 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
         </span>
       </div>
 
-      <div className="flex flex-1 flex-col justify-center py-8" data-testid={`onboarding-step-${step}`}>
+      <div
+        className="flex flex-1 flex-col justify-center py-8"
+        data-testid={`onboarding-step-${step}`}
+      >
         {step === 'name' && (
           <StepShell title="What should we call you?">
             <input
@@ -307,16 +337,22 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
               value={name}
               onChange={(e) => setName(e.target.value)}
               placeholder="Your name"
+              aria-label="Your name"
+              autoComplete="given-name"
+              maxLength={80}
               autoFocus
             />
           </StepShell>
         )}
 
         {step === 'basics' && (
-          <StepShell title="The basics">
+          <StepShell
+            title="The basics"
+            subtitle="For adults 18+. Sex is used for energy and fiber estimates."
+          >
             <div className="flex flex-col gap-5">
               <ChoiceGrid
-                legend="Sex"
+                legend="Calculation sex"
                 options={SEX_OPTIONS}
                 value={sex}
                 onChange={setSex}
@@ -324,8 +360,14 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
                 testIdPrefix="sex"
               />
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Date of birth</span>
-                <DateWheelPicker valueISO={dateOfBirth} onChange={setDateOfBirth} maxISO={todayISO()} />
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  Date of birth
+                </span>
+                <DateWheelPicker
+                  valueISO={dateOfBirth}
+                  onChange={setDateOfBirth}
+                  maxISO={todayISO()}
+                />
               </div>
             </div>
           </StepShell>
@@ -335,7 +377,9 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
           <StepShell title="Your height and weight">
             <div className="flex flex-col gap-4">
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Height</span>
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  Height
+                </span>
                 <HeightInput
                   valueCm={heightCm}
                   onChangeCm={setHeightCm}
@@ -344,7 +388,9 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
                 />
               </div>
               <div className="flex flex-col gap-1">
-                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Weight</span>
+                <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                  Weight
+                </span>
                 <WeightInput
                   valueKg={weightKg}
                   onChangeKg={setWeightKg}
@@ -360,14 +406,14 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
           <StepShell title="Your weight history">
             <div className="flex flex-col gap-6">
               <SelectableCardGroup
-                label="Have you ever weighed more than this before?"
+                label="Have you weighed more before?"
                 options={WEIGHED_MORE_OPTIONS}
                 value={weighedMoreBefore}
                 onChange={setWeighedMoreBefore}
                 testIdPrefix="weighed-more"
               />
               <SelectableCardGroup
-                label="Last 3 months, your weight has been"
+                label="Your weight in the last 3 months"
                 options={RECENT_TREND_OPTIONS}
                 value={recentTrend}
                 onChange={setRecentTrend}
@@ -378,7 +424,7 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
         )}
 
         {step === 'body-fat' && (
-          <StepShell title="What's your body composition?" subtitle="Optional - skip if you're not sure.">
+          <StepShell title="Body composition" subtitle="Optional. Skip if you’re unsure.">
             <ChoiceGrid
               legend="Body fat"
               options={BODY_FAT_OPTIONS}
@@ -423,25 +469,41 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
 
         {step === 'goal' && (
           <StepShell title="What's your goal?">
-            <SelectableCardGroup label="Goal" options={GOAL_OPTIONS} value={goal} onChange={setGoal} testIdPrefix="goal" />
+            <SelectableCardGroup
+              label="Goal"
+              options={GOAL_OPTIONS}
+              value={goal}
+              onChange={setGoal}
+              testIdPrefix="goal"
+            />
           </StepShell>
         )}
 
         {step === 'goal-rate' && (
-          <StepShell title={goal === 'cut' ? 'How fast do you want to lose?' : 'How fast do you want to gain?'}>
+          <StepShell
+            title={
+              goal === 'cut' ? 'How fast do you want to lose?' : 'How fast do you want to gain?'
+            }
+          >
             <div className="flex flex-col gap-6">
               {preview && (
                 <div className="grid grid-cols-2 gap-2">
                   <SummaryTile label="Daily budget" value={`${preview.kcal} kcal`} />
-                  <SummaryTile label="Reach goal by" value={goalDateISO ? formatShortDate(goalDateISO) : '-'} />
+                  <SummaryTile
+                    label="Estimated goal date"
+                    value={goalDateISO ? formatShortDate(goalDateISO) : '-'}
+                  />
                 </div>
               )}
               {goalWeightLb !== null && (
                 <div className="flex flex-col gap-2">
                   <div className="flex items-baseline justify-between">
-                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">Target weight</span>
+                    <span className="text-sm font-medium text-slate-900 dark:text-slate-100">
+                      Target weight
+                    </span>
                     <span className="text-sm font-semibold tabular-nums text-slate-900 dark:text-slate-100">
-                      {(weightUnit === 'kg' ? lbToKg(goalWeightLb) : goalWeightLb).toFixed(1)} {weightUnit}
+                      {(weightUnit === 'kg' ? lbToKg(goalWeightLb) : goalWeightLb).toFixed(1)}{' '}
+                      {weightUnit}
                     </span>
                   </div>
                   <input
@@ -499,22 +561,33 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
                   <p className="mb-2 text-caption uppercase tracking-widest text-slate-500 dark:text-slate-400">
                     Resulting daily targets
                   </p>
-                  <dl className="grid grid-cols-4 gap-2 text-center" data-testid="diet-style-preview">
+                  <dl
+                    className="grid grid-cols-4 gap-2 text-center"
+                    data-testid="diet-style-preview"
+                  >
                     <div>
                       <dt className="text-caption text-slate-500 dark:text-slate-400">Protein</dt>
-                      <dd className="font-semibold tabular-nums text-brand-700 dark:text-brand-400">{preview.proteinG}g</dd>
+                      <dd className="font-semibold tabular-nums text-brand-700 dark:text-brand-400">
+                        {preview.proteinG}g
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-caption text-slate-500 dark:text-slate-400">Carbs</dt>
-                      <dd className="font-semibold tabular-nums text-carbs-700 dark:text-carbs-400">{preview.carbsG}g</dd>
+                      <dd className="font-semibold tabular-nums text-carbs-700 dark:text-carbs-400">
+                        {preview.carbsG}g
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-caption text-slate-500 dark:text-slate-400">Fat</dt>
-                      <dd className="font-semibold tabular-nums text-fat-700 dark:text-fat-400">{preview.fatG}g</dd>
+                      <dd className="font-semibold tabular-nums text-fat-700 dark:text-fat-400">
+                        {preview.fatG}g
+                      </dd>
                     </div>
                     <div>
                       <dt className="text-caption text-slate-500 dark:text-slate-400">kcal</dt>
-                      <dd className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">{preview.kcal}</dd>
+                      <dd className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">
+                        {preview.kcal}
+                      </dd>
                     </div>
                   </dl>
                 </div>
@@ -524,52 +597,49 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
         )}
 
         {step === 'coach-reveal' && (
-          <StepShell title="Here's the math" subtitle="No guesswork - just your numbers.">
+          <StepShell title="Your starting estimate" subtitle="Based on your details and activity.">
             {preview ? (
-              <div className="flex flex-col gap-3">
-                <CoachMessage>Alright - I've got enough to estimate what you burn on an average day.</CoachMessage>
-                <CoachMessage testId="coach-reveal-summary">
-                  <p className="mb-2 text-caption uppercase tracking-widest text-brand-600 dark:text-brand-400">
-                    Estimated daily expenditure
+              <div className="flex flex-col gap-4">
+                <dl
+                  className="rounded-card bg-white px-4 shadow-card dark:bg-surface-dark-card"
+                  data-testid="coach-reveal-summary"
+                >
+                  <SummaryRow
+                    label="At rest"
+                    value={`${Math.round(preview.bmr)} kcal`}
+                    testId="coach-reveal-bmr"
+                  />
+                  <SummaryRow
+                    label="With activity"
+                    value={`${Math.round(preview.tdee)} kcal`}
+                    testId="coach-reveal-tdee"
+                  />
+                  <SummaryRow
+                    label="Daily target"
+                    value={`${preview.kcal} kcal`}
+                    testId="coach-reveal-target"
+                  />
+                </dl>
+                <details className="rounded-xl border border-slate-200 px-4 dark:border-slate-700">
+                  <summary
+                    className="min-h-touch cursor-pointer py-3 text-sm font-medium"
+                    data-testid="coach-reveal-explain-toggle"
+                  >
+                    How it’s calculated
+                  </summary>
+                  <p
+                    className="pb-4 text-sm leading-relaxed text-slate-500 dark:text-slate-400"
+                    data-testid="coach-reveal-explain"
+                  >
+                    The Mifflin-St Jeor formula estimates resting energy. We adjust for activity and
+                    your goal, with a minimum calorie limit. Logged meals and weight trends help you
+                    review it over time.
                   </p>
-                  <p className="mb-1">
-                    Base metabolic rate:{' '}
-                    <strong className="tabular-nums" data-testid="coach-reveal-bmr">
-                      {Math.round(preview.bmr)} kcal
-                    </strong>
-                  </p>
-                  <p className="mb-1">
-                    Total daily energy:{' '}
-                    <strong className="tabular-nums" data-testid="coach-reveal-tdee">
-                      {Math.round(preview.tdee)} kcal
-                    </strong>
-                  </p>
-                  <p>
-                    Your daily target:{' '}
-                    <strong className="tabular-nums text-brand-700 dark:text-brand-400" data-testid="coach-reveal-target">
-                      {preview.kcal} kcal
-                    </strong>
-                  </p>
-                </CoachMessage>
-                <CoachMessage>
-                  Weigh in most mornings and log most meals - that's all the algorithm needs.
-                </CoachMessage>
-                {showExplain && (
-                  <CoachMessage testId="coach-reveal-explain">
-                    We start from the Mifflin-St Jeor formula for your base metabolic rate, scale it by your
-                    activity level, then apply your goal rate as a deficit or surplus - never below your safety
-                    floor.
-                  </CoachMessage>
-                )}
-                <div className="flex flex-col items-end gap-2">
-                  <CoachQuickReply onClick={() => setShowExplain((v) => !v)} testId="coach-reveal-explain-toggle">
-                    How did you work that out?
-                  </CoachQuickReply>
-                </div>
+                </details>
               </div>
             ) : (
               <p className="text-sm text-slate-500 dark:text-slate-400">
-                Go back and double-check your details to see your numbers.
+                Check your details to see your estimate.
               </p>
             )}
           </StepShell>
@@ -580,37 +650,64 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
             {preview ? (
               <div className="flex flex-col gap-4">
                 <div className="rounded-card bg-brand-50 p-4 text-center dark:bg-slate-800">
-                  <p className="text-caption text-slate-500 dark:text-slate-400">Daily calorie target</p>
-                  <p className="text-display tabular-nums text-brand-700 dark:text-brand-400" data-testid="onboarding-preview-kcal">
+                  <p className="text-caption text-slate-500 dark:text-slate-400">
+                    Daily calorie target
+                  </p>
+                  <p
+                    className="text-display tabular-nums text-brand-700 dark:text-brand-400"
+                    data-testid="onboarding-preview-kcal"
+                  >
                     {preview.kcal} kcal
                   </p>
                 </div>
 
-                {preview.adjustments && <p className="mb-4 text-caption text-slate-500 dark:text-slate-400">Your energy and fat allocation were adjusted so the displayed macros fit the calorie target. Your preferred pace may change.</p>}
-                <div className="overflow-hidden rounded-card shadow-card dark:shadow-card-dark" data-testid="week-preview">
-                  <WeekTable preview={preview} />
-                </div>
+                {preview.adjustments && (
+                  <p className="mb-4 text-caption text-slate-500 dark:text-slate-400">
+                    Targets were adjusted to fit your macros. Your preferred pace may change.
+                  </p>
+                )}
+                <dl className="grid grid-cols-3 gap-3 text-center" aria-label="Daily macro targets">
+                  {[
+                    ['Protein', preview.proteinG],
+                    ['Carbs', preview.carbsG],
+                    ['Fat', preview.fatG],
+                  ].map(([label, value]) => (
+                    <div key={label}>
+                      <dt className="text-caption text-slate-500 dark:text-slate-400">{label}</dt>
+                      <dd className="mt-1 text-lg font-semibold tabular-nums">{value} g</dd>
+                    </div>
+                  ))}
+                </dl>
 
                 <dl className="flex flex-col divide-y divide-slate-100 dark:divide-slate-700">
-                  <SummaryRow label="Expenditure estimate" value={`${Math.round(preview.tdee)} kcal`} />
                   <SummaryRow label="Diet style" value={DIET_STYLE_LABELS[dietStyle]} />
-                  <SummaryRow label="First check-in" value={formatShortDate(nextMondayISO(todayISO()))} />
-                  {goalDateISO && <SummaryRow label="Goal date" value={formatShortDate(goalDateISO)} />}
+                  <SummaryRow
+                    label="First check-in"
+                    value={formatShortDate(nextMondayISO(todayISO()))}
+                  />
+                  {goalDateISO && (
+                    <SummaryRow label="Estimated goal date" value={formatShortDate(goalDateISO)} />
+                  )}
                 </dl>
 
                 <button
                   type="button"
                   onClick={() => setShowExplain((v) => !v)}
                   data-testid="onboarding-explain-toggle"
+                  aria-expanded={showExplain}
+                  aria-controls="onboarding-plan-details"
                   className="min-h-touch w-full rounded-card border border-slate-200 px-4 py-2.5 text-sm font-medium text-slate-600 dark:border-slate-700 dark:text-slate-300"
                 >
-                  Explain how this was built
+                  About your plan
                 </button>
                 {showExplain && (
-                  <p className="text-sm text-slate-500 dark:text-slate-400" data-testid="onboarding-explain-text">
-                    Your target comes from your base metabolic rate, adjusted for activity and your chosen goal
-                    rate, then split into macros by your diet-style and protein-priority choices - never below
-                    your safety floor. We'll recalculate every Monday from what actually happened.
+                  <p
+                    className="text-sm text-slate-500 dark:text-slate-400"
+                    data-testid="onboarding-explain-text"
+                    id="onboarding-plan-details"
+                  >
+                    These are starting estimates, not guaranteed results. Weekly check-ins help you
+                    review your targets as you log meals and weight. You can edit them in Settings.
                   </p>
                 )}
               </div>
@@ -637,7 +734,7 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
           data-testid="onboarding-finish"
           className="min-h-touch w-full rounded-card bg-brand-700 px-4 py-3 font-medium text-white transition-transform active:scale-[0.98] disabled:opacity-50"
         >
-          {submitting ? 'Setting up…' : 'Start day 1'}
+          {submitting ? 'Saving…' : 'Start logging'}
         </button>
       ) : (
         <button
@@ -649,7 +746,7 @@ function DetailedOnboardingFlow({ profileRepo, targetRepo, onComplete }: Props) 
           Continue
         </button>
       )}
-    </div>
+    </main>
   )
 }
 
@@ -676,60 +773,25 @@ function StepShell({
 function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-card bg-white p-3 shadow-card dark:bg-surface-dark-card">
-      <p className="text-caption uppercase tracking-widest text-slate-500 dark:text-slate-400">{label}</p>
+      <p className="text-caption uppercase tracking-widest text-slate-500 dark:text-slate-400">
+        {label}
+      </p>
       <p className="font-semibold tabular-nums text-slate-900 dark:text-slate-100">{value}</p>
     </div>
   )
 }
 
-function SummaryRow({ label, value }: { label: string; value: string }) {
+function SummaryRow({ label, value, testId }: { label: string; value: string; testId?: string }) {
   return (
     <div className="flex items-center justify-between py-3">
       <dt className="text-sm text-slate-600 dark:text-slate-300">{label}</dt>
-      <dd className="text-sm font-medium text-slate-900 dark:text-slate-100">{value}</dd>
+      <dd
+        className="text-sm font-medium tabular-nums text-slate-900 dark:text-slate-100"
+        data-testid={testId}
+      >
+        {value}
+      </dd>
     </div>
-  )
-}
-
-function WeekTable({ preview }: { preview: { kcal: number; proteinG: number; carbsG: number; fatG: number } }) {
-  const todayIdx = (new Date(todayISO() + 'T00:00:00').getDay() + 6) % 7 // Mon=0..Sun=6
-  const rows: { key: string; label: string; value: number; colorClass: string }[] = [
-    { key: 'kcal', label: 'KCAL', value: preview.kcal, colorClass: 'text-slate-900 dark:text-slate-100' },
-    { key: 'protein', label: 'PROT', value: preview.proteinG, colorClass: 'text-brand-700 dark:text-brand-400' },
-    { key: 'carbs', label: 'CARB', value: preview.carbsG, colorClass: 'text-carbs-700 dark:text-carbs-400' },
-    { key: 'fat', label: 'FAT', value: preview.fatG, colorClass: 'text-fat-700 dark:text-fat-400' },
-  ]
-  return (
-    <table className="w-full border-collapse bg-white text-center text-xs dark:bg-surface-dark-card">
-      <thead>
-        <tr className="bg-slate-50 dark:bg-slate-800">
-          <th className="p-2 text-left text-caption text-slate-500 dark:text-slate-400"></th>
-          {WEEKDAY_LABELS.map((d, i) => (
-            <th
-              key={d}
-              className={`p-2 font-medium ${i === todayIdx ? 'text-brand-700 dark:text-brand-400' : 'text-slate-500 dark:text-slate-400'}`}
-            >
-              {d[0]}
-            </th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((row) => (
-          <tr key={row.key} className="border-t border-slate-100 dark:border-slate-700">
-            <td className="p-2 text-left text-caption font-semibold text-slate-500 dark:text-slate-400">{row.label}</td>
-            {WEEKDAY_LABELS.map((d, i) => (
-              <td
-                key={d}
-                className={`p-2 tabular-nums ${row.colorClass} ${i === todayIdx ? 'bg-brand-50 font-semibold dark:bg-slate-700' : ''}`}
-              >
-                {row.value}
-              </td>
-            ))}
-          </tr>
-        ))}
-      </tbody>
-    </table>
   )
 }
 
@@ -742,6 +804,6 @@ function nextMondayISO(fromISO: string): string {
   const [y, m, d] = fromISO.split('-').map(Number)
   const date = new Date(y, m - 1, d)
   const day = date.getDay() // 0=Sun..6=Sat
-  const daysUntilMonday = day === 1 ? 7 : ((1 - day + 7) % 7 || 7)
+  const daysUntilMonday = day === 1 ? 7 : (1 - day + 7) % 7 || 7
   return addDaysISO(fromISO, daysUntilMonday)
 }
